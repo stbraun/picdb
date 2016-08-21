@@ -1,0 +1,26 @@
+version: 1
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+loggers:
+  picdb:
+    level: INFO
+    handlers: [console]
+    propagate: no
+  picdb.db:
+    level: INFO
+    handlers: [console]
+    propagate: no
+  picdb.ui:
+    level: INFO
+    handlers: [console]
+    propagate: no
+root:
+  level: WARNING
+  handlers: [console]
