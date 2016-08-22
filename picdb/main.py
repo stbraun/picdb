@@ -25,13 +25,14 @@ from tkinter import ttk
 import logging
 from log import initialize_logger
 from uimain import StatusPanel
+from uimasterdata import SeriesManagement
 
 
 class Application(ttk.Frame):
     """Mind Monitor Frontend"""
 
     def __init__(self, master=None):
-        super().__init__(master, padding="3 3 12 12")
+        super().__init__(master, padding="3 5 3 5")
         self.logger = logging.getLogger('picdb.ui')
         self.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
         self.rowconfigure(0, weight=1)
@@ -40,11 +41,13 @@ class Application(ttk.Frame):
 
     def create_widgets(self):
         """Build UI."""
+        sm = SeriesManagement(self)
+        sm.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
         status_panel = StatusPanel(self)
-        status_panel.grid(row=0, column=0, sticky=tk.N)
+        status_panel.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
-        ttk.Button(self, text='Quit', command=self.quit).grid(row=1, column=0,
-                                                              sticky=tk.S)
+        ttk.Button(self, text='Quit', command=self.quit).grid(row=1, column=1,
+                                                              sticky=(tk.N, tk.E, tk.S))
 
 
 if __name__ == '__main__':

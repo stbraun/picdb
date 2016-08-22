@@ -32,9 +32,16 @@ class StatusPanel(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
+        self.create_widgets()
+
+    def create_widgets(self):
         img = get_data('picdb', 'resources/eye.gif')
         self.logger.info('image {} loaded'.format('resources/eye.gif'))
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
         photo = tk.PhotoImage(data=img)
         image = ttk.Label(self, image=photo)
         image.photo = photo
-        image.grid(row=0, column=0, sticky=(tk.W))
+        image.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        # TODO add labels for statistics: number of files, etc.
+        ttk.Label(self, text=" - statistics - ").grid(row=0, column=1, sticky=(tk.W, tk.E))

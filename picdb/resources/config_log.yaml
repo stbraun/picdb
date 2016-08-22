@@ -21,6 +21,10 @@ loggers:
     level: INFO
     handlers: [console]
     propagate: no
+  picdb.config:
+    level: INFO
+    handlers: [console]
+    propagate: no
 root:
   level: WARNING
   handlers: [console]

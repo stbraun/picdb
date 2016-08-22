@@ -1,7 +1,5 @@
 # coding=utf-8
-"""
-Model classes.
-"""
+"""Tests."""
 # Copyright (c) 2016 Stefan Braun
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,42 +17,4 @@ Model classes.
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-class Entity:
-    """An abstract entity."""
-
-    def __init__(self, key, name, description):
-        self.key = key
-        self.name = name
-        self.description = description
-
-    def __str__(self):
-        return '<{} ({})>'.format(self.name, self.key)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class PictureReference(Entity):
-    """A reference to an image on the file system."""
-    def __init__(self, key, name, path, description=""):
-        super().__init__(key, name, description)
-        self.path = path
-
-    def __str__(self):
-        return '<{} ({}): {}>'.format(self.name, self.key, self.path)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class PictureSeries(Entity):
-    """A series of pictures."""
-    def __init__(self, key, name, description):
-        super().__init__(key, name, description)
-
-
-class Tag(Entity):
-    """A tag."""
-    def __init__(self, key, name, description):
-        super().__init__(key, name, description)
+__author__ = 'sb'
