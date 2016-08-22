@@ -22,6 +22,6 @@ def __read_configuration():
     :return: configuration dictionary
     :rtype: dict
     """
-    cfg = pkgutil.get_data('picdb', 'resources/log_config.yaml')
+    cfg = pkgutil.get_data('picdb', 'resources/config_log.yaml')
     conf_dict = yaml.load(cfg)
     return conf_dict
