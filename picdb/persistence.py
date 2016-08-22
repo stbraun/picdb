@@ -53,6 +53,10 @@ class Persistence:
         else:
             self.conn = sqlite3.connect(self.db_name)
 
+    def close_connection(self):
+        """Close database connection."""
+        self.conn.close()
+        
     def setup_db(self):
         """Setup database schema."""
         cursor = self.conn.cursor()
