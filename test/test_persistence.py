@@ -39,6 +39,8 @@ class TestPersistence(unittest.TestCase):
         # Delete test database
         pass
         if os.path.exists(self.DATABASE):
+            if not self.db is None:
+                self.db.close_connection()
             os.remove(self.DATABASE)
             pass
 

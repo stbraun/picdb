@@ -25,34 +25,46 @@ from tkinter import ttk
 import logging
 from log import initialize_logger
 from uimain import StatusPanel
+from uiimport import PictureImporter
 from uimasterdata import SeriesManagement
 
 
 class Application(ttk.Frame):
     """Mind Monitor Frontend"""
 
-    def __init__(self, master=None):
-        super().__init__(master, padding="3 5 3 5")
+    def __init__(self, master):
+        super().__init__(master, padding="3 5 3 5", width=400, height=300)
         self.logger = logging.getLogger('picdb.ui')
         self.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
         self.create_widgets()
 
     def create_widgets(self):
         """Build UI."""
-        sm = SeriesManagement(self)
-        sm.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+        notebook = ttk.Notebook(self)
+        notebook.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+        search_frame = ttk.Frame(notebook)
+        import_frame = PictureImporter(notebook)
+        series_frame = SeriesManagement(notebook)
+        notebook.add(search_frame, text='search database')
+        notebook.add(import_frame, text='import pictures')
+        notebook.add(series_frame, text='manage series')
+
         status_panel = StatusPanel(self)
         status_panel.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
-        ttk.Button(self, text='Quit', command=self.quit).grid(row=1, column=1,
-                                                              sticky=(tk.N, tk.E, tk.S))
-
+        ttk.Button(self, text='Quit', command=self.quit).grid(row=2, column=0,
+                                                              sticky=(tk.N, tk.S))
+        self.rowconfigure(0, weight=1, minsize=400)
+        self.rowconfigure(1, weight=0)
+        self.rowconfigure(2, weight=0)
+        self.columnconfigure(0, weight=1, minsize=600)
 
 if __name__ == '__main__':
     initialize_logger()
-    APP = Application()
+    root = tk.Tk()
+    root.rowconfigure(0, weight=1)
+    root.columnconfigure(0, weight=1)
+    APP = Application(root)
     APP.master.title('PicDB')
     APP.mainloop()
 

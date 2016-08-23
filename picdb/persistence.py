@@ -32,7 +32,14 @@ Persistence.
 import logging
 import sqlite3
 import os
-from .model import PictureReference, PictureSeries, Tag
+from config import get_configuration
+from model import PictureReference, PictureSeries, Tag
+
+
+def get_db():
+    """Get connected persistence instance."""
+    db = get_configuration('database')
+    return Persistence(db)
 
 
 class Persistence:
@@ -56,7 +63,8 @@ class Persistence:
     def close_connection(self):
         """Close database connection."""
         self.conn.close()
-        
+        self.logger.info('database connection closed.')
+
     def setup_db(self):
         """Setup database schema."""
         cursor = self.conn.cursor()

@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Main UI.
+Import pictures via UI.
 """
 # Copyright (c) 2016 Stefan Braun
 #
@@ -22,27 +22,23 @@ Main UI.
 
 import tkinter as tk
 from tkinter import ttk
-import logging
-from pkgutil import get_data
+
+from tkinter import messagebox
 
 
-class StatusPanel(ttk.Frame):
-    """Present a status."""
-
+class PictureImporter(ttk.Frame):
+    """Provides UI for importing pictures."""
     def __init__(self, master):
         super().__init__(master)
-        self.logger = logging.getLogger('picdb.ui')
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
         self.create_widgets()
 
     def create_widgets(self):
-        img = get_data('picdb', 'resources/eye.gif')
-        self.logger.info('image {} loaded'.format('resources/eye.gif'))
-        self.rowconfigure(0, weight=0)
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
-        photo = tk.PhotoImage(data=img)
-        image = ttk.Label(self, image=photo)
-        image.photo = photo
-        image.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        # TODO add labels for statistics: number of files, etc.
-        stats = ttk.Label(self, text=" - statistics - ").grid(row=0, column=1)
+        add_button = ttk.Button(self, text='add pictures', command=self.import_pictures)
+        add_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
+
+    def import_pictures(self):
+        """Let user select pictures and import them into database."""
+        # TODO implement import
+        messagebox.showinfo(title='Just for fun', message='import pictures not implemented yet')
