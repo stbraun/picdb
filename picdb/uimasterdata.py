@@ -66,14 +66,44 @@ class PictureReferenceEditor(ttk.LabelFrame):
     """Editor for PictureReference objects."""
     def __init__(self, master, text='Edit picture reference'):
         super().__init__(master, text=text)
-        self.picture = None
+        self.picture_ = None
+        self.id_var = tk.IntVar()
+        self.name_var = tk.StringVar()
+        self.path_var = tk.StringVar()
+        self.description_var = tk.StringVar()
         self.create_widgets()
 
     def create_widgets(self):
         self.rowconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
-        # TASK add fields
         ttk.Label(self, text='id').grid(row=0, column=0, sticky=tk.E)
         ttk.Label(self, text='name').grid(row=1, column=0, sticky=tk.E)
         ttk.Label(self, text='path').grid(row=2, column=0, sticky=tk.E)
         ttk.Label(self, text='description').grid(row=3, column=0, sticky=tk.E)
+        ttk.Entry(self, textvariable=self.id_var,
+                  state='readonly').grid(row=0, column=1, sticky=tk.W)
+        ttk.Entry(self, textvariable=self.name_var).grid(row=1, column=1,
+                                                         sticky=(tk.E, tk.W))
+        ttk.Entry(self, textvariable=self.path_var).grid(row=2, column=1,
+                                                         sticky=(tk.E, tk.W))
+        ttk.Entry(self,
+                  textvariable=self.description_var).grid(row=3,
+                                                          column=1,
+                                                          sticky=(tk.E, tk.W))
+
+    @property
+    def picture(self):
+        if self.picture_ is not None:
+            self.picture_.id = self.id_var.get()
+            self.picture_.name = self.name_var.get()
+            self.picture_.path = self.path_var.get()
+            self.picture_.description = self.description_var.get()
+        return self.picture_
+
+    @picture.setter
+    def picture(self, pic):
+        self.picture_ = pic
+        self.id_var.set(pic.key)
+        self.name_var.set(pic.name)
+        self.path_var.set(pic.path)
+        self.description_var.set(pic.description)

@@ -60,8 +60,8 @@ class Persistence:
         else:
             self.conn = sqlite3.connect(self.db_name)
 
-    def close_connection(self):
-        """Close database connection."""
+    def close(self):
+        """Close database."""
         self.conn.close()
         self.logger.info('database connection closed.')
 
@@ -127,9 +127,13 @@ class Persistence:
                        (None, picture.name, picture.path, picture.description))
         self.conn.commit()
 
-    def close(self):
-        """Close database."""
-        self.conn.close()
+    def save_picture(self, picture):
+        cursor = self.conn.cursor()
+        self.logger.info("Add picture to DB: {} ({})".format(picture.name, picture.path))
+        stmt = "UPDATE pictures SET identifier='{}', path='{}', description='{}' WHERE id={}".format(picture.name, picture.path, picture.description, picture.key)
+        self.logger.info(stmt)
+        cursor.execute(stmt)
+        self.conn.commit()
 
     def add_tag_to_picture(self, picture, tag):
         """Add tag to a picture.
@@ -172,7 +176,10 @@ class Persistence:
         stmt = 'SELECT id, identifier, path, description FROM pictures WHERE "id"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (key,))
-        (keay_, name, path, description) = cursor.fetchall()
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        (key_, name, path, description) = row
         return PictureReference(key_, name, path, description)
 
     def retrieve_picture_by_path(self, path):
@@ -187,7 +194,7 @@ class Persistence:
         cursor = self.conn.cursor()
         cursor.execute(stmt, (path,))
         row = cursor.fetchone()
-        if not row:
+        if row is None:
             return None
         (key, name, path_, description) = row
         return PictureReference(key, name, path_, description)

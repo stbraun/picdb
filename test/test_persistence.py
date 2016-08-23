@@ -40,7 +40,7 @@ class TestPersistence(unittest.TestCase):
         pass
         if os.path.exists(self.DATABASE):
             if not self.db is None:
-                self.db.close_connection()
+                self.db.close()
             os.remove(self.DATABASE)
             pass
 
@@ -110,3 +110,13 @@ class TestPersistence(unittest.TestCase):
         self.assertIn(tag_3.__str__(), tags.__str__())
         self.assertNotIn(tag_2.__str__(), tags.__str__())
 
+    def test_save_picture(self):
+        picture1 = PictureReference(None, 'eye', "/resources/eye.gif", "My first picture.")
+        self.db.add_picture(picture1)
+        pic = self.db.retrieve_picture_by_path(picture1.path)
+        new_description = 'new description'
+        pic.description = new_description
+        self.db.save_picture(pic)
+        pic2 = self.db.retrieve_picture_by_key(pic.key)
+        self.assertIsNot(None, pic2)
+        self.assertEqual(new_description, pic2.description)
