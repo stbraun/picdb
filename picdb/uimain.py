@@ -30,7 +30,7 @@ class StatusPanel(ttk.Frame):
     """Present a status."""
 
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger('picdb.ui')
         self.create_widgets()
 

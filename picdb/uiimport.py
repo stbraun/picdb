@@ -19,26 +19,68 @@ Import pictures via UI.
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
+import os
 import tkinter as tk
 from tkinter import ttk
+import logging
 
+from tkinter import filedialog
 from tkinter import messagebox
+
+from model import PictureReference
+from persistence import get_db
+from uimasterdata import PictureReferenceEditor
 
 
 class PictureImporter(ttk.Frame):
     """Provides UI for importing pictures."""
     def __init__(self, master):
-        super().__init__(master)
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        super().__init__(master, borderwidth=2, relief=tk.GROOVE)
+        self.logger = logging.getLogger('picdb.ui')
+        self.content_frame = None
+        self.tree = None
+        self.editor = None
+        self.control_frame = None
         self.create_widgets()
 
     def create_widgets(self):
-        add_button = ttk.Button(self, text='add pictures', command=self.import_pictures)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.create_content_frame()
+        self.create_control_frame()
+
+    def create_content_frame(self):
+        self.content_frame = ttk.Frame(self)
+        self.content_frame.grid(row=0, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.content_frame.rowconfigure(0, weight=1)
+        self.content_frame.columnconfigure(0, weight=1)
+        self.tree = ttk.Treeview(self.content_frame, columns=('path', 'description'))
+        self.tree.heading('path', text='Path')
+        self.tree.heading('description', text='Description')
+        self.tree.grid(row=0, column=0,
+                       sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.editor = PictureReferenceEditor(self.content_frame)
+        self.editor.grid(row=0, column=1, sticky=(tk.N, tk.W))
+
+    def create_control_frame(self):
+        self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
+        self.control_frame.grid(row=1, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.columnconfigure(0, weight=1)
+        add_button = ttk.Button(self.control_frame, text='add pictures',
+                                command=self.import_pictures)
         add_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
 
     def import_pictures(self):
         """Let user select pictures and import them into database."""
-        # TODO implement import
-        messagebox.showinfo(title='Just for fun', message='import pictures not implemented yet')
+        files = filedialog.askopenfilenames()
+        self.logger.info('Files selected for import: {}'.format(files))
+        pictures = [PictureReference(None, os.path.basename(pth), pth, None) for pth in files]
+        db = get_db()
+        for picture in pictures:
+            db.add_picture(picture)
+            pic = db.retrieve_picture_by_path(picture.path)
+            self.tree.insert('', 'end', pic.key,
+                             text=pic.name, values=(pic.path))
+        messagebox.showinfo(title='Picture Import', message='{} pictures imported.'.format(len(pictures)))

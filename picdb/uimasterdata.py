@@ -44,13 +44,13 @@ class SeriesManagement(ttk.Frame):
         self.series_list_box = None
         self.series_names = self.get_series_names()
         self.series_names_var = tk.StringVar(value=self.series_names)
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
         self.create_widgets()
 
     def create_widgets(self):
         """Create the master data UI."""
         self.logger.info("Creating SeriesManagement UI")
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
         self.series_list_box = tk.Listbox(master=self,
                                           listvariable=self.series_names_var)
         self.series_list_box.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W))
@@ -60,3 +60,20 @@ class SeriesManagement(ttk.Frame):
         series = db.retrieve_all_series()
         self.logger.info('{} series loaded'.format(len(series)))
         return series
+
+
+class PictureReferenceEditor(ttk.LabelFrame):
+    """Editor for PictureReference objects."""
+    def __init__(self, master, text='Edit picture reference'):
+        super().__init__(master, text=text)
+        self.picture = None
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.rowconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
+        # TASK add fields
+        ttk.Label(self, text='id').grid(row=0, column=0, sticky=tk.E)
+        ttk.Label(self, text='name').grid(row=1, column=0, sticky=tk.E)
+        ttk.Label(self, text='path').grid(row=2, column=0, sticky=tk.E)
+        ttk.Label(self, text='description').grid(row=3, column=0, sticky=tk.E)

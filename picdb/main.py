@@ -52,8 +52,9 @@ class Application(ttk.Frame):
         status_panel = StatusPanel(self)
         status_panel.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
-        ttk.Button(self, text='Quit', command=self.quit).grid(row=2, column=0,
-                                                              sticky=(tk.N, tk.S))
+        ttk.Button(self, text='Quit',
+                   command=self.quit).grid(row=2, column=0,
+                                           sticky=(tk.N, tk.S))
         self.rowconfigure(0, weight=1, minsize=400)
         self.rowconfigure(1, weight=0)
         self.rowconfigure(2, weight=0)
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
+    root.geometry('800x600+200+100')
     APP = Application(root)
     APP.master.title('PicDB')
     APP.mainloop()

@@ -34,10 +34,6 @@ class Entity:
     def __repr__(self):
         return self.__str__()
 
-    def create_key(self):
-        # TODO implement sequencer
-        return None
-
 
 class PictureReference(Entity):
     """A reference to an image on the file system."""
