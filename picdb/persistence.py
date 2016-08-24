@@ -323,6 +323,11 @@ class Persistence:
         return list(records)
 
 
+def add_series(series: PictureSeries):
+    db = get_db()
+    db.add_series(series)
+
+
 def get_all_series():
     db = get_db()
     return db.retrieve_all_series()

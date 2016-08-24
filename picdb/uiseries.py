@@ -72,19 +72,31 @@ class SeriesManagement(ttk.Frame):
         refresh_button = ttk.Button(control_frame, text='refresh',
                                     command=self.refresh)
         refresh_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
+        add_button = ttk.Button(control_frame, text='add series',
+                                command=self.add_series)
+        add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
         save_button = ttk.Button(control_frame, text='save series',
                                  command=self.save_series)
-        save_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
+        save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
         return control_frame
 
     def refresh(self):
         self.content.refresh()
 
+    def add_series(self):
+        """Push an empty series to editor."""
+        series = PictureSeries(None, '', '')
+        self.content.editor.series = series
+
     def save_series(self):
         """Save the series currently in editor."""
         series = self.content.editor.series
         if series is not None:
-            persistence.update_series(series)
+            if series.key is None:
+                persistence.add_series(series)
+            else:
+                persistence.update_series(series)
+        self.refresh()
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
@@ -164,7 +176,6 @@ class PictureSeriesEditor(ttk.LabelFrame):
     @property
     def series(self):
         if self.series_ is not None:
-            self.series_.id = self.id_var.get()
             self.series_.name = self.name_var.get()
             self.series_.description = self.description_var.get()
         return self.series_
