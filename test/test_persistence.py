@@ -1,5 +1,6 @@
 # coding=utf-8
 """
+Tests for persistence.
 """
 # Copyright (c) 2016 Stefan Braun
 #
@@ -32,7 +33,7 @@ class TestPersistence(unittest.TestCase):
     def setUp(self):
         # Create test database
         pwd = os.path.dirname(__file__)
-        self.DATABASE = os.path.join(pwd, "PICDB_TEST_DB.sqlite")
+        self.DATABASE = os.path.join(pwd, "PICDB_TEST.db")
         self.db = Persistence(db=self.DATABASE)
 
     def tearDown(self):
