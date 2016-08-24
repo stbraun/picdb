@@ -80,7 +80,8 @@ class TestPersistence(unittest.TestCase):
         self.assertEqual(2, len(series))
 
     def test_add_and_retrieve_picture(self):
-        picture1 = PictureReference(None, 'eye', "/resources/eye.gif", "My first picture.")
+        picture1 = PictureReference(None, 'eye', "/resources/eye.gif",
+                                    "My first picture.")
         picture = self.db.retrieve_picture_by_path(picture1.path)
         self.assertIs(None, picture)
         self.db.add_picture(picture1)
@@ -92,7 +93,9 @@ class TestPersistence(unittest.TestCase):
 
     def test_add_tag_to_picture(self):
         path = "/resources/eye.gif"
-        self.db.add_picture(PictureReference(None, 'eye', "/resources/eye.gif", "My first picture."))
+        self.db.add_picture(PictureReference(None, 'eye',
+                                             "/resources/eye.gif",
+                                             "My first picture."))
         picture = self.db.retrieve_picture_by_path(path)
         tag_name_1 = 'Tag 1'
         tag_name_2 = 'Tag 2'
@@ -110,13 +113,25 @@ class TestPersistence(unittest.TestCase):
         self.assertIn(tag_3.__str__(), tags.__str__())
         self.assertNotIn(tag_2.__str__(), tags.__str__())
 
-    def test_save_picture(self):
-        picture1 = PictureReference(None, 'eye', "/resources/eye.gif", "My first picture.")
+    def test_update_picture(self):
+        picture1 = PictureReference(None, 'eye',
+                                    "/resources/eye.gif", "My first picture.")
         self.db.add_picture(picture1)
         pic = self.db.retrieve_picture_by_path(picture1.path)
         new_description = 'new description'
         pic.description = new_description
-        self.db.save_picture(pic)
+        self.db.update_picture(pic)
         pic2 = self.db.retrieve_picture_by_key(pic.key)
         self.assertIsNot(None, pic2)
         self.assertEqual(new_description, pic2.description)
+
+    def test_update_series(self):
+        series1 = PictureSeries(None, 'eyes', "My series.")
+        self.db.add_series(series1)
+        series2 = self.db.retrieve_series_by_name(series1.name)
+        new_description = 'new description'
+        series2.description = new_description
+        self.db.update_series(series2)
+        series3 = self.db.retrieve_series_by_key(series2.key)
+        self.assertIsNot(None, series3)
+        self.assertEqual(new_description, series3.description)

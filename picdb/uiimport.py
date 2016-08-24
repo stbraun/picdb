@@ -30,7 +30,7 @@ from tkinter import messagebox
 
 from model import PictureReference
 from persistence import get_db
-from uimasterdata import PictureReferenceEditor
+from uimasterdata import PictureReferenceEditor, PictureReferenceTree
 
 
 class PictureImporter(ttk.Frame):
@@ -41,9 +41,9 @@ class PictureImporter(ttk.Frame):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger('picdb.ui')
         self.content_frame = None
+        self.control_frame = None
         self.tree = None
         self.editor = None
-        self.control_frame = None
         self.create_widgets()
 
     def create_widgets(self):
@@ -59,10 +59,8 @@ class PictureImporter(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.tree = ttk.Treeview(self.content_frame,
-                                 columns=('path', 'description'))
-        self.tree.heading('path', text='Path')
-        self.tree.heading('description', text='Description')
+        self.tree = PictureReferenceTree(self.content_frame)
+        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.tree.grid(row=0, column=0,
                        sticky=(tk.W, tk.N, tk.E, tk.S))
         self.editor = PictureReferenceEditor(self.content_frame)
@@ -90,9 +88,7 @@ class PictureImporter(ttk.Frame):
         for picture in pictures:
             db.add_picture(picture)
             pic = db.retrieve_picture_by_path(picture.path)
-            self.tree.insert('', 'end', pic.key,
-                             text=pic.name, values=(pic.path))
-            self.editor.picture = pic
+            self.tree.add(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures imported.'.format(len(pictures)))
 
@@ -101,4 +97,16 @@ class PictureImporter(ttk.Frame):
         pic = self.editor.picture
         if pic is not None:
             db = get_db()
-            db.save_picture(pic)
+            db.update_picture(pic)
+
+    def item_selected(self, event):
+        """An item in the tree view was selected."""
+        pics = self.tree.selection()
+        self.logger.info('Selected pictures: {}'.format(pics))
+        if len(pics) > 0:
+            db = get_db()
+            pic = db.retrieve_picture_by_key(pics[0])
+            self.logger.info('Pic: {}'.format(pic))
+            self.editor.picture = pic
+
+

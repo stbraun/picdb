@@ -45,7 +45,7 @@ def get_db():
 class Persistence:
     """SQLite implementation of MonitorDB API."""
 
-    def __init__(self, db):
+    def __init__(self, db: str):
         """Initialize persistence mechanism.
 
         :param db: path to database.
@@ -91,7 +91,7 @@ class Persistence:
         except Exception as e:
             self.logger.warning(e)
 
-    def add_series(self, series):
+    def add_series(self, series: PictureSeries):
         """Add a new series.
 
         :param series: the series to add
@@ -103,7 +103,17 @@ class Persistence:
                        (None, series.name, series.description))
         self.conn.commit()
 
-    def add_tag(self, tag):
+    def update_series(self, series: PictureSeries):
+        cursor = self.conn.cursor()
+        self.logger.info("Update series: {}".format(series.name))
+        stmt = "UPDATE series SET identifier='{}', description='{}' " \
+               "WHERE id={}".format(series.name,
+                                    series.description, series.key)
+        self.logger.info(stmt)
+        cursor.execute(stmt)
+        self.conn.commit()
+
+    def add_tag(self, tag: Tag):
         """Add a new tag.
 
         :param tag: tag to add
@@ -115,27 +125,33 @@ class Persistence:
                        (None, tag.name, tag.description))
         self.conn.commit()
 
-    def add_picture(self, picture):
+    def add_picture(self, picture: PictureReference):
         """Add a new picture.
 
         :param picture: picture to add
         :type name: PictureReference
         """
         cursor = self.conn.cursor()
-        self.logger.info("Add picture to DB: {} ({})".format(picture.name, picture.path))
+        self.logger.info("Add picture to DB: {} ({})".format(picture.name,
+                                                             picture.path))
         cursor.execute('''INSERT INTO pictures VALUES (?, ?, ?, ?)''',
                        (None, picture.name, picture.path, picture.description))
         self.conn.commit()
 
-    def save_picture(self, picture):
+    def update_picture(self, picture: PictureReference):
         cursor = self.conn.cursor()
-        self.logger.info("Add picture to DB: {} ({})".format(picture.name, picture.path))
-        stmt = "UPDATE pictures SET identifier='{}', path='{}', description='{}' WHERE id={}".format(picture.name, picture.path, picture.description, picture.key)
+        self.logger.info("Update picture: {} ({})".format(picture.name,
+                                                          picture.path))
+        stmt = "UPDATE pictures SET identifier='{}', path='{}', " \
+               "description='{}' WHERE id={}".format(picture.name,
+                                                     picture.path,
+                                                     picture.description,
+                                                     picture.key)
         self.logger.info(stmt)
         cursor.execute(stmt)
         self.conn.commit()
 
-    def add_tag_to_picture(self, picture, tag):
+    def add_tag_to_picture(self, picture: PictureReference, tag: Tag):
         """Add tag to a picture.
 
         :param picture: the picture
@@ -150,7 +166,7 @@ class Persistence:
                        (picture.key, tag.key))
         self.conn.commit()
 
-    def add_picture_to_series(self, picture, series):
+    def add_picture_to_series(self, picture: PictureReference, series: PictureSeries):
         """Add picture to a series.
 
         :param picture: the picture
@@ -165,7 +181,7 @@ class Persistence:
                        (picture.id, series.id))
         self.conn.commit()
 
-    def retrieve_picture_by_key(self, key):
+    def retrieve_picture_by_key(self, key: int):
         """Retrieve picture by key.
 
         :param key: the id of the picture
@@ -199,7 +215,24 @@ class Persistence:
         (key, name, path_, description) = row
         return PictureReference(key, name, path_, description)
 
-    def retrieve_tags_for_picture(self, picture):
+    def retrieve_series_by_key(self, key: int):
+        """Retrieve series by key.
+
+        :param key: the id of the series
+        :type key: int
+        :return: series.
+        :rtype: PictureSeries
+        """
+        stmt = 'SELECT id, identifier, description FROM series WHERE "id"=?'
+        cursor = self.conn.cursor()
+        cursor.execute(stmt, (key,))
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        (key_, name, description) = row
+        return PictureSeries(key_, name, description)
+
+    def retrieve_tags_for_picture(self, picture: PictureReference):
         """Retrieve all tags for given picture.
 
         :param picture: the picture to get the tags for
@@ -213,20 +246,39 @@ class Persistence:
         records = [Tag(key, name, description) for (key, name, description) in cursor.fetchall()]
         return list(records)
 
-    def retrieve_series_for_picture(self, picture_id):
+    def retrieve_series_for_picture(self, picture: PictureReference):
         """Retrieve all series for given picture.
 
-        :param picture_id: the id of the session
+        :param picture: the id of the picture
         :return: series.
         :rtype: [PictureSeries]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description FROM series WHERE id in (SELECT ' \
+        stmt = 'SELECT id, identifier, description FROM series ' \
+               'WHERE id in (SELECT ' \
                'tag from picture2series WHERE picture=?)'
-        cursor.execute(stmt, (picture_id,))
+        cursor.execute(stmt, (picture.key,))
         records = [PictureSeries(key, name, description) for (key, name, description) in
                    cursor.fetchall()]
         return list(records)
+
+    def retrieve_series_by_name(self, name: str):
+        """Retrieve series by name.
+
+        :param name: the name of the tag to retrieve
+        :type name: str
+        :return: series or None if name is unknown.
+        :rtype: PictureSeries
+        """
+        stmt = 'SELECT id, identifier, description ' \
+               ' FROM series WHERE "identifier"=?'
+        cursor = self.conn.cursor()
+        cursor.execute(stmt, (name,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        (key, name, description) = row
+        return PictureSeries(key, name, description)
 
     def retrieve_all_tags(self):
         """Get all tags from database.
@@ -240,7 +292,7 @@ class Persistence:
         records = [Tag(key, name, description) for (key, name, description) in cursor.fetchall()]
         return list(records)
 
-    def retrieve_tag_by_name(self, name):
+    def retrieve_tag_by_name(self, name: str):
         """Retrieve tag by name.
 
         :param name: the name of the tag to retrieve
@@ -257,7 +309,6 @@ class Persistence:
         (key, name, description) = row
         return Tag(key, name, description)
 
-
     def retrieve_all_series(self):
         """Get all series from database.
 
@@ -271,3 +322,22 @@ class Persistence:
                    cursor.fetchall()]
         return list(records)
 
+
+def get_all_series():
+    db = get_db()
+    return db.retrieve_all_series()
+
+
+def retrieve_series_by_key(key: int):
+    db = get_db()
+    return db.retrieve_series_by_key(key)
+
+
+def update_series(series: PictureSeries):
+    db = get_db()
+    db.update_series(series)
+
+
+def get_all_tags():
+    db = get_db()
+    return db.retrieve_all_tags()

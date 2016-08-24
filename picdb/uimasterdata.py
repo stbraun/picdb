@@ -32,34 +32,62 @@ The UI for master data management of groups and tags.
 import tkinter as tk
 from tkinter import ttk
 import logging
-from persistence import get_db
+from model import PictureReference, PictureSeries, Tag
 
 
-class SeriesManagement(ttk.Frame):
-    """Manage picture series master data."""
-
-    def __init__(self, master):
-        super().__init__(master)
+class PicTreeView(ttk.Treeview):
+    """Extended tree view."""
+    def __init__(self, master, *args, **kwdargs):
+        super().__init__(master, *args, **kwdargs)
         self.logger = logging.getLogger('picdb.ui')
-        self.series_list_box = None
-        self.series_names = self.get_series_names()
-        self.series_names_var = tk.StringVar(value=self.series_names)
-        self.create_widgets()
 
-    def create_widgets(self):
-        """Create the master data UI."""
-        self.logger.info("Creating SeriesManagement UI")
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
-        self.series_list_box = tk.Listbox(master=self,
-                                          listvariable=self.series_names_var)
-        self.series_list_box.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W))
+    def clear(self):
+        """Remove all items from tree."""
+        items = self.get_children()
+        self.logger.info('Items to delete from tree: {}'.format(items))
+        if len(items) > 0:
+            self.delete(*items)
 
-    def get_series_names(self):
-        db = get_db()
-        series = db.retrieve_all_series()
-        self.logger.info('{} series loaded'.format(len(series)))
-        return series
+
+class PictureSeriesTree(PicTreeView):
+    """A tree handling picture series."""
+    def __init__(self, master):
+        super().__init__(master, columns=('description', ))
+        self.heading('description', text='Description')
+        self.column('#0', stretch=False)  # tree column does not resize
+
+    def add_series(self, series: PictureSeries):
+        """Add given series to tree."""
+        self.insert('', 'end', series.key,
+                    text=series.name, values=(series.description,))
+
+
+class TagTree(PicTreeView):
+    """A tree handling tags."""
+    def __init__(self, master):
+        super().__init__(master, columns=('description', ))
+        self.heading('description', text='Description')
+        self.column('#0', stretch=False)  # tree column does not resize
+
+    def add_tag(self, tag: Tag):
+        """Add given tag to tree."""
+        self.insert('', 'end', tag.key,
+                    text=tag.name, values=(tag.description,))
+
+
+class PictureReferenceTree(PicTreeView):
+    """A tree handling pictures."""
+    def __init__(self, master):
+        super().__init__(master, columns=('path', 'description'))
+        self.heading('path', text='Path')
+        self.heading('description', text='Description')
+        self.column('#0', stretch=False)  # tree column does not resize
+
+    def add_picture(self, picture: PictureReference):
+        """Add given picture to tree."""
+        self.insert('', 'end', picture.key,
+                    text=picture.name,
+                    values=(picture.path, picture.descrition))
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
@@ -101,9 +129,50 @@ class PictureReferenceEditor(ttk.LabelFrame):
         return self.picture_
 
     @picture.setter
-    def picture(self, pic):
+    def picture(self, pic: PictureReference):
         self.picture_ = pic
         self.id_var.set(pic.key)
         self.name_var.set(pic.name)
         self.path_var.set(pic.path)
         self.description_var.set(pic.description)
+
+
+class TagEditor(ttk.LabelFrame):
+    """Editor for Tag objects."""
+    def __init__(self, master, text='Edit tag'):
+        super().__init__(master, text=text)
+        self.tag_ = None
+        self.id_var = tk.IntVar()
+        self.name_var = tk.StringVar()
+        self.description_var = tk.StringVar()
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.rowconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
+        ttk.Label(self, text='id').grid(row=0, column=0, sticky=tk.E)
+        ttk.Label(self, text='name').grid(row=1, column=0, sticky=tk.E)
+        ttk.Label(self, text='description').grid(row=2, column=0, sticky=tk.E)
+        ttk.Entry(self, textvariable=self.id_var,
+                  state='readonly').grid(row=0, column=1, sticky=tk.W)
+        ttk.Entry(self, textvariable=self.name_var).grid(row=1, column=1,
+                                                         sticky=(tk.E, tk.W))
+        ttk.Entry(self,
+                  textvariable=self.description_var).grid(row=2,
+                                                          column=1,
+                                                          sticky=(tk.E, tk.W))
+
+    @property
+    def tag(self):
+        if self.tag_ is not None:
+            self.tag_.id = self.id_var.get()
+            self.tag_.name = self.name_var.get()
+            self.tag_.description = self.description_var.get()
+        return self.tag_
+
+    @tag.setter
+    def tag(self, tag_: Tag):
+        self.tag_ = tag_
+        self.id_var.set(tag_.key)
+        self.name_var.set(tag_.name)
+        self.description_var.set(tag_.description)
