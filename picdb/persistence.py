@@ -32,6 +32,7 @@ Persistence.
 import logging
 import sqlite3
 import os
+from tkinter import messagebox
 from config import get_configuration
 from model import PictureReference, PictureSeries, Tag
 
@@ -71,11 +72,11 @@ class Persistence:
         # Create tables
         try:
             cursor.execute('''CREATE TABLE series ( id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              identifier TEXT,
+                              identifier TEXT UNIQUE,
                               description TEXT)''')
             cursor.execute('''CREATE TABLE tags (
                               id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              identifier TEXT,
+                              identifier TEXT UNIQUE,
                               description TEXT)''')
             cursor.execute('''CREATE TABLE pictures (
                               id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,21 +98,16 @@ class Persistence:
         :param series: the series to add
         :type name: PictureSeries
         """
-        cursor = self.conn.cursor()
         self.logger.info("Add series to DB: {}".format(series.name))
-        cursor.execute('''INSERT INTO series VALUES (?, ?, ?)''',
-                       (None, series.name, series.description))
-        self.conn.commit()
+        stmt = '''INSERT INTO series VALUES (?, ?, ?)'''
+        self.execute_sql(stmt, (None, series.name, series.description))
 
     def update_series(self, series: PictureSeries):
-        cursor = self.conn.cursor()
         self.logger.info("Update series: {}".format(series.name))
         stmt = "UPDATE series SET identifier='{}', description='{}' " \
                "WHERE id={}".format(series.name,
                                     series.description, series.key)
-        self.logger.info(stmt)
-        cursor.execute(stmt)
-        self.conn.commit()
+        self.execute_sql(stmt)
 
     def add_tag(self, tag: Tag):
         """Add a new tag.
@@ -119,21 +115,16 @@ class Persistence:
         :param tag: tag to add
         :type name: Tag
         """
-        cursor = self.conn.cursor()
         self.logger.info("Add tag to DB: {}".format(tag))
-        cursor.execute('''INSERT INTO tags VALUES (?, ?, ?)''',
-                       (None, tag.name, tag.description))
-        self.conn.commit()
+        stmt = '''INSERT INTO tags VALUES (?, ?, ?)'''
+        self.execute_sql(stmt, (None, tag.name, tag.description))
 
     def update_tag(self, tag: Tag):
-        cursor = self.conn.cursor()
         self.logger.info("Update tag: {}".format(tag.name))
         stmt = "UPDATE tags SET identifier='{}', description='{}' " \
                "WHERE id={}".format(tag.name,
                                     tag.description, tag.key)
-        self.logger.info(stmt)
-        cursor.execute(stmt)
-        self.conn.commit()
+        self.execute_sql(stmt)
 
     def add_picture(self, picture: PictureReference):
         """Add a new picture.
@@ -141,12 +132,11 @@ class Persistence:
         :param picture: picture to add
         :type name: PictureReference
         """
-        cursor = self.conn.cursor()
         self.logger.info("Add picture to DB: {} ({})".format(picture.name,
                                                              picture.path))
-        cursor.execute('''INSERT INTO pictures VALUES (?, ?, ?, ?)''',
-                       (None, picture.name, picture.path, picture.description))
-        self.conn.commit()
+        stmt = '''INSERT INTO pictures VALUES (?, ?, ?, ?)'''
+        self.execute_sql(stmt, (None, picture.name,
+                                picture.path, picture.description))
 
     def update_picture(self, picture: PictureReference):
         cursor = self.conn.cursor()
@@ -157,9 +147,7 @@ class Persistence:
                                                      picture.path,
                                                      picture.description,
                                                      picture.key)
-        self.logger.info(stmt)
-        cursor.execute(stmt)
-        self.conn.commit()
+        self.execute_sql(stmt)
 
     def add_tag_to_picture(self, picture: PictureReference, tag: Tag):
         """Add tag to a picture.
@@ -171,10 +159,8 @@ class Persistence:
         """
         self.logger.info(
             "Adding tag {} to picture {}.".format(tag, picture))
-        cursor = self.conn.cursor()
-        cursor.execute('''INSERT INTO picture2tag VALUES(?, ?)''',
-                       (picture.key, tag.key))
-        self.conn.commit()
+        stmt = '''INSERT INTO picture2tag VALUES(?, ?)'''
+        self.execute_sql(stmt, (picture.key, tag.key))
 
     def add_picture_to_series(self, picture: PictureReference, series: PictureSeries):
         """Add picture to a series.
@@ -186,10 +172,8 @@ class Persistence:
         """
         self.logger.info(
             "Adding picture {} to series {}.".format(picture, series))
-        cursor = self.conn.cursor()
-        cursor.execute('''INSERT INTO picture2series VALUES(?, ?)''',
-                       (picture.id, series.id))
-        self.conn.commit()
+        stmt = '''INSERT INTO picture2series VALUES(?, ?)'''
+        self.execute_sql(stmt, (picture.id, series.id))
 
     def retrieve_picture_by_key(self, key: int):
         """Retrieve picture by key.
@@ -350,6 +334,18 @@ class Persistence:
                    for (key, name, description) in
                    cursor.fetchall()]
         return list(records)
+
+    def execute_sql(self, stmt, *args):
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(stmt, *args)
+            self.conn.commit()
+            return True
+        except sqlite3.DatabaseError as e:
+            self.conn.rollback()
+            messagebox.showerror(title='Database Error',
+                                 message='{}'.format(e))
+            return False
 
 
 def add_series(series: PictureSeries):
