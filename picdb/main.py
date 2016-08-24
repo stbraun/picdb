@@ -26,7 +26,7 @@ import logging
 from log import initialize_logger
 from uimain import StatusPanel
 from uiimport import PictureImporter
-from uimasterdata import SeriesManagement
+from uiseries import SeriesManagement
 
 
 class Application(ttk.Frame):
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
-    root.geometry('800x600+200+100')
+    root.geometry('1000x600+200+100')
     APP = Application(root)
     APP.master.title('PicDB')
     APP.mainloop()
