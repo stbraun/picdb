@@ -125,6 +125,16 @@ class Persistence:
                        (None, tag.name, tag.description))
         self.conn.commit()
 
+    def update_tag(self, tag: Tag):
+        cursor = self.conn.cursor()
+        self.logger.info("Update tag: {}".format(tag.name))
+        stmt = "UPDATE tags SET identifier='{}', description='{}' " \
+               "WHERE id={}".format(tag.name,
+                                    tag.description, tag.key)
+        self.logger.info(stmt)
+        cursor.execute(stmt)
+        self.conn.commit()
+
     def add_picture(self, picture: PictureReference):
         """Add a new picture.
 
@@ -289,7 +299,8 @@ class Persistence:
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description FROM tags'
         cursor.execute(stmt)
-        records = [Tag(key, name, description) for (key, name, description) in cursor.fetchall()]
+        records = [Tag(key, name, description)
+                   for (key, name, description) in cursor.fetchall()]
         return list(records)
 
     def retrieve_tag_by_name(self, name: str):
@@ -309,6 +320,23 @@ class Persistence:
         (key, name, description) = row
         return Tag(key, name, description)
 
+    def retrieve_tag_by_key(self, key: int):
+        """Retrieve tag by key.
+
+        :param key: the id of the tag
+        :type key: int
+        :return: tag.
+        :rtype: Tag
+        """
+        stmt = 'SELECT id, identifier, description FROM tags WHERE "id"=?'
+        cursor = self.conn.cursor()
+        cursor.execute(stmt, (key,))
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        (key_, name, description) = row
+        return Tag(key_, name, description)
+
     def retrieve_all_series(self):
         """Get all series from database.
 
@@ -318,7 +346,8 @@ class Persistence:
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description FROM series'
         cursor.execute(stmt)
-        records = [PictureSeries(key, name, description) for (key, name, description) in
+        records = [PictureSeries(key, name, description)
+                   for (key, name, description) in
                    cursor.fetchall()]
         return list(records)
 
@@ -343,6 +372,21 @@ def update_series(series: PictureSeries):
     db.update_series(series)
 
 
+def add_tag(tag: Tag):
+    db = get_db()
+    db.add_tag(tag)
+
+
 def get_all_tags():
     db = get_db()
     return db.retrieve_all_tags()
+
+
+def retrieve_tag_by_key(key: int):
+    db = get_db()
+    return db.retrieve_tag_by_key(key)
+
+
+def update_tag(tag: Tag):
+    db = get_db()
+    db.update_tag(tag)

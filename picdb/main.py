@@ -27,6 +27,7 @@ from log import initialize_logger
 from uimain import StatusPanel
 from uiimport import PictureImporter
 from uiseries import SeriesManagement
+from uitags import TagManagement
 
 
 class Application(ttk.Frame):
@@ -45,9 +46,11 @@ class Application(ttk.Frame):
         search_frame = ttk.Frame(notebook)
         import_frame = PictureImporter(notebook)
         series_frame = SeriesManagement(notebook)
+        tags_frame = TagManagement(notebook)
         notebook.add(search_frame, text='search database')
         notebook.add(import_frame, text='import pictures')
         notebook.add(series_frame, text='manage series')
+        notebook.add(tags_frame, text='manage tags')
 
         status_panel = StatusPanel(self)
         status_panel.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))

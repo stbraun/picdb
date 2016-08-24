@@ -135,3 +135,14 @@ class TestPersistence(unittest.TestCase):
         series3 = self.db.retrieve_series_by_key(series2.key)
         self.assertIsNot(None, series3)
         self.assertEqual(new_description, series3.description)
+
+    def test_update_tag(self):
+        tag1 = Tag(None, 'eyes', "My tag.")
+        self.db.add_tag(tag1)
+        tag2 = self.db.retrieve_tag_by_name(tag1.name)
+        new_description = 'new description'
+        tag2.description = new_description
+        self.db.update_tag(tag2)
+        tag3 = self.db.retrieve_tag_by_key(tag2.key)
+        self.assertIsNot(None, tag3)
+        self.assertEqual(new_description, tag3.description)
