@@ -81,7 +81,7 @@ class Persistence:
             cursor.execute('''CREATE TABLE pictures (
                               id INTEGER PRIMARY KEY AUTOINCREMENT,
                               identifier TEXT,
-                              path TEXT,
+                              path TEXT UNIQUE,
                               description TEXT)''')
             cursor.execute('''CREATE TABLE picture2series (
                                 picture INTEGER REFERENCES "pictures" ("id"),

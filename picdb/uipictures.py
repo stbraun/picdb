@@ -88,7 +88,7 @@ class PictureImporter(ttk.Frame):
         for picture in pictures:
             db.add_picture(picture)
             pic = db.retrieve_picture_by_path(picture.path)
-            self.tree.add(pic)
+            self.tree.add_picture(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures imported.'.format(len(pictures)))
 

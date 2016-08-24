@@ -32,7 +32,7 @@ The UI for master data management of groups and tags.
 import tkinter as tk
 from tkinter import ttk
 import logging
-from model import PictureReference, PictureSeries, Tag
+from model import PictureReference
 
 
 class PicTreeView(ttk.Treeview):
@@ -49,19 +49,6 @@ class PicTreeView(ttk.Treeview):
             self.delete(*items)
 
 
-class PictureSeriesTree(PicTreeView):
-    """A tree handling picture series."""
-    def __init__(self, master):
-        super().__init__(master, columns=('description', ))
-        self.heading('description', text='Description')
-        self.column('#0', stretch=False)  # tree column does not resize
-
-    def add_series(self, series: PictureSeries):
-        """Add given series to tree."""
-        self.insert('', 'end', series.key,
-                    text=series.name, values=(series.description,))
-
-
 class PictureReferenceTree(PicTreeView):
     """A tree handling pictures."""
     def __init__(self, master):
@@ -74,7 +61,7 @@ class PictureReferenceTree(PicTreeView):
         """Add given picture to tree."""
         self.insert('', 'end', picture.key,
                     text=picture.name,
-                    values=(picture.path, picture.descrition))
+                    values=(picture.path, picture.description))
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
