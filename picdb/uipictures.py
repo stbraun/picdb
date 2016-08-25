@@ -27,6 +27,8 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 
+from PIL import Image
+
 from .model import PictureReference
 from .persistence import get_db
 from .uimasterdata import PictureReferenceEditor, PictureReferenceTree
@@ -70,14 +72,28 @@ class PictureImporter(ttk.Frame):
         self.control_frame.grid(row=1, column=0,
                                 sticky=(tk.W, tk.N, tk.E, tk.S))
         self.columnconfigure(0, weight=1)
+        load_button = ttk.Button(self.control_frame, text='load pictures',
+                                 command=self.load_pictures)
+        load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
         add_button = ttk.Button(self.control_frame, text='add pictures',
-                                command=self.import_pictures)
-        add_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
+                                command=self.add_pictures)
+        add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
         save_button = ttk.Button(self.control_frame, text='save picture',
                                  command=self.save_picture)
-        save_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
+        save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
+        view_button = ttk.Button(self.control_frame, text='view picture',
+                                 command=self.view_picture)
+        view_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
 
-    def import_pictures(self):
+    def load_pictures(self):
+        """Load a bunch of pictures from database."""
+        self.tree.clear()
+        db = get_db()
+        pictures = db.retrieve_picture_by_path_segment('%')
+        for picture in pictures:
+            self.tree.add_picture(picture)
+
+    def add_pictures(self):
         """Let user select pictures and import them into database."""
         files = filedialog.askopenfilenames()
         self.logger.info('Files selected for import: {}'.format(files))
@@ -108,4 +124,11 @@ class PictureImporter(ttk.Frame):
             self.logger.info('Pic: {}'.format(pic))
             self.editor.picture = pic
 
-
+    def view_picture(self):
+        """View selected picture."""
+        pics = self.tree.selection()
+        if len(pics) > 0:
+            db = get_db()
+            pic = db.retrieve_picture_by_key(pics[0])
+            image = Image.open(pic.path)
+            image.show()

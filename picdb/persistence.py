@@ -210,6 +210,24 @@ class Persistence:
         (key, name, path_, description) = row
         return PictureReference(key, name, path_, description)
 
+    def retrieve_picture_by_path_segment(self, path: str):
+        """Retrieve picture by path segment using wildcards.
+
+        Example: Path: '%jpg'
+
+        :param path: the path to the picture
+        :type path: str
+        :return: picture.
+        :rtype: list(PictureReference)
+        """
+        stmt = 'SELECT id, identifier, path, description FROM pictures WHERE "path"like?'
+        cursor = self.conn.cursor()
+        cursor.execute(stmt, (path,))
+        records = [PictureReference(key, name, path_, description)
+                   for (key, name, path_, description) in
+                   cursor.fetchall()]
+        return list(records)
+
     def retrieve_series_by_key(self, key: int):
         """Retrieve series by key.
 
