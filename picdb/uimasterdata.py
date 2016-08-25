@@ -29,10 +29,11 @@ The UI for master data management of groups and tags.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import logging
 import tkinter as tk
 from tkinter import ttk
-import logging
-from model import PictureReference
+
+from .model import PictureReference
 
 
 class PicTreeView(ttk.Treeview):

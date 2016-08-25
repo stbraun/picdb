@@ -29,12 +29,13 @@ Tak management.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import logging
 import tkinter as tk
 from tkinter import ttk
-import logging
-import persistence
-from model import Tag
-from uimasterdata import PicTreeView
+
+from . import persistence
+from .model import Tag
+from .uimasterdata import PicTreeView
 
 
 class TagManagement(ttk.Frame):

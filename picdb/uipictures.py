@@ -21,16 +21,15 @@ Import pictures via UI.
 # IN THE SOFTWARE.
 
 import os
+import logging
 import tkinter as tk
 from tkinter import ttk
-import logging
-
 from tkinter import filedialog
 from tkinter import messagebox
 
-from model import PictureReference
-from persistence import get_db
-from uimasterdata import PictureReferenceEditor, PictureReferenceTree
+from .model import PictureReference
+from .persistence import get_db
+from .uimasterdata import PictureReferenceEditor, PictureReferenceTree
 
 
 class PictureImporter(ttk.Frame):

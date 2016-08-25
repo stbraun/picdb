@@ -30,11 +30,12 @@ Persistence.
 # THE SOFTWARE.
 
 import logging
-import sqlite3
 import os
+import sqlite3
 from tkinter import messagebox
-from config import get_configuration
-from model import PictureReference, PictureSeries, Tag
+
+from .config import get_configuration
+from .model import PictureReference, PictureSeries, Tag
 
 
 def get_db():

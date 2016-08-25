@@ -19,12 +19,13 @@ Series management.
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import logging
 import tkinter as tk
 from tkinter import ttk
-import logging
-import persistence
-from model import PictureSeries
-from uimasterdata import PicTreeView
+
+from . import persistence
+from .model import PictureSeries
+from .uimasterdata import PicTreeView
 
 
 class SeriesManagement(ttk.Frame):

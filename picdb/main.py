@@ -23,11 +23,12 @@ Application entry for PicDB.
 import tkinter as tk
 from tkinter import ttk
 import logging
-from log import initialize_logger
-from uimain import StatusPanel
-from uipictures import PictureImporter
-from uiseries import SeriesManagement
-from uitags import TagManagement
+
+from .log import initialize_logger
+from .uimain import StatusPanel
+from .uipictures import PictureImporter
+from .uiseries import SeriesManagement
+from .uitags import TagManagement
 
 
 class Application(ttk.Frame):
@@ -63,13 +64,18 @@ class Application(ttk.Frame):
         self.rowconfigure(2, weight=0)
         self.columnconfigure(0, weight=1, minsize=600)
 
-if __name__ == '__main__':
+
+def start_application():
     initialize_logger()
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
     root.geometry('1000x600+200+100')
-    APP = Application(root)
-    APP.master.title('PicDB')
-    APP.mainloop()
+    app = Application(root)
+    app.master.title('PicDB')
+    app.mainloop()
+
+
+if __name__ == '__main__':
+    start_application()
 

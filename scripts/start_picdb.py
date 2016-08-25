@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Main UI.
+Start PicDB Application.
 """
 # Copyright (c) 2016 Stefan Braun
 #
@@ -20,29 +20,8 @@ Main UI.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import logging
-import tkinter as tk
-from tkinter import ttk
-from pkgutil import get_data
+import picdb
+from picdb import main as app
 
-
-class StatusPanel(ttk.Frame):
-    """Present a status."""
-
-    def __init__(self, master):
-        super().__init__(master, borderwidth=2, relief=tk.GROOVE)
-        self.logger = logging.getLogger('picdb.ui')
-        self.create_widgets()
-
-    def create_widgets(self):
-        img = get_data('picdb', 'resources/eye.gif')
-        self.logger.info('image {} loaded'.format('resources/eye.gif'))
-        self.rowconfigure(0, weight=0)
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
-        photo = tk.PhotoImage(data=img)
-        image = ttk.Label(self, image=photo)
-        image.photo = photo
-        image.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        # TODO add labels for statistics: number of files, etc.
-        stats = ttk.Label(self, text=" - statistics - ").grid(row=0, column=1)
+if __name__ == '__main__':
+    app.start_application()
