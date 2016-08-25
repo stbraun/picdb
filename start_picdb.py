@@ -20,7 +20,6 @@ Start PicDB Application.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import picdb
 from picdb import main as app
 
 if __name__ == '__main__':

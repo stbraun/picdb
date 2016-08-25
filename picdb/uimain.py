@@ -44,5 +44,4 @@ class StatusPanel(ttk.Frame):
         image = ttk.Label(self, image=photo)
         image.photo = photo
         image.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        # TODO add labels for statistics: number of files, etc.
-        stats = ttk.Label(self, text=" - statistics - ").grid(row=0, column=1)
+        #stats = ttk.Label(self, text=" - statistics - ").grid(row=0, column=1)

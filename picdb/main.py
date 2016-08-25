@@ -74,8 +74,3 @@ def start_application():
     app = Application(root)
     app.master.title('PicDB')
     app.mainloop()
-
-
-if __name__ == '__main__':
-    start_application()
-
