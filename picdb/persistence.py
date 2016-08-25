@@ -210,19 +210,21 @@ class Persistence:
         (key, name, path_, description) = row
         return PictureReference(key, name, path_, description)
 
-    def retrieve_picture_by_path_segment(self, path: str):
+    def retrieve_pictures_by_path_segment(self, path: str, limit=50):
         """Retrieve picture by path segment using wildcards.
 
         Example: Path: '%jpg'
 
         :param path: the path to the picture
         :type path: str
+        :param limit: maximum number of records to retrieve
+        :type limit: int
         :return: picture.
         :rtype: list(PictureReference)
         """
-        stmt = 'SELECT id, identifier, path, description FROM pictures WHERE "path"like?'
+        stmt = 'SELECT id, identifier, path, description FROM pictures WHERE "path"like? LIMIT ?'
         cursor = self.conn.cursor()
-        cursor.execute(stmt, (path,))
+        cursor.execute(stmt, (path, limit))
         records = [PictureReference(key, name, path_, description)
                    for (key, name, path_, description) in
                    cursor.fetchall()]
