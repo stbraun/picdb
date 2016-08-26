@@ -45,15 +45,10 @@ class TagManagement(ttk.Frame):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
         self.content = None
+        self.logger.info("Creating Tag Management UI")
         self.content_frame = self.create_content_frame()
         self.control_frame = self.create_control_frame()
-        self.create_widgets()
         self.refresh()
-
-    def create_widgets(self):
-        """Create the master data UI."""
-        self.create_content_frame()
-        self.create_control_frame()
 
     def create_content_frame(self):
         """Create the content frame.
@@ -129,12 +124,10 @@ class TagManagementContent(ttk.Frame):
 
     def create_widgets(self):
         """Create the master data UI."""
-        self.logger.info("Creating Tag Management UI")
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         self.tree = TagTree(master=self)
         self.tree.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W))
-
         self.editor = TagEditor(self)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 

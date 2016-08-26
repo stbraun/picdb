@@ -43,7 +43,7 @@ class PictureImporter(ttk.Frame):
         self.logger = logging.getLogger('picdb.ui')
         self.content_frame = None
         self.control_frame = None
-        self.picture_selector = None
+        self.pic_selector = None
         self.editor = None
         self.create_widgets()
 
@@ -60,9 +60,11 @@ class PictureImporter(ttk.Frame):
     def create_content_frame(self):
         self.content_frame = ttk.Frame(self)
         self.content_frame.rowconfigure(0, weight=1)
-        self.picture_selector = PictureSelector(self.content_frame)
-        self.picture_selector.grid(row=0, column=0,
-                                   sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.pic_selector = PictureSelector(self.content_frame)
+        self.pic_selector.grid(row=0, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.pic_selector.bind(self.pic_selector.EVT_PICTURE_SELECTED,
+                               self.item_selected)
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
@@ -85,7 +87,7 @@ class PictureImporter(ttk.Frame):
     def load_pictures(self):
         """Load a bunch of pictures from database.
         """
-        self.picture_selector.load_pictures()
+        self.pic_selector.load_pictures()
 
     def add_pictures(self):
         """Let user select pictures and import them into database."""
@@ -97,7 +99,7 @@ class PictureImporter(ttk.Frame):
         for picture in pictures:
             db.add_picture(picture)
             pic = db.retrieve_picture_by_path(picture.path)
-            self.picture_selector.add_picture_to_tree(pic)
+            self.pic_selector.add_picture_to_tree(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures added.'.format(len(pictures)))
 
@@ -110,18 +112,16 @@ class PictureImporter(ttk.Frame):
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        # TASK how to add selected item to editor? May PictureSelector fire event?
-        pics = self.picture_selector.selected_pictures()
+        pics = self.pic_selector.selected_pictures()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
-            db = get_db()
-            pic = db.retrieve_picture_by_key(pics[0])
+            pic = pics[0]
             self.logger.info('Pic: {}'.format(pic))
             self.editor.picture = pic
 
     def view_picture(self):
         """View selected picture."""
-        pics = self.picture_selector.selected_pictures()
+        pics = self.pic_selector.selected_pictures()
         if len(pics) > 0:
             image = Image.open(pics[0].path)
             image.show()
@@ -132,6 +132,9 @@ class PictureSelector(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
+        self.EVT_PICTURE_SELECTED = '<<<PictureSelected>>>'
+        self.supported_events = {self.EVT_PICTURE_SELECTED}
+        self.listeners = {}
         self.filter_frame = None
         self.tree = None
         self.path_filter_var = tk.StringVar()
@@ -184,7 +187,7 @@ class PictureSelector(ttk.Frame):
         self.logger.info('Selected pictures: {}'.format(pics))
         return pics
 
-    def __item_selected(self, _):
+    def __item_selected(self, event):
         """An item in the tree view was selected."""
         pics = self.tree.selection()
         self.logger.info('Selected pictures: {}'.format(pics))
@@ -192,8 +195,9 @@ class PictureSelector(ttk.Frame):
             db = get_db()
             pic = db.retrieve_picture_by_key(pics[0])
             self.logger.info('Pic: {}'.format(pic))
-            # TODO Need to invoke a callback -> check how to use bind on own objects
-            # self.editor.picture = pic
+            if self.EVT_PICTURE_SELECTED in self.listeners.keys():
+                listener = self.listeners[self.EVT_PICTURE_SELECTED]
+                listener(event)
 
     def load_pictures(self):
         """Load a bunch of pictures from database.
@@ -211,6 +215,15 @@ class PictureSelector(ttk.Frame):
     def add_picture_to_tree(self, picture: PictureReference):
         """Add given picture to tree view."""
         self.tree.add_picture(picture)
+
+    def bind(self, sequence=None, func=None, add=None):
+        """Bind to this widget at event SEQUENCE a call to function FUNC."""
+        if sequence in self.supported_events:
+            self.logger.info('Binding {} to {}'.format(func,
+                                                       self.EVT_PICTURE_SELECTED))
+            self.listeners[sequence] = func
+        else:
+            super().bind(sequence, func, add)
 
 
 class PictureReferenceTree(PicTreeView):

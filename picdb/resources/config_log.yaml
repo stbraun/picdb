@@ -10,7 +10,7 @@ handlers:
     stream: ext://sys.stdout
 loggers:
   picdb:
-    level: INFO
+    level: WARNING
     handlers: [console]
     propagate: no
   picdb.db:
@@ -22,7 +22,7 @@ loggers:
     handlers: [console]
     propagate: no
   picdb.config:
-    level: INFO
+    level: WARNING
     handlers: [console]
     propagate: no
 root:
