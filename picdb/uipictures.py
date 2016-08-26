@@ -99,7 +99,10 @@ class PictureImporter(ttk.Frame):
         view_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
 
     def load_pictures(self):
-        """Load a bunch of pictures from database."""
+        """Load a bunch of pictures from database.
+
+        filter_path_var and limit_var are considered for retrieval.
+        """
         self.tree.clear()
         db = get_db()
         path_filter = self.path_filter_var.get()
@@ -129,7 +132,7 @@ class PictureImporter(ttk.Frame):
             db = get_db()
             db.update_picture(pic)
 
-    def item_selected(self, event):
+    def item_selected(self, _):
         """An item in the tree view was selected."""
         pics = self.tree.selection()
         self.logger.info('Selected pictures: {}'.format(pics))

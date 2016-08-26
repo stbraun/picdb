@@ -49,7 +49,7 @@ class Application(ttk.Frame):
         series_frame = SeriesManagement(notebook)
         tags_frame = TagManagement(notebook)
         notebook.add(search_frame, text='search database')
-        notebook.add(import_frame, text='import pictures')
+        notebook.add(import_frame, text='manage pictures')
         notebook.add(series_frame, text='manage series')
         notebook.add(tags_frame, text='manage tags')
 
