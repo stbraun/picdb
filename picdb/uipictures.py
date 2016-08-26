@@ -60,6 +60,8 @@ class PictureImporter(ttk.Frame):
     def create_content_frame(self):
         self.content_frame = ttk.Frame(self)
         self.content_frame.rowconfigure(0, weight=1)
+        self.content_frame.columnconfigure(0, weight=1)
+        self.content_frame.columnconfigure(1, weight=1)
         self.pic_selector = PictureSelector(self.content_frame)
         self.pic_selector.grid(row=0, column=0,
                                sticky=(tk.W, tk.N, tk.E, tk.S))

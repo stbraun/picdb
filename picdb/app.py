@@ -25,7 +25,7 @@ from tkinter import ttk
 import logging
 
 from .log import initialize_logger
-from .uimain import StatusPanel
+from .uistatus import StatusPanel
 from .uipictures import PictureImporter
 from .uiseries import SeriesManagement
 from .uitags import TagManagement

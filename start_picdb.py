@@ -20,7 +20,7 @@ Start PicDB Application.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-from picdb import main as app
+from picdb import app as app
 
 if __name__ == '__main__':
     app.start_application()
