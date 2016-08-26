@@ -38,6 +38,9 @@ from .config import get_configuration
 from .model import PictureReference, PictureSeries, Tag
 
 
+db_name = None
+
+
 def get_db():
     """Get connected persistence instance."""
     db = get_configuration('database')
@@ -53,43 +56,53 @@ class Persistence:
         :param db: path to database.
         :type db: str
         """
+        global db_name
         self.logger = logging.getLogger('picdb.db')
-        self.db_name = os.path.expanduser(db)
-        self.logger.info(self.db_name)
+        self.determine_db_name(db)
         if not os.path.exists(self.db_name):
             self.conn = sqlite3.connect(self.db_name)
             self.setup_db()
         else:
             self.conn = sqlite3.connect(self.db_name)
 
+    def determine_db_name(self, db):
+        global db_name
+        if db_name is None:
+            self.db_name = os.path.expanduser(db)
+            self.logger.info('DB name: {}'.format(self.db_name))
+            db_name = self.db_name
+        else:
+            self.db_name = db_name
+
     def close(self):
         """Close database."""
         self.conn.close()
-        self.logger.info('database connection closed.')
+        self.logger.debug('database connection closed.')
 
     def setup_db(self):
         """Setup database schema."""
         cursor = self.conn.cursor()
         # Create tables
         try:
-            cursor.execute('''CREATE TABLE series ( id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              identifier TEXT UNIQUE,
-                              description TEXT)''')
-            cursor.execute('''CREATE TABLE tags (
-                              id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              identifier TEXT UNIQUE,
-                              description TEXT)''')
-            cursor.execute('''CREATE TABLE pictures (
-                              id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              identifier TEXT,
-                              path TEXT UNIQUE,
-                              description TEXT)''')
-            cursor.execute('''CREATE TABLE picture2series (
-                                picture INTEGER REFERENCES "pictures" ("id"),
-                                series INTEGER REFERENCES "series" ("id"))''')
-            cursor.execute('''CREATE TABLE picture2tag (
-                                picture INTEGER REFERENCES "pictures" ("id"),
-                                tag INTEGER REFERENCES "tags" ("id"))''')
+            cursor.execute('CREATE TABLE series ( '
+                           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                           'identifier TEXT UNIQUE, '
+                           'description TEXT)')
+            cursor.execute('CREATE TABLE tags ( '
+                           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                           'identifier TEXT UNIQUE, '
+                           'description TEXT)')
+            cursor.execute('CREATE TABLE pictures ( '
+                           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                           'identifier TEXT, '
+                           'path TEXT UNIQUE, '
+                           'description TEXT)')
+            cursor.execute('CREATE TABLE picture2series ('
+                           'picture INTEGER REFERENCES "pictures" ("id"), '
+                           'series INTEGER REFERENCES "series" ("id"))')
+            cursor.execute('CREATE TABLE picture2tag ('
+                           'picture INTEGER REFERENCES "pictures" ("id"), '
+                           'tag INTEGER REFERENCES "tags" ("id"))')
         except Exception as e:
             self.logger.warning(e)
 
@@ -99,12 +112,12 @@ class Persistence:
         :param series: the series to add
         :type name: PictureSeries
         """
-        self.logger.info("Add series to DB: {}".format(series.name))
+        self.logger.debug("Add series to DB: {}".format(series.name))
         stmt = '''INSERT INTO series VALUES (?, ?, ?)'''
         self.execute_sql(stmt, (None, series.name, series.description))
 
     def update_series(self, series: PictureSeries):
-        self.logger.info("Update series: {}".format(series.name))
+        self.logger.debug("Update series: {}".format(series.name))
         stmt = "UPDATE series SET identifier='{}', description='{}' " \
                "WHERE id={}".format(series.name,
                                     series.description, series.key)
@@ -116,12 +129,12 @@ class Persistence:
         :param tag: tag to add
         :type name: Tag
         """
-        self.logger.info("Add tag to DB: {}".format(tag))
+        self.logger.debug("Add tag to DB: {}".format(tag))
         stmt = '''INSERT INTO tags VALUES (?, ?, ?)'''
         self.execute_sql(stmt, (None, tag.name, tag.description))
 
     def update_tag(self, tag: Tag):
-        self.logger.info("Update tag: {}".format(tag.name))
+        self.logger.debug("Update tag: {}".format(tag.name))
         stmt = "UPDATE tags SET identifier='{}', description='{}' " \
                "WHERE id={}".format(tag.name,
                                     tag.description, tag.key)
@@ -133,7 +146,7 @@ class Persistence:
         :param picture: picture to add
         :type name: PictureReference
         """
-        self.logger.info("Add picture to DB: {} ({})".format(picture.name,
+        self.logger.debug("Add picture to DB: {} ({})".format(picture.name,
                                                              picture.path))
         stmt = '''INSERT INTO pictures VALUES (?, ?, ?, ?)'''
         self.execute_sql(stmt, (None, picture.name,
@@ -141,7 +154,7 @@ class Persistence:
 
     def update_picture(self, picture: PictureReference):
         cursor = self.conn.cursor()
-        self.logger.info("Update picture: {} ({})".format(picture.name,
+        self.logger.debug("Update picture: {} ({})".format(picture.name,
                                                           picture.path))
         stmt = "UPDATE pictures SET identifier='{}', path='{}', " \
                "description='{}' WHERE id={}".format(picture.name,
@@ -158,12 +171,13 @@ class Persistence:
         :param tag: the tag
         :type tag: Tag
         """
-        self.logger.info(
+        self.logger.debug(
             "Adding tag {} to picture {}.".format(tag, picture))
         stmt = '''INSERT INTO picture2tag VALUES(?, ?)'''
         self.execute_sql(stmt, (picture.key, tag.key))
 
-    def add_picture_to_series(self, picture: PictureReference, series: PictureSeries):
+    def add_picture_to_series(self, picture: PictureReference,
+                              series: PictureSeries):
         """Add picture to a series.
 
         :param picture: the picture
@@ -171,7 +185,7 @@ class Persistence:
         :param series: the series
         :type series: PictureSeries
         """
-        self.logger.info(
+        self.logger.debug(
             "Adding picture {} to series {}.".format(picture, series))
         stmt = '''INSERT INTO picture2series VALUES(?, ?)'''
         self.execute_sql(stmt, (picture.id, series.id))
@@ -184,7 +198,8 @@ class Persistence:
         :return: picture.
         :rtype: PictureReference
         """
-        stmt = 'SELECT id, identifier, path, description FROM pictures WHERE "id"=?'
+        stmt = 'SELECT id, identifier, path, description ' \
+               'FROM pictures WHERE "id"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (key,))
         row = cursor.fetchone()
@@ -201,7 +216,8 @@ class Persistence:
         :return: picture.
         :rtype: PictureReference
         """
-        stmt = 'SELECT id, identifier, path, description FROM pictures WHERE "path"=?'
+        stmt = 'SELECT id, identifier, path, description ' \
+               'FROM pictures WHERE "path"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (path,))
         row = cursor.fetchone()
@@ -222,7 +238,8 @@ class Persistence:
         :return: picture.
         :rtype: list(PictureReference)
         """
-        stmt = 'SELECT id, identifier, path, description FROM pictures WHERE "path"like? LIMIT ?'
+        stmt = 'SELECT id, identifier, path, description ' \
+               'FROM pictures WHERE "path"like? LIMIT ?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (path, limit))
         records = [PictureReference(key, name, path_, description)
@@ -256,9 +273,12 @@ class Persistence:
         :rtype: [Tag]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description FROM tags WHERE id in (SELECT tag from picture2tag WHERE picture=?)'
+        stmt = 'SELECT id, identifier, description ' \
+               'FROM tags WHERE id in (SELECT tag ' \
+               'FROM picture2tag WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
-        records = [Tag(key, name, description) for (key, name, description) in cursor.fetchall()]
+        records = [Tag(key, name, description)
+                   for (key, name, description) in cursor.fetchall()]
         return list(records)
 
     def retrieve_series_for_picture(self, picture: PictureReference):
@@ -273,8 +293,8 @@ class Persistence:
                'WHERE id in (SELECT ' \
                'tag from picture2series WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
-        records = [PictureSeries(key, name, description) for (key, name, description) in
-                   cursor.fetchall()]
+        records = [PictureSeries(key, name, description)
+                   for (key, name, description) in cursor.fetchall()]
         return list(records)
 
     def retrieve_series_by_name(self, name: str):
@@ -316,7 +336,8 @@ class Persistence:
         :return: tag or None if name is unknown.
         :rtype: Tag
         """
-        stmt = 'SELECT id, identifier, description FROM tags WHERE "identifier"=?'
+        stmt = 'SELECT id, identifier, description ' \
+               'FROM tags WHERE "identifier"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (name,))
         row = cursor.fetchone()
