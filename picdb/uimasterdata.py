@@ -30,21 +30,18 @@ The UI for master data management of groups and tags.
 # IN THE SOFTWARE.
 
 import logging
-import tkinter as tk
 from tkinter import ttk
-
-from .model import PictureReference
 
 
 class PicTreeView(ttk.Treeview):
     """Extended tree view."""
-    def __init__(self, master, *args, **kwdargs):
-        super().__init__(master, *args, **kwdargs)
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
 
     def clear(self):
         """Remove all items from tree."""
         items = self.get_children()
-        self.logger.info('Items to delete from tree: {}'.format(items))
+        self.logger.debug('Items to delete from tree: {}'.format(items))
         if len(items) > 0:
             self.delete(*items)
