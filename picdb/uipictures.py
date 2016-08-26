@@ -31,7 +31,7 @@ from PIL import Image
 
 from .model import PictureReference
 from .persistence import get_db
-from .uimasterdata import PictureReferenceEditor, PictureReferenceTree
+from .uimasterdata import PicTreeView
 
 
 class PictureImporter(ttk.Frame):
@@ -43,13 +43,7 @@ class PictureImporter(ttk.Frame):
         self.logger = logging.getLogger('picdb.ui')
         self.content_frame = None
         self.control_frame = None
-        self.tree = None
-        self.path_filter_var = tk.StringVar()
-        self.path_filter_var.set('%')
-        self.path_filter_entry = None
-        self.limit_var = tk.IntVar()
-        self.limit_var.set(50)
-        self.limit_entry = None
+        self.picture_selector = None
         self.editor = None
         self.create_widgets()
 
@@ -57,33 +51,23 @@ class PictureImporter(ttk.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         self.create_content_frame()
+        self.content_frame.grid(row=0, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
         self.create_control_frame()
+        self.control_frame.grid(row=1, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def create_content_frame(self):
         self.content_frame = ttk.Frame(self)
-        self.content_frame.grid(row=0, column=0,
-                                sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.content_frame.rowconfigure(1, weight=0)
-        self.content_frame.rowconfigure(2, weight=1)
-        self.content_frame.columnconfigure(0, weight=1)
-        self.content_frame.columnconfigure(1, weight=0)
-        self.path_filter_entry = ttk.Entry(self.content_frame,
-                                           textvariable=self.path_filter_var)
-        self.path_filter_entry.grid(row=0, column=0, sticky=(tk.N, ))
-        self.limit_entry = ttk.Entry(self.content_frame,
-                                     textvariable=self.limit_var)
-        self.limit_entry.grid(row=1, column=0, sticky=(tk.N, ))
-        self.tree = PictureReferenceTree(self.content_frame)
-        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
-        self.tree.grid(row=2, column=0,
-                       sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.content_frame.rowconfigure(0, weight=1)
+        self.picture_selector = PictureSelector(self.content_frame)
+        self.picture_selector.grid(row=0, column=0,
+                                   sticky=(tk.W, tk.N, tk.E, tk.S))
         self.editor = PictureReferenceEditor(self.content_frame)
-        self.editor.grid(row=2, column=1, sticky=(tk.N, tk.E, tk.W))
+        self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
     def create_control_frame(self):
         self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
-        self.control_frame.grid(row=1, column=0,
-                                sticky=(tk.W, tk.N, tk.E, tk.S))
         self.columnconfigure(0, weight=1)
         load_button = ttk.Button(self.control_frame, text='load pictures',
                                  command=self.load_pictures)
@@ -100,16 +84,8 @@ class PictureImporter(ttk.Frame):
 
     def load_pictures(self):
         """Load a bunch of pictures from database.
-
-        filter_path_var and limit_var are considered for retrieval.
         """
-        self.tree.clear()
-        db = get_db()
-        path_filter = self.path_filter_var.get()
-        limit = self.limit_var.get()
-        pictures = db.retrieve_pictures_by_path_segment(path_filter, limit)
-        for picture in pictures:
-            self.tree.add_picture(picture)
+        self.picture_selector.load_pictures()
 
     def add_pictures(self):
         """Let user select pictures and import them into database."""
@@ -121,9 +97,9 @@ class PictureImporter(ttk.Frame):
         for picture in pictures:
             db.add_picture(picture)
             pic = db.retrieve_picture_by_path(picture.path)
-            self.tree.add_picture(pic)
+            self.picture_selector.add_picture_to_tree(pic)
         messagebox.showinfo(title='Picture Import',
-                            message='{} pictures imported.'.format(len(pictures)))
+                            message='{} pictures added.'.format(len(pictures)))
 
     def save_picture(self):
         """Save the picture currently in editor."""
@@ -134,7 +110,8 @@ class PictureImporter(ttk.Frame):
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        pics = self.tree.selection()
+        # TASK how to add selected item to editor? May PictureSelector fire event?
+        pics = self.picture_selector.selected_pictures()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
             db = get_db()
@@ -144,9 +121,155 @@ class PictureImporter(ttk.Frame):
 
     def view_picture(self):
         """View selected picture."""
+        pics = self.picture_selector.selected_pictures()
+        if len(pics) > 0:
+            image = Image.open(pics[0].path)
+            image.show()
+
+
+class PictureSelector(ttk.Frame):
+    """Provide a picture tree and a slection panel."""
+    def __init__(self, master):
+        super().__init__(master)
+        self.logger = logging.getLogger('picdb.ui')
+        self.filter_frame = None
+        self.tree = None
+        self.path_filter_var = tk.StringVar()
+        self.path_filter_var.set('%')
+        self.path_filter_entry = None
+        self.limit_var = tk.IntVar()
+        self.limit_var.set(50)
+        self.limit_entry = None
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.create_filter_frame()
+        self.filter_frame.grid(row=0, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.tree = PictureReferenceTree(self)
+        self.tree.bind('<<TreeviewSelect>>', self.__item_selected)
+        self.tree.grid(row=1, column=0,
+                       sticky=(tk.W, tk.N, tk.E, tk.S))
+
+    def create_filter_frame(self):
+        self.filter_frame = ttk.Frame(self)
+        self.filter_frame.rowconfigure(0, weight=1)
+        self.filter_frame.rowconfigure(1, weight=1)
+        self.filter_frame.columnconfigure(0, weight=0)
+        self.filter_frame.columnconfigure(1, weight=1)
+        lbl_filter = ttk.Label(self.filter_frame, text='Filter on path')
+        lbl_filter.grid(row=0, column=0, sticky=tk.E)
+        self.path_filter_entry = ttk.Entry(self.filter_frame,
+                                           textvariable=self.path_filter_var)
+        self.path_filter_entry.grid(row=0, column=1, sticky=(tk.W, tk.E,))
+        lbl_limit = ttk.Label(self.filter_frame, text='Max. number of records')
+        lbl_limit.grid(row=1, column=0, sticky=tk.E)
+        self.limit_entry = ttk.Entry(self.filter_frame,
+                                     textvariable=self.limit_var,
+                                     width=5)
+        self.limit_entry.grid(row=1, column=1, sticky=(tk.W,))
+
+    def selected_pictures(self):
+        """Provide list of pictures selected in tree.
+
+        :return: selected pictures
+        :rtype: list(PictureReference)
+        """
+        pic_ids = self.tree.selection()
+        db = get_db()
+        pics = [db.retrieve_picture_by_key(pic_id) for pic_id in pic_ids]
+        self.logger.info('Selected pictures: {}'.format(pics))
+        return pics
+
+    def __item_selected(self, _):
+        """An item in the tree view was selected."""
         pics = self.tree.selection()
+        self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
             db = get_db()
             pic = db.retrieve_picture_by_key(pics[0])
-            image = Image.open(pic.path)
-            image.show()
+            self.logger.info('Pic: {}'.format(pic))
+            # TODO Need to invoke a callback -> check how to use bind on own objects
+            # self.editor.picture = pic
+
+    def load_pictures(self):
+        """Load a bunch of pictures from database.
+
+        filter_path_var and limit_var are considered for retrieval.
+        """
+        self.tree.clear()
+        db = get_db()
+        path_filter = self.path_filter_var.get()
+        limit = self.limit_var.get()
+        pictures = db.retrieve_pictures_by_path_segment(path_filter, limit)
+        for picture in pictures:
+            self.tree.add_picture(picture)
+
+    def add_picture_to_tree(self, picture: PictureReference):
+        """Add given picture to tree view."""
+        self.tree.add_picture(picture)
+
+
+class PictureReferenceTree(PicTreeView):
+    """A tree handling pictures."""
+    def __init__(self, master):
+        super().__init__(master, columns=('path', 'description'))
+        self.heading('path', text='Path')
+        self.heading('description', text='Description')
+        self.column('#0', stretch=False)  # tree column does not resize
+
+    def add_picture(self, picture: PictureReference):
+        """Add given picture to tree."""
+        self.insert('', 'end', picture.key,
+                    text=picture.name,
+                    values=(picture.path, picture.description))
+
+
+class PictureReferenceEditor(ttk.LabelFrame):
+    """Editor for PictureReference objects."""
+    def __init__(self, master, text='Edit picture reference'):
+        super().__init__(master, text=text)
+        self.picture_ = None
+        self.id_var = tk.IntVar()
+        self.name_var = tk.StringVar()
+        self.path_var = tk.StringVar()
+        self.description_var = tk.StringVar()
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.rowconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
+        ttk.Label(self, text='id').grid(row=0, column=0, sticky=tk.E)
+        ttk.Label(self, text='name').grid(row=1, column=0, sticky=tk.E)
+        ttk.Label(self, text='path').grid(row=2, column=0, sticky=tk.E)
+        ttk.Label(self, text='description').grid(row=3, column=0, sticky=tk.E)
+        ttk.Entry(self, textvariable=self.id_var,
+                  state='readonly').grid(row=0, column=1, sticky=tk.W)
+        ttk.Entry(self, textvariable=self.name_var).grid(row=1, column=1,
+                                                         sticky=(tk.E, tk.W))
+        ttk.Entry(self, textvariable=self.path_var).grid(row=2, column=1,
+                                                         sticky=(tk.E, tk.W))
+        ttk.Entry(self,
+                  textvariable=self.description_var).grid(row=3,
+                                                          column=1,
+                                                          sticky=(tk.E, tk.W))
+
+    @property
+    def picture(self):
+        if self.picture_ is not None:
+            self.picture_.id = self.id_var.get()
+            self.picture_.name = self.name_var.get()
+            self.picture_.path = self.path_var.get()
+            self.picture_.description = self.description_var.get()
+        return self.picture_
+
+    @picture.setter
+    def picture(self, pic: PictureReference):
+        self.picture_ = pic
+        self.id_var.set(pic.key)
+        self.name_var.set(pic.name)
+        self.path_var.set(pic.path)
+        self.description_var.set(pic.description)
