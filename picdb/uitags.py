@@ -48,6 +48,8 @@ class TagManagement(ttk.Frame):
         self.logger.info("Creating Tag Management UI")
         self.content_frame = self.create_content_frame()
         self.control_frame = self.create_control_frame()
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
         self.refresh()
 
     def create_content_frame(self):
@@ -60,6 +62,7 @@ class TagManagement(ttk.Frame):
         content_frame.grid(row=0, column=0,
                            sticky=(tk.W, tk.N, tk.E, tk.S))
         content_frame.rowconfigure(0, weight=1)
+        content_frame.columnconfigure(0, weight=1)
         self.content = TagManagementContent(content_frame)
         self.content.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.S, tk.W))
         self.content.tree.bind('<<TreeviewSelect>>', self.item_selected)
@@ -126,8 +129,9 @@ class TagManagementContent(ttk.Frame):
         """Create the master data UI."""
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
         self.tree = TagTree(master=self)
-        self.tree.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W))
+        self.tree.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W, tk.E))
         self.editor = TagEditor(self)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 

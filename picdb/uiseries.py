@@ -4,20 +4,30 @@ Series management.
 """
 # Copyright (c) 2016 Stefan Braun
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-# associated documentation files (the "Software"), to deal in the Software without restriction,
-# including without limitation the rights to use, copy, modify, merge, publish, distribute,
-# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and
+# associated documentation files (the "Software"), to deal in the Software
+# without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute,
+# sublicense, and/or sell copies of the Software, and to permit persons to
+# whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all copies or
+# The above copyright notice and this permission notice shall be included in
+#  all copies or
 # substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
-# AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE
+# AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+#  LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 import logging
 import tkinter as tk
@@ -38,6 +48,8 @@ class SeriesManagement(ttk.Frame):
         self.logger.info("Creating SeriesManagement UI")
         self.content_frame = self.create_content_frame()
         self.control_frame = self.create_control_frame()
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
         self.refresh()
 
     def create_content_frame(self):
@@ -50,6 +62,7 @@ class SeriesManagement(ttk.Frame):
         content_frame.grid(row=0, column=0,
                            sticky=(tk.W, tk.N, tk.E, tk.S))
         content_frame.rowconfigure(0, weight=1)
+        content_frame.columnconfigure(0, weight=1)
         self.content = SeriesManagementContent(content_frame)
         self.content.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.S, tk.W))
         self.content.tree.bind('<<TreeviewSelect>>', self.item_selected)
@@ -116,8 +129,9 @@ class SeriesManagementContent(ttk.Frame):
         """Create the master data UI."""
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
         self.tree = PictureSeriesTree(master=self)
-        self.tree.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W))
+        self.tree.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W, tk.E))
         self.editor = PictureSeriesEditor(self)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
@@ -131,8 +145,9 @@ class SeriesManagementContent(ttk.Frame):
 
 class PictureSeriesTree(PicTreeView):
     """A tree handling picture series."""
+
     def __init__(self, master):
-        super().__init__(master, columns=('description', ))
+        super().__init__(master, columns=('description',))
         self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column does not resize
 
@@ -144,6 +159,7 @@ class PictureSeriesTree(PicTreeView):
 
 class PictureSeriesEditor(ttk.LabelFrame):
     """Editor for PictureSeries objects."""
+
     def __init__(self, master, text='Edit series'):
         super().__init__(master, text=text)
         self.series_ = None

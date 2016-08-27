@@ -4,19 +4,28 @@ Import pictures via UI.
 """
 # Copyright (c) 2016 Stefan Braun
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-# associated documentation files (the "Software"), to deal in the Software without restriction,
-# including without limitation the rights to use, copy, modify, merge, publish, distribute,
-# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and
+# associated documentation files (the "Software"), to deal in the Software
+# without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute,
+# sublicense, and/or sell copies of the Software, and to permit persons to
+# whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all copies or
+# The above copyright notice and this permission notice shall be included in
+#  all copies or
 # substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
-# AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE
+# AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+#  LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
@@ -35,7 +44,6 @@ from .uimasterdata import PicTreeView
 
 
 class PictureImporter(ttk.Frame):
-
     """Provides UI for importing pictures."""
 
     def __init__(self, master):
@@ -131,6 +139,7 @@ class PictureImporter(ttk.Frame):
 
 class PictureSelector(ttk.Frame):
     """Provide a picture tree and a slection panel."""
+
     def __init__(self, master):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
@@ -230,6 +239,7 @@ class PictureSelector(ttk.Frame):
 
 class PictureReferenceTree(PicTreeView):
     """A tree handling pictures."""
+
     def __init__(self, master):
         super().__init__(master, columns=('path', 'description'))
         self.heading('path', text='Path')
@@ -245,6 +255,7 @@ class PictureReferenceTree(PicTreeView):
 
 class PictureReferenceEditor(ttk.LabelFrame):
     """Editor for PictureReference objects."""
+
     def __init__(self, master, text='Edit picture reference'):
         super().__init__(master, text=text)
         self.picture_ = None
