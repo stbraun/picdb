@@ -43,12 +43,13 @@ from .persistence import get_db
 from .uimasterdata import PicTreeView
 
 
-class PictureImporter(ttk.Frame):
+class PictureManagement(ttk.Frame):
     """Provides UI for importing pictures."""
 
     def __init__(self, master):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger('picdb.ui')
+        self.logger.info("Creating Picture Management UI")
         self.content_frame = None
         self.control_frame = None
         self.pic_selector = None
@@ -138,7 +139,7 @@ class PictureImporter(ttk.Frame):
 
 
 class PictureSelector(ttk.Frame):
-    """Provide a picture tree and a slection panel."""
+    """Provide a picture tree and a selection panel."""
 
     def __init__(self, master):
         super().__init__(master)
@@ -195,7 +196,7 @@ class PictureSelector(ttk.Frame):
         pic_ids = self.tree.selection()
         db = get_db()
         pics = [db.retrieve_picture_by_key(pic_id) for pic_id in pic_ids]
-        self.logger.info('Selected pictures: {}'.format(pics))
+        self.logger.debug('Selected pictures: {}'.format(pics))
         return pics
 
     def __item_selected(self, event):
@@ -203,9 +204,6 @@ class PictureSelector(ttk.Frame):
         pics = self.tree.selection()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
-            db = get_db()
-            pic = db.retrieve_picture_by_key(pics[0])
-            self.logger.info('Pic: {}'.format(pic))
             if self.EVT_PICTURE_SELECTED in self.listeners.keys():
                 listener = self.listeners[self.EVT_PICTURE_SELECTED]
                 listener(event)

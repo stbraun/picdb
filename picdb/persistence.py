@@ -346,6 +346,26 @@ class Persistence:
         (key, name, description) = row
         return Tag(key, name, description)
 
+    def retrieve_tags_by_name_segment(self, name: str, limit=50):
+        """Retrieve tags by name segment using wildcards.
+
+        Example: name: 'a%'
+
+        :param name: the path to the tag
+        :type name: str
+        :param limit: maximum number of records to retrieve
+        :type limit: int
+        :return: tags.
+        :rtype: list(Tag)
+        """
+        stmt = 'SELECT id, identifier, description ' \
+               'FROM tags WHERE "identifier"like? LIMIT ?'
+        cursor = self.conn.cursor()
+        cursor.execute(stmt, (name, limit))
+        records = [Tag(key, name_, description)
+                   for (key, name_, description) in cursor.fetchall()]
+        return list(records)
+
     def retrieve_tag_by_key(self, key: int):
         """Retrieve tag by key.
 
@@ -423,6 +443,11 @@ def get_all_tags():
 def retrieve_tag_by_key(key: int):
     db = get_db()
     return db.retrieve_tag_by_key(key)
+
+
+def retrieve_tags_by_name_segment(name: str, limit):
+    db = get_db()
+    return db.retrieve_tags_by_name_segment(name, limit)
 
 
 def update_tag(tag: Tag):

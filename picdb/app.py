@@ -36,7 +36,7 @@ import logging
 
 from .log import initialize_logger
 from .uistatus import StatusPanel
-from .uipictures import PictureImporter
+from .uipictures import PictureManagement
 from .uiseries import SeriesManagement
 from .uitags import TagManagement
 
@@ -55,7 +55,7 @@ class Application(ttk.Frame):
         notebook = ttk.Notebook(self)
         notebook.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
         search_frame = ttk.Frame(notebook)
-        import_frame = PictureImporter(notebook)
+        import_frame = PictureManagement(notebook)
         series_frame = SeriesManagement(notebook)
         tags_frame = TagManagement(notebook)
         notebook.add(search_frame, text='search database')

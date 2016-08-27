@@ -44,103 +44,172 @@ class TagManagement(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
-        self.content = None
         self.logger.info("Creating Tag Management UI")
-        self.content_frame = self.create_content_frame()
-        self.control_frame = self.create_control_frame()
+        self.content_frame = None
+        self.control_frame = None
+        self.tag_selector = None
+        self.editor = None
+        self.create_widgets()
+
+    def create_widgets(self):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.refresh()
+        self.create_content_frame()
+        self.content_frame.grid(row=0, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.create_control_frame()
+        self.control_frame.grid(row=1, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def create_content_frame(self):
-        """Create the content frame.
-
-        :return: content frame
-        :rtype: ttk.Frame
-        """
-        content_frame = ttk.Frame(self)
-        content_frame.grid(row=0, column=0,
-                           sticky=(tk.W, tk.N, tk.E, tk.S))
-        content_frame.rowconfigure(0, weight=1)
-        content_frame.columnconfigure(0, weight=1)
-        self.content = TagManagementContent(content_frame)
-        self.content.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.S, tk.W))
-        self.content.tree.bind('<<TreeviewSelect>>', self.item_selected)
-        return content_frame
+        """Create the content frame."""
+        self.content_frame = ttk.Frame(self)
+        self.content_frame.rowconfigure(0, weight=1)
+        self.content_frame.columnconfigure(0, weight=1)
+        self.content_frame.columnconfigure(1, weight=1)
+        self.tag_selector = TagSelector(self.content_frame)
+        self.tag_selector.grid(row=0, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.tag_selector.bind(self.tag_selector.EVT_TAG_SELECTED,
+                               self.item_selected)
+        self.editor = TagEditor(self.content_frame)
+        self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
     def create_control_frame(self):
-        """Create the control frame.
-
-        :return: control frame
-        :rtype: ttk.Frame
-        """
-        control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
-        control_frame.grid(row=1, column=0,
-                           sticky=(tk.W, tk.N, tk.E, tk.S))
+        """Create the control frame."""
+        self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
         self.columnconfigure(0, weight=1)
-        refresh_button = ttk.Button(control_frame, text='refresh',
-                                    command=self.refresh)
-        refresh_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        add_button = ttk.Button(control_frame, text='add tag',
+        load_button = ttk.Button(self.control_frame, text='load tags',
+                                 command=self.load_tags)
+        load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
+        add_button = ttk.Button(self.control_frame, text='add tag',
                                 command=self.add_tag)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        save_button = ttk.Button(control_frame, text='save tag',
+        save_button = ttk.Button(self.control_frame, text='save tag',
                                  command=self.save_tag)
         save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
-        return control_frame
 
-    def refresh(self):
-        self.content.refresh()
+    def load_tags(self):
+        """Load a bunch of tags from database.
+        """
+        self.tag_selector.load_tags()
 
     def add_tag(self):
         """Push an empty tag to editor."""
         tag = Tag(None, '', '')
-        self.content.editor.tag = tag
+        self.editor.tag = tag
 
     def save_tag(self):
         """Save the tag currently in editor."""
-        tag = self.content.editor.tag
+        tag = self.editor.tag
         if tag is not None:
             if tag.key is None:
                 persistence.add_tag(tag)
             else:
                 persistence.update_tag(tag)
-        self.refresh()
+        self.load_tags()
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        selected_tag = self.content.tree.selection()
-        if len(selected_tag) > 0:
-            tag = persistence.retrieve_tag_by_key(selected_tag[0])
-            self.content.editor.tag = tag
+        items = self.tag_selector.selected_tags()
+        self.logger.info('Selected tags: {}'.format(items))
+        if len(items) > 0:
+            tag = items[0]
+            self.editor.tag = tag
 
 
-class TagManagementContent(ttk.Frame):
-    """Manage tag master data."""
-
+class TagSelector(ttk.Frame):
+    """Provide a tag tree and selection panel."""
     def __init__(self, master):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
+        self.EVT_TAG_SELECTED = '<<<TagSelected>>>'
+        self.supported_events = {self.EVT_TAG_SELECTED}
+        self.listeners = {}
+        self.filter_frame = None
         self.tree = None
-        self.editor = None
+        self.name_filter_var = tk.StringVar()
+        self.name_filter_var.set('%')
+        self.name_filter_entry = None
+        self.limit_var = tk.IntVar()
+        self.limit_var.set(50)
+        self.limit_entry = None
         self.create_widgets()
 
     def create_widgets(self):
-        """Create the master data UI."""
-        self.rowconfigure(0, weight=1)
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-        self.tree = TagTree(master=self)
-        self.tree.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W, tk.E))
-        self.editor = TagEditor(self)
-        self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
+        self.create_filter_frame()
+        self.filter_frame.grid(row=0, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.tree = TagTree(self)
+        self.tree.bind('<<TreeviewSelect>>', self.__item_selected)
+        self.tree.grid(row=1, column=0,
+                       sticky=(tk.W, tk.N, tk.E, tk.S))
 
-    def refresh(self):
-        """Refresh tree."""
-        all_tags = persistence.get_all_tags()
+    def create_filter_frame(self):
+        self.filter_frame = ttk.Frame(self)
+        self.filter_frame.rowconfigure(0, weight=1)
+        self.filter_frame.rowconfigure(1, weight=1)
+        self.filter_frame.columnconfigure(0, weight=0)
+        self.filter_frame.columnconfigure(1, weight=1)
+        lbl_filter = ttk.Label(self.filter_frame, text='Filter on path')
+        lbl_filter.grid(row=0, column=0, sticky=tk.E)
+        self.name_filter_entry = ttk.Entry(self.filter_frame,
+                                           textvariable=self.name_filter_var)
+        self.name_filter_entry.grid(row=0, column=1, sticky=(tk.W, tk.E,))
+        lbl_limit = ttk.Label(self.filter_frame, text='Max. number of records')
+        lbl_limit.grid(row=1, column=0, sticky=tk.E)
+        self.limit_entry = ttk.Entry(self.filter_frame,
+                                     textvariable=self.limit_var,
+                                     width=5)
+        self.limit_entry.grid(row=1, column=1, sticky=(tk.W,))
+
+    def selected_tags(self):
+        """Provide list of tags selected in tree.
+
+        :return: selected tags
+        :rtype: list(Tag)
+        """
+        item_ids = self.tree.selection()
+        pics = [persistence.retrieve_tag_by_key(pic_id) for pic_id in item_ids]
+        self.logger.debug('Selected tags: {}'.format(pics))
+        return pics
+
+    def __item_selected(self, event):
+        """An item in the tree view was selected."""
+        items = self.tree.selection()
+        self.logger.info('Selected tags: {}'.format(items))
+        if len(items) > 0:
+            if self.EVT_TAG_SELECTED in self.listeners.keys():
+                listener = self.listeners[self.EVT_TAG_SELECTED]
+                listener(event)
+
+    def load_tags(self):
+        """Load a bunch of tags from database.
+
+        name_filter_var and limit_var are considered for retrieval.
+        """
         self.tree.clear()
-        for tag in all_tags:
+        name_filter = self.name_filter_var.get()
+        limit = self.limit_var.get()
+        tags = persistence.retrieve_tags_by_name_segment(name_filter, limit)
+        for tag in tags:
             self.tree.add_tag(tag)
+
+    def add_picture_to_tree(self, tag: Tag):
+        """Add given tag to tree view."""
+        self.tree.add_tag(tag)
+
+    def bind(self, sequence=None, func=None, add=None):
+        """Bind to this widget at event SEQUENCE a call to function FUNC."""
+        if sequence in self.supported_events:
+            self.logger.debug('Binding {} to {}'.format(func,
+                                                        self.EVT_TAG_SELECTED))
+            self.listeners[sequence] = func
+        else:
+            super().bind(sequence, func, add)
 
 
 class TagTree(PicTreeView):
