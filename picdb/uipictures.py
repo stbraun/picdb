@@ -86,7 +86,7 @@ class PictureManagement(ttk.Frame):
                                  command=self.load_pictures)
         load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
         add_button = ttk.Button(self.control_frame, text='add pictures',
-                                command=self.add_pictures)
+                                command=self.import_pictures)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
         save_button = ttk.Button(self.control_frame, text='save picture',
                                  command=self.save_picture)
@@ -100,7 +100,7 @@ class PictureManagement(ttk.Frame):
         """
         self.pic_selector.load_pictures()
 
-    def add_pictures(self):
+    def import_pictures(self):
         """Let user select pictures and import them into database."""
         files = filedialog.askopenfilenames()
         self.logger.info('Files selected for import: {}'.format(files))
