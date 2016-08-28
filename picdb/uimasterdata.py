@@ -54,7 +54,7 @@ class PicTreeView(ttk.Treeview):
             self.delete(*items)
 
     def add_item(self, item: Entity):
-        """Add given tag to tree."""
+        """Add given item to tree."""
         self.insert('', 'end', item.key,
                     text=item.name, values=(item.description,))
 
@@ -128,7 +128,11 @@ class Selector(ttk.Treeview):
 
     def _item_selected(self, event):
         """An item in the tree view was selected."""
-        raise NotImplementedError('Please override this method.')
+        items = self.tree.selection()
+        if len(items) > 0:
+            if self.EVT_ITEM_SELECTED in self.listeners.keys():
+                listener = self.listeners[self.EVT_ITEM_SELECTED]
+                listener(event)
 
     def _validate_limit(self):
         """Validator for limit entry."""

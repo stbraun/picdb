@@ -35,7 +35,7 @@ from tkinter import ttk
 
 from . import persistence
 from .model import PictureSeries
-from .uimasterdata import PicTreeView
+from .uimasterdata import PicTreeView, Selector
 
 
 class SeriesManagement(ttk.Frame):
@@ -44,29 +44,36 @@ class SeriesManagement(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
-        self.content = None
         self.logger.info("Creating SeriesManagement UI")
-        self.content_frame = self.create_content_frame()
-        self.control_frame = self.create_control_frame()
+        self.content_frame = None
+        self.control_frame = None
+        self.selector = None
+        self.editor = None
+        self.create_widgets()
+
+    def create_widgets(self):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.refresh()
+        self.create_content_frame()
+        self.content_frame.grid(row=0, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.create_control_frame()
+        self.control_frame.grid(row=1, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def create_content_frame(self):
-        """Create the content frame.
-
-        :return: content frame
-        :rtype: ttk.Frame
-        """
-        content_frame = ttk.Frame(self)
-        content_frame.grid(row=0, column=0,
-                           sticky=(tk.W, tk.N, tk.E, tk.S))
-        content_frame.rowconfigure(0, weight=1)
-        content_frame.columnconfigure(0, weight=1)
-        self.content = SeriesManagementContent(content_frame)
-        self.content.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.S, tk.W))
-        self.content.tree.bind('<<TreeviewSelect>>', self.item_selected)
-        return content_frame
+        """Create the content frame."""
+        self.content_frame = ttk.Frame(self)
+        self.content_frame.rowconfigure(0, weight=1)
+        self.content_frame.columnconfigure(0, weight=1)
+        self.content_frame.columnconfigure(1, weight=1)
+        self.selector = PictureSeriesSelector(self.content_frame)
+        self.selector.grid(row=0, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.selector.bind(self.selector.EVT_ITEM_SELECTED,
+                           self.item_selected)
+        self.editor = PictureSeriesEditor(self.content_frame)
+        self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
     def create_control_frame(self):
         """Create the control frame.
@@ -74,73 +81,103 @@ class SeriesManagement(ttk.Frame):
         :return: control frame
         :rtype: ttk.Frame
         """
-        control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
-        control_frame.grid(row=1, column=0,
-                           sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
+        self.control_frame.grid(row=1, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
         self.columnconfigure(0, weight=1)
-        refresh_button = ttk.Button(control_frame, text='refresh',
-                                    command=self.refresh)
-        refresh_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        add_button = ttk.Button(control_frame, text='add series',
+        load_button = ttk.Button(self.control_frame, text='load series',
+                                 command=self.load_series)
+        load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
+        add_button = ttk.Button(self.control_frame, text='add series',
                                 command=self.add_series)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        save_button = ttk.Button(control_frame, text='save series',
+        save_button = ttk.Button(self.control_frame, text='save series',
                                  command=self.save_series)
         save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
-        return control_frame
 
-    def refresh(self):
-        self.content.refresh()
+    def load_series(self):
+        """Load a bunch of series from database."""
+        self.selector.load_items()
 
     def add_series(self):
         """Push an empty series to editor."""
         series = PictureSeries(None, '', '')
-        self.content.editor.series = series
+        self.editor.series = series
 
     def save_series(self):
         """Save the series currently in editor."""
-        series = self.content.editor.series
+        series = self.editor.series
         if series is not None:
             if series.key is None:
                 persistence.add_series(series)
             else:
                 persistence.update_series(series)
-        self.refresh()
+        self.load_series()
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        selected_series = self.content.tree.selection()
-        if len(selected_series) > 0:
-            series = persistence.retrieve_series_by_key(selected_series[0])
-            self.content.editor.series = series
+        items = self.selector.selected_items()
+        if len(items) > 0:
+            series = items[0]
+            self.editor.series = series
 
 
-class SeriesManagementContent(ttk.Frame):
-    """Manage picture series master data."""
+class PictureSeriesSelector(Selector):
+    """Provide a series tree and selection panel."""
 
     def __init__(self, master):
-        super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
-        self.tree = None
-        self.editor = None
-        self.create_widgets()
+        self.name_filter_var = tk.StringVar()
+        self.limit_var = tk.IntVar()
+        super().__init__(master, PictureSeriesTree.create_instance)
+        self.name_filter_var.set('%')
+        self.name_filter_entry = None
+        self.limit_var.set(self.limit_default)
 
-    def create_widgets(self):
-        """Create the master data UI."""
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-        self.tree = PictureSeriesTree(master=self)
-        self.tree.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W, tk.E))
-        self.editor = PictureSeriesEditor(self)
-        self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
+    def _create_filter_frame(self):
+        self.filter_frame = ttk.Frame(self)
+        self.filter_frame.rowconfigure(0, weight=1)
+        self.filter_frame.rowconfigure(1, weight=1)
+        self.filter_frame.columnconfigure(0, weight=0)
+        self.filter_frame.columnconfigure(1, weight=1)
+        lbl_filter = ttk.Label(self.filter_frame, text='Filter on name')
+        lbl_filter.grid(row=0, column=0, sticky=tk.E)
+        self.name_filter_entry = ttk.Entry(self.filter_frame,
+                                           textvariable=self.name_filter_var)
+        self.name_filter_entry.grid(row=0, column=1, sticky=(tk.W, tk.E,))
+        lbl_limit = ttk.Label(self.filter_frame, text='Max. number of records')
+        lbl_limit.grid(row=1, column=0, sticky=tk.E)
+        self.limit_entry = ttk.Entry(self.filter_frame,
+                                     textvariable=self.limit_var,
+                                     width=5,
+                                     validate='focusout',
+                                     validatecommand=self._validate_limit)
+        self.limit_entry.grid(row=1, column=1, sticky=(tk.W,))
 
-    def refresh(self):
-        """Refresh tree."""
-        all_series = persistence.get_all_series()
-        self.tree.clear()
-        for series in all_series:
-            self.tree.add_series(series)
+    def selected_items(self):
+        """Provide list of series selected in tree.
+
+        :return: selected tags
+        :rtype: list(Tag)
+        """
+        item_ids = self.tree.selection()
+        series = [persistence.retrieve_series_by_key(item_id)
+                  for item_id in item_ids]
+        return series
+
+    def add_item_to_tree(self, series: PictureSeries):
+        """Add given series to tree view."""
+        super().add_item_to_tree(series)
+
+    def _retrieve_items(self):
+        """Retrieve a bunch of tags from database.
+
+        name_filter_var and limit_var are considered for retrieval.
+        """
+        name_filter = self.name_filter_var.get()
+        limit = self.limit_var.get()
+        tags = persistence.retrieve_series_by_name_segment(name_filter, limit)
+        return tags
 
 
 class PictureSeriesTree(PicTreeView):
@@ -151,10 +188,14 @@ class PictureSeriesTree(PicTreeView):
         self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column does not resize
 
-    def add_series(self, series: PictureSeries):
+    @classmethod
+    def create_instance(cls, master):
+        """Factory method."""
+        return PictureSeriesTree(master)
+
+    def add_item(self, series: PictureSeries):
         """Add given series to tree."""
-        self.insert('', 'end', series.key,
-                    text=series.name, values=(series.description,))
+        super().add_item(series)
 
 
 class PictureSeriesEditor(ttk.LabelFrame):

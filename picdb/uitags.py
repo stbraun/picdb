@@ -47,7 +47,7 @@ class TagManagement(ttk.Frame):
         self.logger.info("Creating Tag Management UI")
         self.content_frame = None
         self.control_frame = None
-        self.tag_selector = None
+        self.selector = None
         self.editor = None
         self.create_widgets()
 
@@ -67,11 +67,11 @@ class TagManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.tag_selector = TagSelector(self.content_frame)
-        self.tag_selector.grid(row=0, column=0,
-                               sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.tag_selector.bind(self.tag_selector.EVT_ITEM_SELECTED,
-                               self.item_selected)
+        self.selector = TagSelector(self.content_frame)
+        self.selector.grid(row=0, column=0,
+                           sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.selector.bind(self.selector.EVT_ITEM_SELECTED,
+                           self.item_selected)
         self.editor = TagEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
@@ -90,9 +90,8 @@ class TagManagement(ttk.Frame):
         save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
 
     def load_tags(self):
-        """Load a bunch of tags from database.
-        """
-        self.tag_selector.load_items()
+        """Load a bunch of tags from database."""
+        self.selector.load_items()
 
     def add_tag(self):
         """Push an empty tag to editor."""
@@ -111,7 +110,7 @@ class TagManagement(ttk.Frame):
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        items = self.tag_selector.selected_items()
+        items = self.selector.selected_items()
         self.logger.info('Selected tags: {}'.format(items))
         if len(items) > 0:
             tag = items[0]
@@ -135,7 +134,7 @@ class TagSelector(Selector):
         self.filter_frame.rowconfigure(1, weight=1)
         self.filter_frame.columnconfigure(0, weight=0)
         self.filter_frame.columnconfigure(1, weight=1)
-        lbl_filter = ttk.Label(self.filter_frame, text='Filter on path')
+        lbl_filter = ttk.Label(self.filter_frame, text='Filter on name')
         lbl_filter.grid(row=0, column=0, sticky=tk.E)
         self.name_filter_entry = ttk.Entry(self.filter_frame,
                                            textvariable=self.name_filter_var)
@@ -156,21 +155,13 @@ class TagSelector(Selector):
         :rtype: list(Tag)
         """
         item_ids = self.tree.selection()
-        tags = [persistence.retrieve_tag_by_key(pic_id) for pic_id in item_ids]
+        tags = [persistence.retrieve_tag_by_key(item_id)
+                for item_id in item_ids]
         return tags
 
     def add_item_to_tree(self, tag: Tag):
         """Add given tag to tree view."""
         super().add_item_to_tree(tag)
-
-    def _item_selected(self, event):
-        """An item in the tree view was selected."""
-        items = self.tree.selection()
-        self.logger.info('Selected tags: {}'.format(items))
-        if len(items) > 0:
-            if self.EVT_ITEM_SELECTED in self.listeners.keys():
-                listener = self.listeners[self.EVT_ITEM_SELECTED]
-                listener(event)
 
     def _retrieve_items(self):
         """Retrieve a bunch of tags from database.

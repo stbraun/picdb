@@ -52,7 +52,7 @@ class PictureManagement(ttk.Frame):
         self.logger.info("Creating Picture Management UI")
         self.content_frame = None
         self.control_frame = None
-        self.pic_selector = None
+        self.selector = None
         self.editor = None
         self.create_widgets()
 
@@ -71,11 +71,11 @@ class PictureManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.pic_selector = PictureSelector(self.content_frame)
-        self.pic_selector.grid(row=0, column=0,
-                               sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.pic_selector.bind(self.pic_selector.EVT_PICTURE_SELECTED,
-                               self.item_selected)
+        self.selector = PictureSelector(self.content_frame)
+        self.selector.grid(row=0, column=0,
+                           sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.selector.bind(self.selector.EVT_PICTURE_SELECTED,
+                           self.item_selected)
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
@@ -98,7 +98,7 @@ class PictureManagement(ttk.Frame):
     def load_pictures(self):
         """Load a bunch of pictures from database.
         """
-        self.pic_selector.load_pictures()
+        self.selector.load_pictures()
 
     def import_pictures(self):
         """Let user select pictures and import them into database."""
@@ -110,7 +110,7 @@ class PictureManagement(ttk.Frame):
         for picture in pictures:
             db.add_picture(picture)
             pic = db.retrieve_picture_by_path(picture.path)
-            self.pic_selector.add_item_to_tree(pic)
+            self.selector.add_item_to_tree(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures added.'.format(len(pictures)))
 
@@ -123,7 +123,7 @@ class PictureManagement(ttk.Frame):
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        pics = self.pic_selector.selected_pictures()
+        pics = self.selector.selected_pictures()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
             pic = pics[0]
@@ -132,7 +132,7 @@ class PictureManagement(ttk.Frame):
 
     def view_picture(self):
         """View selected picture."""
-        pics = self.pic_selector.selected_pictures()
+        pics = self.selector.selected_pictures()
         if len(pics) > 0:
             image = Image.open(pics[0].path)
             image.show()

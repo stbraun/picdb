@@ -315,6 +315,26 @@ class Persistence:
         (key, name, description) = row
         return PictureSeries(key, name, description)
 
+    def retrieve_series_by_name_segment(self, name: str, limit=50):
+        """Retrieve series by name segment using wildcards.
+
+        Example: name: 'a%'
+
+        :param name: the name of the series
+        :type name: str
+        :param limit: maximum number of records to retrieve
+        :type limit: int
+        :return: tags.
+        :rtype: list(Tag)
+        """
+        stmt = 'SELECT id, identifier, description ' \
+               'FROM series WHERE "identifier"like? LIMIT ?'
+        cursor = self.conn.cursor()
+        cursor.execute(stmt, (name, limit))
+        records = [Tag(key, name_, description)
+                   for (key, name_, description) in cursor.fetchall()]
+        return list(records)
+
     def retrieve_all_tags(self):
         """Get all tags from database.
 
@@ -351,7 +371,7 @@ class Persistence:
 
         Example: name: 'a%'
 
-        :param name: the path to the tag
+        :param name: the name of the tag
         :type name: str
         :param limit: maximum number of records to retrieve
         :type limit: int
@@ -423,6 +443,11 @@ def get_all_series():
 def retrieve_series_by_key(key: int):
     db = get_db()
     return db.retrieve_series_by_key(key)
+
+
+def retrieve_series_by_name_segment(name: str, limit):
+    db = get_db()
+    return db.retrieve_series_by_name_segment(name, limit)
 
 
 def update_series(series: PictureSeries):
