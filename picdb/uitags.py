@@ -35,7 +35,7 @@ from tkinter import ttk
 
 from . import persistence
 from .model import Tag
-from .uimasterdata import PicTreeView
+from .uimasterdata import PicTreeView, Selector
 
 
 class TagManagement(ttk.Frame):
@@ -70,7 +70,7 @@ class TagManagement(ttk.Frame):
         self.tag_selector = TagSelector(self.content_frame)
         self.tag_selector.grid(row=0, column=0,
                                sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.tag_selector.bind(self.tag_selector.EVT_TAG_SELECTED,
+        self.tag_selector.bind(self.tag_selector.EVT_ITEM_SELECTED,
                                self.item_selected)
         self.editor = TagEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
@@ -92,7 +92,7 @@ class TagManagement(ttk.Frame):
     def load_tags(self):
         """Load a bunch of tags from database.
         """
-        self.tag_selector.load_tags()
+        self.tag_selector.load_items()
 
     def add_tag(self):
         """Push an empty tag to editor."""
@@ -111,44 +111,25 @@ class TagManagement(ttk.Frame):
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        items = self.tag_selector.selected_tags()
+        items = self.tag_selector.selected_items()
         self.logger.info('Selected tags: {}'.format(items))
         if len(items) > 0:
             tag = items[0]
             self.editor.tag = tag
 
 
-class TagSelector(ttk.Frame):
+class TagSelector(Selector):
     """Provide a tag tree and selection panel."""
     def __init__(self, master):
-        super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
-        self.EVT_TAG_SELECTED = '<<<TagSelected>>>'
-        self.supported_events = {self.EVT_TAG_SELECTED}
-        self.listeners = {}
-        self.filter_frame = None
-        self.tree = None
         self.name_filter_var = tk.StringVar()
+        self.limit_var = tk.IntVar()
+        super().__init__(master, TagTree.create_instance)
         self.name_filter_var.set('%')
         self.name_filter_entry = None
-        self.limit_var = tk.IntVar()
-        self.limit_var.set(50)
-        self.limit_entry = None
-        self.create_widgets()
+        self.limit_var.set(self.limit_default)
 
-    def create_widgets(self):
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
-        self.create_filter_frame()
-        self.filter_frame.grid(row=0, column=0,
-                               sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.tree = TagTree(self)
-        self.tree.bind('<<TreeviewSelect>>', self.__item_selected)
-        self.tree.grid(row=1, column=0,
-                       sticky=(tk.W, tk.N, tk.E, tk.S))
-
-    def create_filter_frame(self):
+    def _create_filter_frame(self):
         self.filter_frame = ttk.Frame(self)
         self.filter_frame.rowconfigure(0, weight=1)
         self.filter_frame.rowconfigure(1, weight=1)
@@ -163,53 +144,43 @@ class TagSelector(ttk.Frame):
         lbl_limit.grid(row=1, column=0, sticky=tk.E)
         self.limit_entry = ttk.Entry(self.filter_frame,
                                      textvariable=self.limit_var,
-                                     width=5)
+                                     width=5,
+                                     validate='focusout',
+                                     validatecommand=self._validate_limit)
         self.limit_entry.grid(row=1, column=1, sticky=(tk.W,))
 
-    def selected_tags(self):
+    def selected_items(self):
         """Provide list of tags selected in tree.
 
         :return: selected tags
         :rtype: list(Tag)
         """
         item_ids = self.tree.selection()
-        pics = [persistence.retrieve_tag_by_key(pic_id) for pic_id in item_ids]
-        self.logger.debug('Selected tags: {}'.format(pics))
-        return pics
+        tags = [persistence.retrieve_tag_by_key(pic_id) for pic_id in item_ids]
+        return tags
 
-    def __item_selected(self, event):
+    def add_item_to_tree(self, tag: Tag):
+        """Add given tag to tree view."""
+        super().add_item_to_tree(tag)
+
+    def _item_selected(self, event):
         """An item in the tree view was selected."""
         items = self.tree.selection()
         self.logger.info('Selected tags: {}'.format(items))
         if len(items) > 0:
-            if self.EVT_TAG_SELECTED in self.listeners.keys():
-                listener = self.listeners[self.EVT_TAG_SELECTED]
+            if self.EVT_ITEM_SELECTED in self.listeners.keys():
+                listener = self.listeners[self.EVT_ITEM_SELECTED]
                 listener(event)
 
-    def load_tags(self):
-        """Load a bunch of tags from database.
+    def _retrieve_items(self):
+        """Retrieve a bunch of tags from database.
 
         name_filter_var and limit_var are considered for retrieval.
         """
-        self.tree.clear()
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
         tags = persistence.retrieve_tags_by_name_segment(name_filter, limit)
-        for tag in tags:
-            self.tree.add_tag(tag)
-
-    def add_picture_to_tree(self, tag: Tag):
-        """Add given tag to tree view."""
-        self.tree.add_tag(tag)
-
-    def bind(self, sequence=None, func=None, add=None):
-        """Bind to this widget at event SEQUENCE a call to function FUNC."""
-        if sequence in self.supported_events:
-            self.logger.debug('Binding {} to {}'.format(func,
-                                                        self.EVT_TAG_SELECTED))
-            self.listeners[sequence] = func
-        else:
-            super().bind(sequence, func, add)
+        return tags
 
 
 class TagTree(PicTreeView):
@@ -220,10 +191,14 @@ class TagTree(PicTreeView):
         self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column does not resize
 
-    def add_tag(self, tag: Tag):
+    @classmethod
+    def create_instance(cls, master):
+        """Factory method."""
+        return TagTree(master)
+
+    def add_item(self, tag: Tag):
         """Add given tag to tree."""
-        self.insert('', 'end', tag.key,
-                    text=tag.name, values=(tag.description,))
+        super().add_item(tag)
 
 
 class TagEditor(ttk.LabelFrame):

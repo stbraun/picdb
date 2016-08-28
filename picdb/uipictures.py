@@ -110,7 +110,7 @@ class PictureManagement(ttk.Frame):
         for picture in pictures:
             db.add_picture(picture)
             pic = db.retrieve_picture_by_path(picture.path)
-            self.pic_selector.add_picture_to_tree(pic)
+            self.pic_selector.add_item_to_tree(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures added.'.format(len(pictures)))
 

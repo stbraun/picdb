@@ -30,7 +30,9 @@ The UI for master data management of groups and tags.
 # IN THE SOFTWARE.
 
 import logging
+import tkinter as tk
 from tkinter import ttk
+from .model import Entity
 
 
 class PicTreeView(ttk.Treeview):
@@ -39,9 +41,102 @@ class PicTreeView(ttk.Treeview):
         super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
 
+    @classmethod
+    def create_instance(cls, master):
+        """Factory method."""
+        return PicTreeView(master)
+
     def clear(self):
         """Remove all items from tree."""
         items = self.get_children()
         self.logger.debug('Items to delete from tree: {}'.format(items))
         if len(items) > 0:
             self.delete(*items)
+
+    def add_item(self, item: Entity):
+        """Add given tag to tree."""
+        self.insert('', 'end', item.key,
+                    text=item.name, values=(item.description,))
+
+
+class Selector(ttk.Treeview):
+    """Abstract selector class."""
+    def __init__(self, master, tree_factory):
+        super().__init__(master)
+        self.logger = logging.getLogger('picdb.ui')
+        self.EVT_ITEM_SELECTED = '<<<ItemSelected>>>'
+        self.supported_events = {self.EVT_ITEM_SELECTED}
+        self.listeners = {}
+        self.filter_frame = None
+        self.tree = None
+        self.tree_factory = tree_factory
+        self.limit_default = 50
+        self.limit_entry = None
+        self._create_widgets()
+
+    def _create_widgets(self):
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=1)
+        self.columnconfigure(0, weight=1)
+        self._create_filter_frame()
+        self.filter_frame.grid(row=0, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.tree = self.tree_factory(self)
+        self.tree.bind('<<TreeviewSelect>>', self._item_selected)
+        self.tree.grid(row=1, column=0,
+                       sticky=(tk.W, tk.N, tk.E, tk.S))
+
+    def _create_filter_frame(self):
+        """Provide a frame for selection of filter criteria."""
+        raise NotImplementedError('Please override this method.')
+
+    def selected_items(self):
+        """Provide list of items selected in tree.
+
+        :return: selected items
+        :rtype: list(Entity)
+        """
+        raise NotImplementedError('Please override this method.')
+
+    def add_item_to_tree(self, item: Entity):
+        """Add given tag to tree view."""
+        self.tree.add_item(item)
+
+    def bind(self, sequence=None, func=None, add=None):
+        """Bind to this widget at event SEQUENCE a call to function FUNC."""
+        if sequence in self.supported_events:
+            self.logger.debug('Binding {} to {}'.format(func,
+                                                        self.EVT_ITEM_SELECTED))
+            self.listeners[sequence] = func
+        else:
+            super().bind(sequence, func, add)
+
+    def load_items(self):
+        """Load a bunch of select items from database."""
+        self.tree.clear()
+        items = self._retrieve_items()
+        for item in items:
+            self.tree.add_item(item)
+
+    def _retrieve_items(self):
+        """Retrieve items to load into tree view.
+
+        :return: select items
+        :rtype: list[Entity]
+        """
+        raise NotImplementedError('Please override this method.')
+
+    def _item_selected(self, event):
+        """An item in the tree view was selected."""
+        raise NotImplementedError('Please override this method.')
+
+    def _validate_limit(self):
+        """Validator for limit entry."""
+        x = self.limit_entry.get()
+        self.logger.info("limit = {}".format(x))
+        try:
+            int(x)
+        except ValueError:
+            self.limit_entry.delete(0, len(x))
+            self.limit_entry.insert(0, str(self.limit_default))
+        return True
