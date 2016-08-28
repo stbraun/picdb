@@ -40,7 +40,7 @@ from PIL import Image
 
 from .model import PictureReference
 from .persistence import get_db
-from .uimasterdata import PicTreeView
+from .uimasterdata import PicTreeView,  Selector
 
 
 class PictureManagement(ttk.Frame):
@@ -74,7 +74,7 @@ class PictureManagement(ttk.Frame):
         self.selector = PictureSelector(self.content_frame)
         self.selector.grid(row=0, column=0,
                            sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.selector.bind(self.selector.EVT_PICTURE_SELECTED,
+        self.selector.bind(self.selector.EVT_ITEM_SELECTED,
                            self.item_selected)
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
@@ -98,7 +98,7 @@ class PictureManagement(ttk.Frame):
     def load_pictures(self):
         """Load a bunch of pictures from database.
         """
-        self.selector.load_pictures()
+        self.selector.load_items()
 
     def import_pictures(self):
         """Let user select pictures and import them into database."""
@@ -120,10 +120,11 @@ class PictureManagement(ttk.Frame):
         if pic is not None:
             db = get_db()
             db.update_picture(pic)
+        self.load_pictures()
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        pics = self.selector.selected_pictures()
+        pics = self.selector.selected_items()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
             pic = pics[0]
@@ -132,44 +133,25 @@ class PictureManagement(ttk.Frame):
 
     def view_picture(self):
         """View selected picture."""
-        pics = self.selector.selected_pictures()
+        pics = self.selector.selected_items()
         if len(pics) > 0:
             image = Image.open(pics[0].path)
             image.show()
 
 
-class PictureSelector(ttk.Frame):
+class PictureSelector(Selector):
     """Provide a picture tree and a selection panel."""
 
     def __init__(self, master):
-        super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
-        self.EVT_PICTURE_SELECTED = '<<<PictureSelected>>>'
-        self.supported_events = {self.EVT_PICTURE_SELECTED}
-        self.listeners = {}
-        self.filter_frame = None
-        self.tree = None
         self.path_filter_var = tk.StringVar()
+        self.limit_var = tk.IntVar()
+        super().__init__(master, PictureReferenceTree.create_instance)
         self.path_filter_var.set('%')
         self.path_filter_entry = None
-        self.limit_var = tk.IntVar()
-        self.limit_var.set(50)
-        self.limit_entry = None
-        self.create_widgets()
+        self.limit_var.set(self.limit_default)
 
-    def create_widgets(self):
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
-        self.create_filter_frame()
-        self.filter_frame.grid(row=0, column=0,
-                               sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.tree = PictureReferenceTree(self)
-        self.tree.bind('<<TreeviewSelect>>', self.__item_selected)
-        self.tree.grid(row=1, column=0,
-                       sticky=(tk.W, tk.N, tk.E, tk.S))
-
-    def create_filter_frame(self):
+    def _create_filter_frame(self):
         self.filter_frame = ttk.Frame(self)
         self.filter_frame.rowconfigure(0, weight=1)
         self.filter_frame.rowconfigure(1, weight=1)
@@ -184,55 +166,36 @@ class PictureSelector(ttk.Frame):
         lbl_limit.grid(row=1, column=0, sticky=tk.E)
         self.limit_entry = ttk.Entry(self.filter_frame,
                                      textvariable=self.limit_var,
-                                     width=5)
+                                     width=5,
+                                     validate='focusout',
+                                     validatecommand=self._validate_limit)
         self.limit_entry.grid(row=1, column=1, sticky=(tk.W,))
 
-    def selected_pictures(self):
+    def selected_items(self):
         """Provide list of pictures selected in tree.
 
         :return: selected pictures
         :rtype: list(PictureReference)
         """
-        pic_ids = self.tree.selection()
+        item_ids = self.tree.selection()
         db = get_db()
-        pics = [db.retrieve_picture_by_key(pic_id) for pic_id in pic_ids]
-        self.logger.debug('Selected pictures: {}'.format(pics))
+        pics = [db.retrieve_picture_by_key(pic_id) for pic_id in item_ids]
         return pics
 
-    def __item_selected(self, event):
-        """An item in the tree view was selected."""
-        pics = self.tree.selection()
-        self.logger.info('Selected pictures: {}'.format(pics))
-        if len(pics) > 0:
-            if self.EVT_PICTURE_SELECTED in self.listeners.keys():
-                listener = self.listeners[self.EVT_PICTURE_SELECTED]
-                listener(event)
-
-    def load_pictures(self):
-        """Load a bunch of pictures from database.
-
-        filter_path_var and limit_var are considered for retrieval.
-        """
-        self.tree.clear()
-        db = get_db()
-        path_filter = self.path_filter_var.get()
-        limit = self.limit_var.get()
-        pictures = db.retrieve_pictures_by_path_segment(path_filter, limit)
-        for picture in pictures:
-            self.tree.add_picture(picture)
-
-    def add_picture_to_tree(self, picture: PictureReference):
+    def add_item_to_tree(self, picture: PictureReference):
         """Add given picture to tree view."""
-        self.tree.add_picture(picture)
+        super().add_item_to_tree(picture)
 
-    def bind(self, sequence=None, func=None, add=None):
-        """Bind to this widget at event SEQUENCE a call to function FUNC."""
-        if sequence in self.supported_events:
-            self.logger.info('Binding {} to {}'.format(func,
-                                                       self.EVT_PICTURE_SELECTED))
-            self.listeners[sequence] = func
-        else:
-            super().bind(sequence, func, add)
+    def _retrieve_items(self):
+        """Retrieve a bunch of pictures from database.
+
+        name_filter_var and limit_var are considered for retrieval.
+        """
+        name_filter = self.path_filter_var.get()
+        limit = self.limit_var.get()
+        db = get_db()
+        pics = db.retrieve_pictures_by_path_segment(name_filter, limit)
+        return pics
 
 
 class PictureReferenceTree(PicTreeView):
@@ -244,7 +207,12 @@ class PictureReferenceTree(PicTreeView):
         self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column does not resize
 
-    def add_picture(self, picture: PictureReference):
+    @classmethod
+    def create_instance(cls, master):
+        """Factory method."""
+        return PictureReferenceTree(master)
+
+    def add_item(self, picture: PictureReference):
         """Add given picture to tree."""
         self.insert('', 'end', picture.key,
                     text=picture.name,
