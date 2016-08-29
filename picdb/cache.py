@@ -51,6 +51,11 @@ class LRUCache():
     def size(self):
         return len(self.__usage_list)
 
+    def clear(self):
+        """Clear cache."""
+        self.__cache = {}
+        self.__usage_list = []
+
     def __update_usage(self, key):
         if key in self.__usage_list:
             self.__usage_list.remove(key)

@@ -72,3 +72,17 @@ class LRUCacheTest(unittest.TestCase):
         cache.get(max_size)
         with self.assertRaises(KeyError):
             cache.get(0)
+
+    def test_clear_cache(self):
+        """Test clearing the cache."""
+        max_size = 3
+        cache = LRUCache(3)
+        for i in range(max_size):
+            cache.put(i, str(i))
+        self.assertEqual(max_size, cache.size())
+        cache.clear()
+        self.assertEqual(0, cache.size())
+
+
+
+

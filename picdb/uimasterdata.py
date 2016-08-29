@@ -112,7 +112,7 @@ class Selector(ttk.Treeview):
             super().bind(sequence, func, add)
 
     def load_items(self):
-        """Load a bunch of select items from database."""
+        """Load a bunch of items from database."""
         self.tree.clear()
         items = self._retrieve_items()
         for item in items:
