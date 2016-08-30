@@ -49,7 +49,6 @@ class PicTreeView(ttk.Treeview):
     def clear(self):
         """Remove all items from tree."""
         items = self.get_children()
-        self.logger.debug('Items to delete from tree: {}'.format(items))
         if len(items) > 0:
             self.delete(*items)
 

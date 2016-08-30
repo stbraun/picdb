@@ -206,7 +206,7 @@ class PictureReferenceTree(PicTreeView):
         super().__init__(master, columns=('path', 'description'))
         self.heading('path', text='Path')
         self.heading('description', text='Description')
-        self.column('#0', stretch=False)  # tree column does not resize
+        self.column('#0', stretch=False)  # tree column shall not resize
 
     @classmethod
     def create_instance(cls, master):
