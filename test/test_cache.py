@@ -97,5 +97,3 @@ class LRUCacheTest(unittest.TestCase):
         self.assertRaises(KeyError, cache.get, (42,))
         self.assertEqual(1, cache.hits)
         self.assertEqual(1, cache.misses)
-
-

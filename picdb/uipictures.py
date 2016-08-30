@@ -100,10 +100,6 @@ class PictureManagement(ttk.Frame):
         """Load a bunch of pictures from database.
         """
         self.selector.load_items()
-        self.logger.info('Picture cache stats: size={}, hits={}, misses={}'.format(
-            persistence._picture_cache.size(),
-            persistence._picture_cache.hits,
-            persistence._picture_cache.misses))
 
     def import_pictures(self):
         """Let user select pictures and import them into database."""
