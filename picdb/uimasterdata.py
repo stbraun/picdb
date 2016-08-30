@@ -59,7 +59,7 @@ class PicTreeView(ttk.Treeview):
                     text=item.name, values=(item.description,))
 
 
-class Selector(ttk.Treeview):
+class Selector(ttk.Frame):
     """Abstract selector class."""
     def __init__(self, master, tree_factory):
         super().__init__(master)
