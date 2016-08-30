@@ -83,6 +83,19 @@ class LRUCacheTest(unittest.TestCase):
         cache.clear()
         self.assertEqual(0, cache.size())
 
-
+    def test_statistics(self):
+        """Test hits and misses."""
+        max_size = 3
+        cache = LRUCache(max_size)
+        for i in range(max_size):
+            cache.put(i, str(i))
+        self.assertEqual(0, cache.hits)
+        self.assertEqual(0, cache.misses)
+        cache.get(0)
+        self.assertEqual(1, cache.hits)
+        self.assertEqual(0, cache.misses)
+        self.assertRaises(KeyError, cache.get, (42,))
+        self.assertEqual(1, cache.hits)
+        self.assertEqual(1, cache.misses)
 
 

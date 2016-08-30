@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-A simple LRU __cache.
+A simple LRU cache.
 """
 # Copyright (c) 2016 Stefan Braun
 #
@@ -36,6 +36,8 @@ class LRUCache():
         self.max_size = max_size
         self.__cache = {}
         self.__usage_list = []
+        self.misses = 0
+        self.hits = 0
 
     def put(self, key, item):
         """Put item into __cache."""
@@ -44,9 +46,14 @@ class LRUCache():
 
     def get(self, key):
         """Try to retrieve item """
-        item = self.__cache[key]
-        self.__update_usage(key)
-        return item
+        try:
+            item = self.__cache[key]
+            self.hits += 1
+            self.__update_usage(key)
+            return item
+        except KeyError:
+            self.misses += 1
+            raise
 
     def size(self):
         return len(self.__usage_list)

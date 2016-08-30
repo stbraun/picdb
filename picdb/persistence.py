@@ -37,13 +37,16 @@ from tkinter import messagebox
 from .config import get_configuration
 from .model import PictureReference, PictureSeries, Tag
 
-
 db_name = None
 
 
 def get_db():
     """Get connected persistence instance."""
-    db = get_configuration('database')
+    global db_name
+    if db_name is None:
+        db = get_configuration('database')
+    else:
+        db = db_name
     return Persistence(db)
 
 
@@ -58,6 +61,7 @@ class Persistence:
         """
         global db_name
         self.logger = logging.getLogger('picdb.db')
+        self.db_name = None
         self.determine_db_name(db)
         if not os.path.exists(self.db_name):
             self.conn = sqlite3.connect(self.db_name)
@@ -147,7 +151,7 @@ class Persistence:
         :type name: PictureReference
         """
         self.logger.debug("Add picture to DB: {} ({})".format(picture.name,
-                                                             picture.path))
+                                                              picture.path))
         stmt = '''INSERT INTO pictures VALUES (?, ?, ?, ?)'''
         self.execute_sql(stmt, (None, picture.name,
                                 picture.path, picture.description))
@@ -155,7 +159,7 @@ class Persistence:
     def update_picture(self, picture: PictureReference):
         cursor = self.conn.cursor()
         self.logger.debug("Update picture: {} ({})".format(picture.name,
-                                                          picture.path))
+                                                           picture.path))
         stmt = "UPDATE pictures SET identifier='{}', path='{}', " \
                "description='{}' WHERE id={}".format(picture.name,
                                                      picture.path,
@@ -430,6 +434,8 @@ class Persistence:
             return False
 
 
+# Series
+
 def add_series(series: PictureSeries):
     db = get_db()
     db.add_series(series)
@@ -454,6 +460,8 @@ def update_series(series: PictureSeries):
     db = get_db()
     db.update_series(series)
 
+
+# Tags
 
 def add_tag(tag: Tag):
     db = get_db()
