@@ -34,19 +34,27 @@ import os
 import sqlite3
 from tkinter import messagebox
 
+from .cache import LRUCache
+
 from .config import get_configuration
 from .model import PictureReference, PictureSeries, Tag
 
-db_name = None
+# This module global variable will hold the expanded database name
+_db_name = None
+
+# Caches for PictureReference, PictureSeries, Tag
+_tag_cache = LRUCache(200)
+_series_cache = LRUCache(200)
+_picture_cache = LRUCache(200)
 
 
 def get_db():
     """Get connected persistence instance."""
-    global db_name
-    if db_name is None:
+    global _db_name
+    if _db_name is None:
         db = get_configuration('database')
     else:
-        db = db_name
+        db = _db_name
     return Persistence(db)
 
 
@@ -59,7 +67,7 @@ class Persistence:
         :param db: path to database.
         :type db: str
         """
-        global db_name
+        global _db_name
         self.logger = logging.getLogger('picdb.db')
         self.db_name = None
         self.determine_db_name(db)
@@ -70,13 +78,13 @@ class Persistence:
             self.conn = sqlite3.connect(self.db_name)
 
     def determine_db_name(self, db):
-        global db_name
-        if db_name is None:
+        global _db_name
+        if _db_name is None:
             self.db_name = os.path.expanduser(db)
             self.logger.info('DB name: {}'.format(self.db_name))
-            db_name = self.db_name
+            _db_name = self.db_name
         else:
-            self.db_name = db_name
+            self.db_name = _db_name
 
     def close(self):
         """Close database."""
@@ -434,6 +442,48 @@ class Persistence:
             return False
 
 
+# Picture
+
+def add_picture(picture: PictureReference):
+    db = get_db()
+    db.add_picture(picture)
+
+
+def retrieve_picture_by_key(key: int):
+    global _picture_cache
+    try:
+        picture = _picture_cache.get(key)
+    except KeyError:
+        db = get_db()
+        picture = db.retrieve_picture_by_key(key)
+        _picture_cache.put(picture.key, picture)
+    return picture
+
+
+def retrieve_picture_by_path(path: str):
+    global _picture_cache
+    db = get_db()
+    picture = db.retrieve_picture_by_path(path)
+    _picture_cache.put(picture.key, picture)
+    return picture
+
+
+def retrieve_pictures_by_path_segment(path: str, limit: int):
+    global _picture_cache
+    db = get_db()
+    pictures = db.retrieve_pictures_by_path_segment(path, limit)
+    for picture in pictures:
+        _picture_cache.put(picture.key, picture)
+    return pictures
+
+
+def update_picture(picture: PictureReference):
+    global _picture_cache
+    db = get_db()
+    db.update_picture(picture)
+    _picture_cache.put(picture.key, picture)
+
+
 # Series
 
 def add_series(series: PictureSeries):
@@ -442,23 +492,47 @@ def add_series(series: PictureSeries):
 
 
 def get_all_series():
+    global _series_cache
     db = get_db()
-    return db.retrieve_all_series()
+    all_series = db.retrieve_all_series()
+    for series in all_series:
+        _series_cache.put(series.key, series)
+    return all_series
 
 
 def retrieve_series_by_key(key: int):
+    global _series_cache
+    try:
+        series = _series_cache.get(key)
+    except KeyError:
+        db = get_db()
+        series = db.retrieve_series_by_key(key)
+        _series_cache.put(series.key, series)
+    return series
+
+
+def retrieve_series_by_name(name: str):
+    global _series_cache
     db = get_db()
-    return db.retrieve_series_by_key(key)
+    series = db.retrieve_series_by_name(name)
+    _series_cache.put(series.key, series)
+    return series
 
 
 def retrieve_series_by_name_segment(name: str, limit):
+    global _series_cache
     db = get_db()
-    return db.retrieve_series_by_name_segment(name, limit)
+    filtered_series = db.retrieve_series_by_name_segment(name, limit)
+    for series in filtered_series:
+        _series_cache.put(series.key, series)
+    return filtered_series
 
 
 def update_series(series: PictureSeries):
+    global _series_cache
     db = get_db()
     db.update_series(series)
+    _series_cache.put(series.key, series)
 
 
 # Tags
@@ -469,20 +543,44 @@ def add_tag(tag: Tag):
 
 
 def get_all_tags():
+    global _tag_cache
     db = get_db()
-    return db.retrieve_all_tags()
+    tags = db.retrieve_all_tags()
+    for tag in tags:
+        _tag_cache.put(tag.key, tag)
+    return tags
 
 
 def retrieve_tag_by_key(key: int):
+    global _tag_cache
+    try:
+        tag = _tag_cache.get(key)
+    except KeyError:
+        db = get_db()
+        tag = db.retrieve_tag_by_key(key)
+        _tag_cache.put(tag.key, tag)
+    return tag
+
+
+def retrieve_tag_by_name(name: str):
+    global _tag_cache
     db = get_db()
-    return db.retrieve_tag_by_key(key)
+    tag = db.retrieve_tag_by_name(name)
+    _tag_cache.put(tag.key, tag)
+    return tag
 
 
 def retrieve_tags_by_name_segment(name: str, limit):
+    global _tag_cache
     db = get_db()
-    return db.retrieve_tags_by_name_segment(name, limit)
+    tags = db.retrieve_tags_by_name_segment(name, limit)
+    for tag in tags:
+        _tag_cache.put(tag.key, tag)
+    return tags
 
 
 def update_tag(tag: Tag):
+    global _tag_cache
     db = get_db()
     db.update_tag(tag)
+    _tag_cache.put(tag.key, tag)

@@ -155,7 +155,7 @@ class TagSelector(Selector):
         :rtype: list(Tag)
         """
         item_ids = self.tree.selection()
-        tags = [persistence.retrieve_tag_by_key(item_id)
+        tags = [persistence.retrieve_tag_by_key(int(item_id))
                 for item_id in item_ids]
         return tags
 

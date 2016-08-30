@@ -39,11 +39,12 @@ from tkinter import messagebox
 from PIL import Image
 
 from .model import PictureReference
-from .persistence import get_db
+from . import persistence
 from .uimasterdata import PicTreeView,  Selector
 
 
 class PictureManagement(ttk.Frame):
+
     """Provides UI for importing pictures."""
 
     def __init__(self, master):
@@ -99,6 +100,10 @@ class PictureManagement(ttk.Frame):
         """Load a bunch of pictures from database.
         """
         self.selector.load_items()
+        self.logger.info('Picture cache stats: size={}, hits={}, misses={}'.format(
+            persistence._picture_cache.size(),
+            persistence._picture_cache.hits,
+            persistence._picture_cache.misses))
 
     def import_pictures(self):
         """Let user select pictures and import them into database."""
@@ -106,10 +111,9 @@ class PictureManagement(ttk.Frame):
         self.logger.info('Files selected for import: {}'.format(files))
         pictures = [PictureReference(None, os.path.basename(pth), pth, None)
                     for pth in files]
-        db = get_db()
         for picture in pictures:
-            db.add_picture(picture)
-            pic = db.retrieve_picture_by_path(picture.path)
+            persistence.add_picture(picture)
+            pic = persistence.retrieve_picture_by_path(picture.path)
             self.selector.add_item_to_tree(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures added.'.format(len(pictures)))
@@ -118,8 +122,7 @@ class PictureManagement(ttk.Frame):
         """Save the picture currently in editor."""
         pic = self.editor.picture
         if pic is not None:
-            db = get_db()
-            db.update_picture(pic)
+            persistence.update_picture(pic)
         self.load_pictures()
 
     def item_selected(self, _):
@@ -140,6 +143,7 @@ class PictureManagement(ttk.Frame):
 
 
 class PictureSelector(Selector):
+
     """Provide a picture tree and a selection panel."""
 
     def __init__(self, master):
@@ -178,8 +182,8 @@ class PictureSelector(Selector):
         :rtype: list(PictureReference)
         """
         item_ids = self.tree.selection()
-        db = get_db()
-        pics = [db.retrieve_picture_by_key(pic_id) for pic_id in item_ids]
+        pics = [persistence.retrieve_picture_by_key(int(pic_id))
+                for pic_id in item_ids]
         return pics
 
     def add_item_to_tree(self, picture: PictureReference):
@@ -193,12 +197,13 @@ class PictureSelector(Selector):
         """
         name_filter = self.path_filter_var.get()
         limit = self.limit_var.get()
-        db = get_db()
-        pics = db.retrieve_pictures_by_path_segment(name_filter, limit)
+        pics = persistence.retrieve_pictures_by_path_segment(name_filter,
+                                                             limit)
         return pics
 
 
 class PictureReferenceTree(PicTreeView):
+
     """A tree handling pictures."""
 
     def __init__(self, master):
@@ -220,6 +225,7 @@ class PictureReferenceTree(PicTreeView):
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
+
     """Editor for PictureReference objects."""
 
     def __init__(self, master, text='Edit picture reference'):

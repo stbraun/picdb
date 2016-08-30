@@ -161,7 +161,7 @@ class PictureSeriesSelector(Selector):
         :rtype: list(Tag)
         """
         item_ids = self.tree.selection()
-        series = [persistence.retrieve_series_by_key(item_id)
+        series = [persistence.retrieve_series_by_key(int(item_id))
                   for item_id in item_ids]
         return series
 

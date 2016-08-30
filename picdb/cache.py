@@ -55,6 +55,7 @@ class LRUCache():
             self.misses += 1
             raise
 
+    @property
     def size(self):
         return len(self.__usage_list)
 

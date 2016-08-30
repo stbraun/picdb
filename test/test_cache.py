@@ -37,9 +37,9 @@ class LRUCacheTest(unittest.TestCase):
     def test_put(self):
         """Just put an item."""
         cache = LRUCache(5)
-        self.assertEqual(0, cache.size())
+        self.assertEqual(0, cache.size)
         cache.put(1, 'aaa')
-        self.assertEqual(1, cache.size())
+        self.assertEqual(1, cache.size)
 
     def test_put_get(self):
         """Put an item an get it again."""
@@ -48,7 +48,7 @@ class LRUCacheTest(unittest.TestCase):
         cache = LRUCache(5)
         cache.put(key, item)
         self.assertEqual(item, cache.get(key))
-        self.assertEqual(1, cache.size())
+        self.assertEqual(1, cache.size)
 
     def test_not_in_cache(self):
         """Try to get an item which is not in cache."""
@@ -64,11 +64,11 @@ class LRUCacheTest(unittest.TestCase):
         cache = LRUCache(max_size)
         for i in range(max_size):
             cache.put(i, str(i))
-        self.assertEqual(max_size, cache.size())
+        self.assertEqual(max_size, cache.size)
         for i in range(max_size):
             cache.get(i)
         cache.put(max_size, str(max_size))
-        self.assertEqual(max_size, cache.size())
+        self.assertEqual(max_size, cache.size)
         cache.get(max_size)
         with self.assertRaises(KeyError):
             cache.get(0)
@@ -79,9 +79,9 @@ class LRUCacheTest(unittest.TestCase):
         cache = LRUCache(3)
         for i in range(max_size):
             cache.put(i, str(i))
-        self.assertEqual(max_size, cache.size())
+        self.assertEqual(max_size, cache.size)
         cache.clear()
-        self.assertEqual(0, cache.size())
+        self.assertEqual(0, cache.size)
 
     def test_statistics(self):
         """Test hits and misses."""
