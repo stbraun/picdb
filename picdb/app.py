@@ -38,7 +38,8 @@ from .log import initialize_logger
 from .uistatus import StatusPanel
 from .uipictures import PictureManagement
 from .uiseries import SeriesManagement
-from .uitags import TagManagement
+from .uitags import TagManagement, TagTree
+from .selector import Selector
 
 
 class Application(ttk.Frame):
@@ -54,11 +55,9 @@ class Application(ttk.Frame):
         """Build UI."""
         notebook = ttk.Notebook(self)
         notebook.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
-        search_frame = ttk.Frame(notebook)
         import_frame = PictureManagement(notebook)
         series_frame = SeriesManagement(notebook)
         tags_frame = TagManagement(notebook)
-        notebook.add(search_frame, text='search database')
         notebook.add(import_frame, text='manage pictures')
         notebook.add(series_frame, text='manage series')
         notebook.add(tags_frame, text='manage tags')
@@ -80,7 +79,7 @@ def start_application():
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
-    root.geometry('1000x600+200+100')
+    root.geometry('1500x800+200+100')
     app = Application(root)
     app.master.title('PicDB')
     app.mainloop()

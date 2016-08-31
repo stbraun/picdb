@@ -122,7 +122,7 @@ class Persistence:
         """Add a new series.
 
         :param series: the series to add
-        :type name: PictureSeries
+        :type series: PictureSeries
         """
         self.logger.debug("Add series to DB: {}".format(series.name))
         stmt = '''INSERT INTO series VALUES (?, ?, ?)'''
@@ -139,7 +139,7 @@ class Persistence:
         """Add a new tag.
 
         :param tag: tag to add
-        :type name: Tag
+        :type tag: Tag
         """
         self.logger.debug("Add tag to DB: {}".format(tag))
         stmt = '''INSERT INTO tags VALUES (?, ?, ?)'''
@@ -156,7 +156,7 @@ class Persistence:
         """Add a new picture.
 
         :param picture: picture to add
-        :type name: PictureReference
+        :type picture: PictureReference
         """
         self.logger.debug("Add picture to DB: {} ({})".format(picture.name,
                                                               picture.path))
@@ -165,7 +165,7 @@ class Persistence:
                                 picture.path, picture.description))
 
     def update_picture(self, picture: PictureReference):
-        cursor = self.conn.cursor()
+        self.conn.cursor()
         self.logger.debug("Update picture: {} ({})".format(picture.name,
                                                            picture.path))
         stmt = "UPDATE pictures SET identifier='{}', path='{}', " \
@@ -218,7 +218,7 @@ class Persistence:
         if row is None:
             return None
         (key_, name, path, description) = row
-        return PictureReference(key_, name, path, description)
+        return self.__create_picture(key_, name, path, description)
 
     def retrieve_picture_by_path(self, path):
         """Retrieve picture by path.
@@ -236,7 +236,7 @@ class Persistence:
         if row is None:
             return None
         (key, name, path_, description) = row
-        return PictureReference(key, name, path_, description)
+        return self.__create_picture(key, name, path_, description)
 
     def retrieve_pictures_by_path_segment(self, path: str, limit=50):
         """Retrieve picture by path segment using wildcards.
@@ -248,13 +248,13 @@ class Persistence:
         :param limit: maximum number of records to retrieve
         :type limit: int
         :return: picture.
-        :rtype: list(PictureReference)
+        :rtype:[PictureReference]
         """
         stmt = 'SELECT id, identifier, path, description ' \
                'FROM pictures WHERE "path"like? LIMIT ?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (path, limit))
-        records = [PictureReference(key, name, path_, description)
+        records = [self.__create_picture(key, name, path_, description)
                    for (key, name, path_, description) in
                    cursor.fetchall()]
         return list(records)
@@ -303,7 +303,7 @@ class Persistence:
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description FROM series ' \
                'WHERE id in (SELECT ' \
-               'tag from picture2series WHERE picture=?)'
+               'series from picture2series WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
         records = [PictureSeries(key, name, description)
                    for (key, name, description) in cursor.fetchall()]
@@ -337,7 +337,7 @@ class Persistence:
         :param limit: maximum number of records to retrieve
         :type limit: int
         :return: tags.
-        :rtype: list(Tag)
+        :rtype: [Tag]
         """
         stmt = 'SELECT id, identifier, description ' \
                'FROM series WHERE "identifier"like? LIMIT ?'
@@ -388,7 +388,7 @@ class Persistence:
         :param limit: maximum number of records to retrieve
         :type limit: int
         :return: tags.
-        :rtype: list(Tag)
+        :rtype: [Tag]
         """
         stmt = 'SELECT id, identifier, description ' \
                'FROM tags WHERE "identifier"like? LIMIT ?'
@@ -419,7 +419,7 @@ class Persistence:
         """Get all series from database.
 
         :return: series.
-        :rtype: list(PictureSeries)
+        :rtype: [PictureSeries]
         """
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description FROM series'
@@ -440,6 +440,15 @@ class Persistence:
             messagebox.showerror(title='Database Error',
                                  message='{}'.format(e))
             return False
+
+    def __create_picture(self, key: int, name: str,
+                         path: str, description: str):
+        """Create a PictureReference and retrieve tags and series."""
+        picture = PictureReference(key, name, path, description)
+        picture.tags = retrieve_tags_for_picture(picture)
+        picture.series = retrieve_series_for_picture(picture)
+        self.logger.info('picture created: {}'.format(picture))
+        return picture
 
 
 # Picture
@@ -528,6 +537,15 @@ def retrieve_series_by_name_segment(name: str, limit):
     return filtered_series
 
 
+def retrieve_series_for_picture(picture: PictureReference):
+    global _series_cache
+    db = get_db()
+    pic_series = db.retrieve_series_for_picture(picture)
+    for series in pic_series:
+        _series_cache.put(series.key, series)
+    return pic_series
+
+
 def update_series(series: PictureSeries):
     global _series_cache
     db = get_db()
@@ -574,6 +592,15 @@ def retrieve_tags_by_name_segment(name: str, limit):
     global _tag_cache
     db = get_db()
     tags = db.retrieve_tags_by_name_segment(name, limit)
+    for tag in tags:
+        _tag_cache.put(tag.key, tag)
+    return tags
+
+
+def retrieve_tags_for_picture(picture: PictureReference):
+    global _tag_cache
+    db = get_db()
+    tags = db.retrieve_tags_for_picture(picture)
     for tag in tags:
         _tag_cache.put(tag.key, tag)
     return tags

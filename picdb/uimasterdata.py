@@ -57,9 +57,17 @@ class PicTreeView(ttk.Treeview):
         self.insert('', 'end', item.key,
                     text=item.name, values=(item.description,))
 
+    def selected_items(self):
+        """Provide list of items selected in tree.
 
-class Selector(ttk.Frame):
-    """Abstract selector class."""
+        :return: selected items
+        :rtype: [Entity]
+        """
+        raise NotImplementedError
+
+
+class FilteredTreeview(ttk.Frame):
+    """Abstract filter_tree class."""
     def __init__(self, master, tree_factory):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')

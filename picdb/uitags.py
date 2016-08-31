@@ -35,7 +35,8 @@ from tkinter import ttk
 
 from . import persistence
 from .model import Tag
-from .uimasterdata import PicTreeView, Selector
+from .uimasterdata import PicTreeView, FilteredTreeview
+from .selector import Selector
 
 
 class TagManagement(ttk.Frame):
@@ -47,7 +48,7 @@ class TagManagement(ttk.Frame):
         self.logger.info("Creating Tag Management UI")
         self.content_frame = None
         self.control_frame = None
-        self.selector = None
+        self.filter_tree = None
         self.editor = None
         self.create_widgets()
 
@@ -67,11 +68,11 @@ class TagManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.selector = TagSelector(self.content_frame)
-        self.selector.grid(row=0, column=0,
-                           sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.selector.bind(self.selector.EVT_ITEM_SELECTED,
-                           self.item_selected)
+        self.filter_tree = TagFilteredTreeview(self.content_frame)
+        self.filter_tree.grid(row=0, column=0,
+                              sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
+                              self.item_selected)
         self.editor = TagEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
@@ -91,7 +92,7 @@ class TagManagement(ttk.Frame):
 
     def load_tags(self):
         """Load a bunch of tags from database."""
-        self.selector.load_items()
+        self.filter_tree.load_items()
 
     def add_tag(self):
         """Push an empty tag to editor."""
@@ -110,14 +111,14 @@ class TagManagement(ttk.Frame):
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        items = self.selector.selected_items()
+        items = self.filter_tree.selected_items()
         self.logger.info('Selected tags: {}'.format(items))
         if len(items) > 0:
             tag = items[0]
             self.editor.tag = tag
 
 
-class TagSelector(Selector):
+class TagFilteredTreeview(FilteredTreeview):
     """Provide a tag tree and selection panel."""
     def __init__(self, master):
         self.logger = logging.getLogger('picdb.ui')
@@ -154,10 +155,7 @@ class TagSelector(Selector):
         :return: selected tags
         :rtype: list(Tag)
         """
-        item_ids = self.tree.selection()
-        tags = [persistence.retrieve_tag_by_key(int(item_id))
-                for item_id in item_ids]
-        return tags
+        return self.tree.selected_items()
 
     def add_item_to_tree(self, tag: Tag):
         """Add given tag to tree view."""
@@ -190,6 +188,18 @@ class TagTree(PicTreeView):
     def add_item(self, tag: Tag):
         """Add given tag to tree."""
         super().add_item(tag)
+
+    def selected_items(self):
+        """Provide list of tags selected in tree.
+
+        :return: selected tags
+        :rtype: list(Tag)
+        """
+        item_ids = self.selection()
+        tags = [persistence.retrieve_tag_by_key(int(item_id))
+                for item_id in item_ids]
+        return tags
+
 
 
 class TagEditor(ttk.LabelFrame):
@@ -231,3 +241,19 @@ class TagEditor(ttk.LabelFrame):
         self.id_var.set(tag_.key)
         self.name_var.set(tag_.name)
         self.description_var.set(tag_.description)
+
+
+class TagSelector(Selector):
+    """Provide a selector component for tags."""
+    def __init__(self, master):
+        super().__init__(master, TagTree.create_instance,
+                         TagTree.create_instance)
+
+    def selected_items(self):
+        items = self.right.get_children()
+        tags = [persistence.retrieve_tag_by_key(int(item)) for item in items]
+        return tags
+
+    def load_items(self, picture_tags: [Tag]):
+        all_tags = persistence.get_all_tags()
+        self.init_trees(all_tags, picture_tags)

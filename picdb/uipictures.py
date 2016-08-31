@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Import pictures via UI.
+Manage pictures via UI.
 """
 # Copyright (c) 2016 Stefan Braun
 #
@@ -40,7 +40,9 @@ from PIL import Image
 
 from .model import PictureReference
 from . import persistence
-from .uimasterdata import PicTreeView,  Selector
+from .uimasterdata import PicTreeView,  FilteredTreeview
+from .uitags import TagSelector
+from .uiseries import PictureSeriesSelector
 
 
 class PictureManagement(ttk.Frame):
@@ -53,34 +55,37 @@ class PictureManagement(ttk.Frame):
         self.logger.info("Creating Picture Management UI")
         self.content_frame = None
         self.control_frame = None
-        self.selector = None
+        self.filter_tree = None
         self.editor = None
-        self.create_widgets()
+        self.tag_selector = None
+        self.series_selector = None
+        self._create_widgets()
 
-    def create_widgets(self):
+    def _create_widgets(self):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.create_content_frame()
+        self._create_content_frame()
         self.content_frame.grid(row=0, column=0,
                                 sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.create_control_frame()
+        self._create_control_frame()
         self.control_frame.grid(row=1, column=0,
                                 sticky=(tk.W, tk.N, tk.E, tk.S))
 
-    def create_content_frame(self):
+    def _create_content_frame(self):
         self.content_frame = ttk.Frame(self)
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.selector = PictureSelector(self.content_frame)
-        self.selector.grid(row=0, column=0,
-                           sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.selector.bind(self.selector.EVT_ITEM_SELECTED,
-                           self.item_selected)
-        self.editor = PictureReferenceEditor(self.content_frame)
-        self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
+        self.filter_tree = PictureFilteredTreeview(self.content_frame)
+        self.filter_tree.grid(row=0, column=0,
+                              sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
+                              self.item_selected)
+        self.editor = PictureMetadataEditor(self.content_frame)
+        self.editor.grid(row=0, column=1,
+                         sticky=(tk.W, tk.N, tk.E, tk.S))
 
-    def create_control_frame(self):
+    def _create_control_frame(self):
         self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
         self.columnconfigure(0, weight=1)
         load_button = ttk.Button(self.control_frame, text='load pictures',
@@ -89,9 +94,6 @@ class PictureManagement(ttk.Frame):
         add_button = ttk.Button(self.control_frame, text='add pictures',
                                 command=self.import_pictures)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        save_button = ttk.Button(self.control_frame, text='save picture',
-                                 command=self.save_picture)
-        save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
         view_button = ttk.Button(self.control_frame, text='view picture',
                                  command=self.view_picture)
         view_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
@@ -99,7 +101,7 @@ class PictureManagement(ttk.Frame):
     def load_pictures(self):
         """Load a bunch of pictures from database.
         """
-        self.selector.load_items()
+        self.filter_tree.load_items()
 
     def import_pictures(self):
         """Let user select pictures and import them into database."""
@@ -110,35 +112,28 @@ class PictureManagement(ttk.Frame):
         for picture in pictures:
             persistence.add_picture(picture)
             pic = persistence.retrieve_picture_by_path(picture.path)
-            self.selector.add_item_to_tree(pic)
+            self.filter_tree.add_item_to_tree(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures added.'.format(len(pictures)))
 
-    def save_picture(self):
-        """Save the picture currently in editor."""
-        pic = self.editor.picture
-        if pic is not None:
-            persistence.update_picture(pic)
-        self.load_pictures()
-
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        pics = self.selector.selected_items()
+        pics = self.filter_tree.selected_items()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
             pic = pics[0]
             self.logger.info('Pic: {}'.format(pic))
-            self.editor.picture = pic
+            self.editor.load_picture(pic)
 
     def view_picture(self):
         """View selected picture."""
-        pics = self.selector.selected_items()
+        pics = self.filter_tree.selected_items()
         if len(pics) > 0:
             image = Image.open(pics[0].path)
             image.show()
 
 
-class PictureSelector(Selector):
+class PictureFilteredTreeview(FilteredTreeview):
 
     """Provide a picture tree and a selection panel."""
 
@@ -177,10 +172,7 @@ class PictureSelector(Selector):
         :return: selected pictures
         :rtype: list(PictureReference)
         """
-        item_ids = self.tree.selection()
-        pics = [persistence.retrieve_picture_by_key(int(pic_id))
-                for pic_id in item_ids]
-        return pics
+        return self.tree.selected_items()
 
     def add_item_to_tree(self, picture: PictureReference):
         """Add given picture to tree view."""
@@ -218,6 +210,17 @@ class PictureReferenceTree(PicTreeView):
         self.insert('', 'end', picture.key,
                     text=picture.name,
                     values=(picture.path, picture.description))
+
+    def selected_items(self):
+        """Provide list of pictures selected in tree.
+
+        :return: selected pictures
+        :rtype: list(PictureReference)
+        """
+        item_ids = self.selection()
+        pics = [persistence.retrieve_picture_by_key(int(pic_id))
+                for pic_id in item_ids]
+        return pics
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
@@ -267,3 +270,70 @@ class PictureReferenceEditor(ttk.LabelFrame):
         self.name_var.set(pic.name)
         self.path_var.set(pic.path)
         self.description_var.set(pic.description)
+
+
+class PictureMetadataEditor(ttk.Frame):
+    """Editor component for picture meta data."""
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.content_frame = None
+        self.control_frame = None
+        self.tag_selector = None
+        self.series_selector = None
+        self.save_button = None
+        self._create_widgets()
+
+    def _create_widgets(self):
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self._create_content(self)
+        self.content_frame.grid(row=0, column=0,
+                                sticky=(tk.W, tk.N, tk.E, tk.S))
+        self._create_control_frame(self)
+        self.control_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))
+
+    def _create_content(self, master):
+        self.content_frame = ttk.Frame(master)
+        self.content_frame.rowconfigure(0, weight=0)
+        self.content_frame.rowconfigure(1, weight=1)
+        self.content_frame.rowconfigure(2, weight=1)
+        self.content_frame.columnconfigure(0, weight=1)
+
+        self.editor = PictureReferenceEditor(self.content_frame)
+        self.editor.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.W))
+        self.tag_selector = TagSelector(self.content_frame)
+        self.tag_selector.grid(row=1, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.series_selector = PictureSeriesSelector(self.content_frame)
+        self.series_selector.grid(row=2, column=0,
+                                  sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.tag_selector.load_items([])
+        self.series_selector.load_items([])
+
+    def _create_control_frame(self, master):
+        self.control_frame = ttk.Frame(master)
+        self.columnconfigure(0, weight=1)
+        self.save_button = ttk.Button(self.control_frame, text='save',
+                                      command=self._save)
+        self.save_button.grid(row=0, column=0)
+        cancel_button = ttk.Button(self.control_frame, text='cancel',
+                                   command=self._cancel)
+        cancel_button.grid(row=0, column=1)
+
+    def _save(self):
+        """Save current picture."""
+        # TODO save picture
+        # TODO save tag assigments
+        # TODO save series assignments
+        raise NotImplementedError
+
+    def _cancel(self):
+        """Cancel editing."""
+        # TODO implement
+        raise NotImplementedError
+
+    def load_picture(self, picture: PictureReference):
+        """Load picture into editor."""
+        self.editor.picture = picture
+        self.tag_selector.load_items(picture.tags)
+        self.series_selector.load_items(picture.series)

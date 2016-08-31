@@ -35,7 +35,8 @@ from tkinter import ttk
 
 from . import persistence
 from .model import PictureSeries
-from .uimasterdata import PicTreeView, Selector
+from .uimasterdata import PicTreeView, FilteredTreeview
+from .selector import Selector
 
 
 class SeriesManagement(ttk.Frame):
@@ -47,7 +48,7 @@ class SeriesManagement(ttk.Frame):
         self.logger.info("Creating SeriesManagement UI")
         self.content_frame = None
         self.control_frame = None
-        self.selector = None
+        self.filter_tree = None
         self.editor = None
         self.create_widgets()
 
@@ -67,11 +68,11 @@ class SeriesManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.selector = PictureSeriesSelector(self.content_frame)
-        self.selector.grid(row=0, column=0,
-                               sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.selector.bind(self.selector.EVT_ITEM_SELECTED,
-                           self.item_selected)
+        self.filter_tree = PictureSeriesFilteredTreeview(self.content_frame)
+        self.filter_tree.grid(row=0, column=0,
+                              sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
+                              self.item_selected)
         self.editor = PictureSeriesEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
@@ -97,7 +98,7 @@ class SeriesManagement(ttk.Frame):
 
     def load_series(self):
         """Load a bunch of series from database."""
-        self.selector.load_items()
+        self.filter_tree.load_items()
 
     def add_series(self):
         """Push an empty series to editor."""
@@ -116,13 +117,13 @@ class SeriesManagement(ttk.Frame):
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
-        items = self.selector.selected_items()
+        items = self.filter_tree.selected_items()
         if len(items) > 0:
             series = items[0]
             self.editor.series = series
 
 
-class PictureSeriesSelector(Selector):
+class PictureSeriesFilteredTreeview(FilteredTreeview):
     """Provide a series tree and selection panel."""
 
     def __init__(self, master):
@@ -160,10 +161,7 @@ class PictureSeriesSelector(Selector):
         :return: selected tags
         :rtype: list(Tag)
         """
-        item_ids = self.tree.selection()
-        series = [persistence.retrieve_series_by_key(int(item_id))
-                  for item_id in item_ids]
-        return series
+        return self.tree.selected_items()
 
     def add_item_to_tree(self, series: PictureSeries):
         """Add given series to tree view."""
@@ -196,6 +194,17 @@ class PictureSeriesTree(PicTreeView):
     def add_item(self, series: PictureSeries):
         """Add given series to tree."""
         super().add_item(series)
+
+    def selected_items(self):
+        """Provide list of series selected in tree.
+
+        :return: selected tags
+        :rtype: list(Tag)
+        """
+        item_ids = self.selection()
+        series = [persistence.retrieve_series_by_key(int(item_id))
+                  for item_id in item_ids]
+        return series
 
 
 class PictureSeriesEditor(ttk.LabelFrame):
@@ -237,3 +246,20 @@ class PictureSeriesEditor(ttk.LabelFrame):
         self.id_var.set(series_.key)
         self.name_var.set(series_.name)
         self.description_var.set(series_.description)
+
+
+class PictureSeriesSelector(Selector):
+    """Provide a selector component for series."""
+    def __init__(self, master):
+        super().__init__(master, PictureSeriesTree.create_instance,
+                         PictureSeriesTree.create_instance)
+
+    def selected_items(self):
+        items = self.right.get_children()
+        series = [persistence.retrieve_series_by_key(int(item))
+                  for item in items]
+        return series
+
+    def load_items(self, picture_series: [PictureSeries]):
+        all_series = persistence.get_all_series()
+        self.init_trees(all_series, picture_series)
