@@ -201,7 +201,6 @@ class TagTree(PicTreeView):
         return tags
 
 
-
 class TagEditor(ttk.LabelFrame):
     """Editor for Tag objects."""
 
@@ -245,9 +244,9 @@ class TagEditor(ttk.LabelFrame):
 
 class TagSelector(Selector):
     """Provide a selector component for tags."""
-    def __init__(self, master):
+    def __init__(self, master, **kwargs):
         super().__init__(master, TagTree.create_instance,
-                         TagTree.create_instance)
+                         TagTree.create_instance, **kwargs)
 
     def selected_items(self):
         items = self.right.get_children()

@@ -57,6 +57,8 @@ class PictureManagement(ttk.Frame):
         self.control_frame = None
         self.filter_tree = None
         self.editor = None
+        self.edit_button = None
+        self.view_button = None
         self.tag_selector = None
         self.series_selector = None
         self._create_widgets()
@@ -81,9 +83,6 @@ class PictureManagement(ttk.Frame):
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
                               self.item_selected)
-        self.editor = PictureMetadataEditor(self.content_frame)
-        self.editor.grid(row=0, column=1,
-                         sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def _create_control_frame(self):
         self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
@@ -94,9 +93,14 @@ class PictureManagement(ttk.Frame):
         add_button = ttk.Button(self.control_frame, text='add pictures',
                                 command=self.import_pictures)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        view_button = ttk.Button(self.control_frame, text='view picture',
-                                 command=self.view_picture)
-        view_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
+        self.view_button = ttk.Button(self.control_frame, text='view picture',
+                                      command=self.view_picture)
+        self.view_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
+        self.view_button.state(['disabled'])
+        self.edit_button = ttk.Button(self.control_frame, text='edit picture',
+                                      command=self.edit_picture)
+        self.edit_button.grid(row=0, column=4, sticky=(tk.W, tk.N))
+        self.edit_button.state(['disabled'])
 
     def load_pictures(self):
         """Load a bunch of pictures from database.
@@ -113,17 +117,17 @@ class PictureManagement(ttk.Frame):
             persistence.add_picture(picture)
             pic = persistence.retrieve_picture_by_path(picture.path)
             self.filter_tree.add_item_to_tree(pic)
-        messagebox.showinfo(title='Picture Import',
-                            message='{} pictures added.'.format(len(pictures)))
+            messagebox.showinfo(title='Picture Import',
+                                message='{} pictures added.'.format(
+                                    len(pictures)))
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
         pics = self.filter_tree.selected_items()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
-            pic = pics[0]
-            self.logger.info('Pic: {}'.format(pic))
-            self.editor.load_picture(pic)
+            self.view_button.state(['!disabled'])
+            self.edit_button.state(['!disabled'])
 
     def view_picture(self):
         """View selected picture."""
@@ -132,9 +136,22 @@ class PictureManagement(ttk.Frame):
             image = Image.open(pics[0].path)
             image.show()
 
+    def edit_picture(self):
+        pics = self.filter_tree.selected_items()
+        if len(pics) > 0:
+            pic = pics[0]
+            win = tk.Toplevel(self)
+            win.title('Editing Picture {}'.format(pic.name))
+            win.geometry('1000x800+700+200')
+            win.rowconfigure(0, weight=1)
+            win.columnconfigure(0, weight=1)
+            self.editor = PictureMetadataEditor(win)
+            self.editor.grid(row=0, column=0,
+                             sticky=(tk.W, tk.N, tk.E, tk.S))
+            self.editor.load_picture(pic)
+
 
 class PictureFilteredTreeview(FilteredTreeview):
-
     """Provide a picture tree and a selection panel."""
 
     def __init__(self, master):
@@ -191,7 +208,6 @@ class PictureFilteredTreeview(FilteredTreeview):
 
 
 class PictureReferenceTree(PicTreeView):
-
     """A tree handling pictures."""
 
     def __init__(self, master):
@@ -224,7 +240,6 @@ class PictureReferenceTree(PicTreeView):
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
-
     """Editor for PictureReference objects."""
 
     def __init__(self, master, text='Edit picture reference'):
@@ -276,6 +291,7 @@ class PictureMetadataEditor(ttk.Frame):
     """Editor component for picture meta data."""
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self.master = master
         self.content_frame = None
         self.control_frame = None
         self.tag_selector = None
@@ -300,7 +316,6 @@ class PictureMetadataEditor(ttk.Frame):
         self.content_frame.rowconfigure(1, weight=1)
         self.content_frame.rowconfigure(2, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
-
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.W))
         self.tag_selector = TagSelector(self.content_frame)
@@ -309,8 +324,6 @@ class PictureMetadataEditor(ttk.Frame):
         self.series_selector = PictureSeriesSelector(self.content_frame)
         self.series_selector.grid(row=2, column=0,
                                   sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.tag_selector.load_items([])
-        self.series_selector.load_items([])
 
     def _create_control_frame(self, master):
         self.control_frame = ttk.Frame(master)
@@ -318,8 +331,8 @@ class PictureMetadataEditor(ttk.Frame):
         self.save_button = ttk.Button(self.control_frame, text='save',
                                       command=self._save)
         self.save_button.grid(row=0, column=0)
-        cancel_button = ttk.Button(self.control_frame, text='cancel',
-                                   command=self._cancel)
+        cancel_button = ttk.Button(self.control_frame, text='close',
+                                   command=self._close)
         cancel_button.grid(row=0, column=1)
 
     def _save(self):
@@ -350,10 +363,9 @@ class PictureMetadataEditor(ttk.Frame):
                                                       series_to_remove)
         self.picture.series = edt_series
 
-    def _cancel(self):
-        """Cancel editing."""
-        # TODO implement
-        raise NotImplementedError
+    def _close(self):
+        """Close editor."""
+        self.master.destroy()
 
     def load_picture(self, picture: PictureReference):
         """Load picture into editor."""
