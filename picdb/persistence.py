@@ -188,6 +188,19 @@ class Persistence:
         stmt = '''INSERT INTO picture2tag VALUES(?, ?)'''
         self.execute_sql(stmt, (picture.key, tag.key))
 
+    def remove_tag_from_picture(self, picture: PictureReference, tag: Tag):
+        """Remove tag from given picture.
+
+        :param picture: the picture
+        :type picture: PictureReference
+        :param tag: the tag
+        :type tag: Tag
+        """
+        self.logger.debug(
+            "Removing tag {} from picture {}.".format(tag, picture))
+        stmt = '''DELETE FROM picture2tag WHERE picture=? AND tag=?'''
+        self.execute_sql(stmt, (picture.key, tag.key))
+
     def add_picture_to_series(self, picture: PictureReference,
                               series: PictureSeries):
         """Add picture to a series.
@@ -200,7 +213,21 @@ class Persistence:
         self.logger.debug(
             "Adding picture {} to series {}.".format(picture, series))
         stmt = '''INSERT INTO picture2series VALUES(?, ?)'''
-        self.execute_sql(stmt, (picture.id, series.id))
+        self.execute_sql(stmt, (picture.key, series.key))
+
+    def remove_picture_from_series(self, picture: PictureReference,
+                                   series: PictureSeries):
+        """Remove picture from a series.
+
+        :param picture: the picture
+        :type picture: PictureReference
+        :param series: the series
+        :type series: PictureSeries
+        """
+        self.logger.debug(
+            "Removing picture {} from series {}.".format(picture, series))
+        stmt = '''DELETE FROM picture2series WHERE picture=? AND series=?'''
+        self.execute_sql(stmt, (picture.key, series.key))
 
     def retrieve_picture_by_key(self, key: int):
         """Retrieve picture by key.
@@ -491,6 +518,49 @@ def update_picture(picture: PictureReference):
     db = get_db()
     db.update_picture(picture)
     _picture_cache.put(picture.key, picture)
+
+
+def add_tag_to_picture(picture: PictureReference, tag: Tag):
+    db = get_db()
+    db.add_tag_to_picture(picture, tag)
+
+
+def add_tags_to_picture(picture: PictureReference, tags: [Tag]):
+    for tag in tags:
+        add_tag_to_picture(picture, tag)
+
+
+def remove_tag_from_picture(picture: PictureReference, tag: Tag):
+    db = get_db()
+    db.remove_tag_from_picture(picture, tag)
+
+
+def remove_tags_from_picture(picture: PictureReference, tags: [Tag]):
+    for tag in tags:
+        remove_tag_from_picture(picture, tag)
+
+
+def add_picture_to_series(picture: PictureReference, series: PictureSeries):
+    db = get_db()
+    db.add_picture_to_series(picture, series)
+
+
+def add_picture_to_set_of_series(picture: PictureReference,
+                                 series: [PictureSeries]):
+    for item in series:
+        add_picture_to_series(picture, item)
+
+
+def remove_picture_from_series(picture: PictureReference,
+                               series: PictureSeries):
+    db = get_db()
+    db.remove_picture_from_series(picture, series)
+
+
+def remove_picture_from_set_of_series(picture: PictureReference,
+                                      series: [PictureSeries]):
+    for item in series:
+        remove_picture_from_series(picture, item)
 
 
 # Series

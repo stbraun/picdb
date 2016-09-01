@@ -280,7 +280,9 @@ class PictureMetadataEditor(ttk.Frame):
         self.control_frame = None
         self.tag_selector = None
         self.series_selector = None
+        self.editor = None
         self.save_button = None
+        self.picture = None
         self._create_widgets()
 
     def _create_widgets(self):
@@ -322,10 +324,31 @@ class PictureMetadataEditor(ttk.Frame):
 
     def _save(self):
         """Save current picture."""
-        # TODO save picture
-        # TODO save tag assigments
-        # TODO save series assignments
-        raise NotImplementedError
+        self.picture = self.editor.picture
+        persistence.update_picture(self.picture)
+        self._update_tags()
+        self._update_series()
+
+    def _update_tags(self):
+        """Remove and add tags according to changes made during editing."""
+        pic_tags = set(self.picture.tags)
+        edt_tags = set(self.tag_selector.selected_items())
+        tags_to_add = edt_tags.difference(pic_tags)
+        tags_to_remove = pic_tags.difference(edt_tags)
+        persistence.add_tags_to_picture(self.picture, tags_to_add)
+        persistence.remove_tags_from_picture(self.picture, tags_to_remove)
+        self.picture.tags = edt_tags
+
+    def _update_series(self):
+        """Remove and add series according to changes made during editing."""
+        pic_series = set(self.picture.series)
+        edt_series = set(self.series_selector.selected_items())
+        series_to_add = edt_series.difference(pic_series)
+        series_to_remove = pic_series.difference(edt_series)
+        persistence.add_picture_to_set_of_series(self.picture, series_to_add)
+        persistence.remove_picture_from_set_of_series(self.picture,
+                                                      series_to_remove)
+        self.picture.series = edt_series
 
     def _cancel(self):
         """Cancel editing."""
@@ -334,6 +357,7 @@ class PictureMetadataEditor(ttk.Frame):
 
     def load_picture(self, picture: PictureReference):
         """Load picture into editor."""
+        self.picture = picture
         self.editor.picture = picture
         self.tag_selector.load_items(picture.tags)
         self.series_selector.load_items(picture.series)
