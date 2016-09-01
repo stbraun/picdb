@@ -46,7 +46,6 @@ from .uiseries import PictureSeriesSelector
 
 
 class PictureManagement(ttk.Frame):
-
     """Provides UI for importing pictures."""
 
     def __init__(self, master):
@@ -103,8 +102,7 @@ class PictureManagement(ttk.Frame):
         self.edit_button.state(['disabled'])
 
     def load_pictures(self):
-        """Load a bunch of pictures from database.
-        """
+        """Load a bunch of pictures from database."""
         self.filter_tree.load_items()
 
     def import_pictures(self):

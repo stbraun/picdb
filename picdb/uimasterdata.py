@@ -112,8 +112,6 @@ class FilteredTreeview(ttk.Frame):
     def bind(self, sequence=None, func=None, add=None):
         """Bind to this widget at event SEQUENCE a call to function FUNC."""
         if sequence in self.supported_events:
-            self.logger.debug('Binding {} to {}'.format(func,
-                                                        self.EVT_ITEM_SELECTED))
             self.listeners[sequence] = func
         else:
             super().bind(sequence, func, add)
