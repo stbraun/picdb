@@ -181,7 +181,7 @@ class TagTree(PicTreeView):
         super().__init__(master, columns=columns)
         if not tree_only:
             self.heading('description', text='Description')
-        self.column('#0', stretch=False)  # tree column does not resize
+        # self.column('#0', stretch=False)  # tree column shall not resize
 
     @classmethod
     def create_instance(cls, master, tree_only=False):
@@ -252,7 +252,7 @@ class TagSelector(Selector):
     """Provide a selector component for tags."""
     def __init__(self, master, **kwargs):
         super().__init__(master, TagTree.create_instance,
-                         TagTree.create_instance, **kwargs)
+                         TagTree.create_instance, text='Assign Tags', **kwargs)
 
     def selected_items(self):
         items = self.right.get_children()
