@@ -36,7 +36,7 @@ import logging
 from .model import Entity
 
 
-class Selector(ttk.Frame):
+class Selector(ttk.LabelFrame):
     """A component for moving items between two tree views."""
     def __init__(self, master, tree_factory_left,
                  tree_factory_right, **kwargs):
@@ -65,10 +65,13 @@ class Selector(ttk.Frame):
 
     def _create_control_frame(self):
         frame = ttk.Frame(self)
-        self.add_button = ttk.Button(frame, text='>', command=self._add_item)
+        self.add_button = ttk.Button(frame, text='>',
+                                     command=self._add_item,
+                                     width=1)
         self.add_button.grid(row=0, column=0)
         self.remove_button = ttk.Button(frame, text='<',
-                                        command=self._remove_item)
+                                        command=self._remove_item,
+                                        width=1)
         self.remove_button.grid(row=1, column=0)
         return frame
 

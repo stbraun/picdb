@@ -187,7 +187,7 @@ class PictureSeriesTree(PicTreeView):
         super().__init__(master, columns=columns)
         if not tree_only:
             self.heading('description', text='Description')
-        self.column('#0', stretch=False)  # tree column does not resize
+        # self.column('#0', stretch=False)  # tree column shall not resize
 
     @classmethod
     def create_instance(cls, master, tree_only=False):
@@ -256,9 +256,10 @@ class PictureSeriesEditor(ttk.LabelFrame):
 
 class PictureSeriesSelector(Selector):
     """Provide a selector component for series."""
-    def __init__(self, master):
+    def __init__(self, master, **kwargs):
         super().__init__(master, PictureSeriesTree.create_instance,
-                         PictureSeriesTree.create_instance)
+                         PictureSeriesTree.create_instance,
+                         text='Assign Series', **kwargs)
 
     def selected_items(self):
         items = self.right.get_children()
