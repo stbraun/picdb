@@ -82,6 +82,9 @@ class PictureManagement(ttk.Frame):
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
                               self.item_selected)
+        self.editor = PictureMetadataEditor(self.content_frame)
+        self.editor.grid(row=0, column=1,
+                         sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def _create_control_frame(self):
         self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
@@ -96,10 +99,6 @@ class PictureManagement(ttk.Frame):
                                       command=self.view_picture)
         self.view_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
         self.view_button.state(['disabled'])
-        self.edit_button = ttk.Button(self.control_frame, text='edit picture',
-                                      command=self.edit_picture)
-        self.edit_button.grid(row=0, column=4, sticky=(tk.W, tk.N))
-        self.edit_button.state(['disabled'])
 
     def load_pictures(self):
         """Load a bunch of pictures from database."""
@@ -125,7 +124,7 @@ class PictureManagement(ttk.Frame):
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
             self.view_button.state(['!disabled'])
-            self.edit_button.state(['!disabled'])
+            self.editor.load_picture(pics[0])
 
     def view_picture(self):
         """View selected picture."""
@@ -133,20 +132,6 @@ class PictureManagement(ttk.Frame):
         if len(pics) > 0:
             image = Image.open(pics[0].path)
             image.show()
-
-    def edit_picture(self):
-        pics = self.filter_tree.selected_items()
-        if len(pics) > 0:
-            pic = pics[0]
-            win = tk.Toplevel(self)
-            win.title('Editing Picture {}'.format(pic.name))
-            win.geometry('1000x800+700+200')
-            win.rowconfigure(0, weight=1)
-            win.columnconfigure(0, weight=1)
-            self.editor = PictureMetadataEditor(win)
-            self.editor.grid(row=0, column=0,
-                             sticky=(tk.W, tk.N, tk.E, tk.S))
-            self.editor.load_picture(pic)
 
 
 class PictureFilteredTreeview(FilteredTreeview):

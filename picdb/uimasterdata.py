@@ -59,9 +59,7 @@ class PicTreeView(ttk.Treeview):
 
     def _additional_values(self, item):
         """Provide a tuple with values to display in the tree."""
-        values = (item.description,)
-        self.logger.debug('Values to show in tree view: {}'.format(values))
-        return values
+        raise NotImplementedError
 
     def selected_items(self):
         """Provide list of items selected in tree.
