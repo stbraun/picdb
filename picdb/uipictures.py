@@ -208,22 +208,22 @@ class PictureFilteredTreeview(FilteredTreeview):
 class PictureReferenceTree(PicTreeView):
     """A tree handling pictures."""
 
-    def __init__(self, master):
-        super().__init__(master, columns=('path', 'description'))
-        self.heading('path', text='Path')
-        self.heading('description', text='Description')
+    def __init__(self, master, tree_only=False):
+        self.tree_only = tree_only
+        columns = () if tree_only else ('path', 'description')
+        super().__init__(master, columns=columns)
+        if not tree_only:
+            self.heading('path', text='Path')
+            self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column shall not resize
 
     @classmethod
-    def create_instance(cls, master):
+    def create_instance(cls, master, tree_only=False):
         """Factory method."""
-        return PictureReferenceTree(master)
+        return PictureReferenceTree(master, tree_only)
 
-    def add_item(self, picture: PictureReference):
-        """Add given picture to tree."""
-        self.insert('', 'end', picture.key,
-                    text=picture.name,
-                    values=(picture.path, picture.description))
+    def _additional_values(self, item):
+        return () if self.tree_only else (item.path, item.description)
 
     def selected_items(self):
         """Provide list of pictures selected in tree.

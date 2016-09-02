@@ -55,7 +55,13 @@ class PicTreeView(ttk.Treeview):
     def add_item(self, item: Entity):
         """Add given item to tree."""
         self.insert('', 'end', item.key,
-                    text=item.name, values=(item.description,))
+                    text=item.name, values=self._additional_values(item))
+
+    def _additional_values(self, item):
+        """Provide a tuple with values to display in the tree."""
+        values = (item.description,)
+        self.logger.debug('Values to show in tree view: {}'.format(values))
+        return values
 
     def selected_items(self):
         """Provide list of items selected in tree.

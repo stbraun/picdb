@@ -175,19 +175,25 @@ class TagFilteredTreeview(FilteredTreeview):
 class TagTree(PicTreeView):
     """A tree handling tags."""
 
-    def __init__(self, master):
-        super().__init__(master, columns=('description',))
-        self.heading('description', text='Description')
+    def __init__(self, master, tree_only=False):
+        self.tree_only = tree_only
+        columns = () if tree_only else ('description',)
+        super().__init__(master, columns=columns)
+        if not tree_only:
+            self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column does not resize
 
     @classmethod
-    def create_instance(cls, master):
+    def create_instance(cls, master, tree_only=False):
         """Factory method."""
-        return TagTree(master)
+        return TagTree(master, tree_only)
 
     def add_item(self, tag: Tag):
         """Add given tag to tree."""
         super().add_item(tag)
+
+    def _additional_values(self, item):
+        return () if self.tree_only else (item.description,)
 
     def selected_items(self):
         """Provide list of tags selected in tree.
