@@ -40,7 +40,7 @@ from PIL import Image
 
 from .model import PictureReference
 from . import persistence
-from .uimasterdata import PicTreeView,  FilteredTreeview
+from .uimasterdata import PicTreeView, FilteredTreeview
 from .uitags import TagSelector
 from .uiseries import PictureSeriesSelector
 
@@ -114,9 +114,8 @@ class PictureManagement(ttk.Frame):
             persistence.add_picture(picture)
             pic = persistence.retrieve_picture_by_path(picture.path)
             self.filter_tree.add_item_to_tree(pic)
-            messagebox.showinfo(title='Picture Import',
-                                message='{} pictures added.'.format(
-                                    len(pictures)))
+        messagebox.showinfo(title='Picture Import',
+                            message='{} pictures added.'.format(len(pictures)))
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
@@ -299,6 +298,7 @@ class PictureReferenceEditor(ttk.LabelFrame):
 
 class PictureMetadataEditor(ttk.Frame):
     """Editor component for picture meta data."""
+
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master

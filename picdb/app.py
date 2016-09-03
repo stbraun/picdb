@@ -38,8 +38,7 @@ from .log import initialize_logger
 from .uistatus import StatusPanel
 from .uipictures import PictureManagement
 from .uiseries import SeriesManagement
-from .uitags import TagManagement, TagTree
-from .selector import Selector
+from .uitags import TagManagement
 
 
 class Application(ttk.Frame):
