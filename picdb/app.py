@@ -78,7 +78,7 @@ def start_application():
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
-    root.geometry('1500x800+200+100')
+    root.geometry('2200x1000+100+100')
     app = Application(root)
     app.master.title('PicDB')
     app.mainloop()

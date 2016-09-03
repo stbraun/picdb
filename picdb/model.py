@@ -47,15 +47,13 @@ class Entity:
         return self.__str__()
 
     def __eq__(self, other):
-        if self.key is None or other.key is None:
-            return False
-        return self.key == other.key
+        return self.name == other.name
 
     def __lt__(self, other):
         return self.name < other.name
 
     def __hash__(self):
-        return self.key
+        return hash(self.name)
 
 
 class PictureSeries(Entity):
@@ -102,3 +100,13 @@ class PictureReference(Entity):
 
     def __repr__(self):
         return self.__str__()
+
+    def __eq__(self, other):
+        return self.path == other.path
+
+    def __lt__(self, other):
+        return self.path < other.path
+
+    def __hash__(self):
+        return hash(self.path)
+

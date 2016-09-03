@@ -31,6 +31,7 @@ Manage pictures via UI.
 
 import os
 import logging
+import tempfile
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -60,6 +61,8 @@ class PictureManagement(ttk.Frame):
         self.view_button = None
         self.tag_selector = None
         self.series_selector = None
+        self.canvas = None
+        self.image = None  # currently displayed image
         self._create_widgets()
 
     def _create_widgets(self):
@@ -77,6 +80,7 @@ class PictureManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
+        self.content_frame.columnconfigure(2, weight=4)
         self.filter_tree = PictureFilteredTreeview(self.content_frame)
         self.filter_tree.grid(row=0, column=0,
                               sticky=(tk.W, tk.N, tk.E, tk.S))
@@ -85,6 +89,8 @@ class PictureManagement(ttk.Frame):
         self.editor = PictureMetadataEditor(self.content_frame)
         self.editor.grid(row=0, column=1,
                          sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.canvas = tk.Canvas(self.content_frame, width=600, height=900)
+        self.canvas.grid(row=0, column=2, sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def _create_control_frame(self):
         self.control_frame = ttk.Frame(self, borderwidth=2, relief=tk.GROOVE)
@@ -122,8 +128,24 @@ class PictureManagement(ttk.Frame):
         pics = self.filter_tree.selected_items()
         self.logger.info('Selected pictures: {}'.format(pics))
         if len(pics) > 0:
+            pic = pics[0]
             self.view_button.state(['!disabled'])
-            self.editor.load_picture(pics[0])
+            self.editor.load_picture(pic)
+            self._display_picture(pic)
+
+    def _display_picture(self, pic):
+        """Display given picture in canvas."""
+        img = Image.open(pic.path)
+        # if img.width > self.canvas.size()[0]:
+        #     self.logger.info('Canvas size: {}'.format(self.canvas.size()))
+        #     factor = self.canvas.size()[0] / img.width
+        #     img.resize((int(img.size[0]*factor), int(img.size[1]*factor)))
+        tmp_img = tempfile.NamedTemporaryFile(suffix='.ppm')
+        self.logger.info('tmp_img = {}'.format(tmp_img.name))
+        img.save(tmp_img.name)
+        self.image = tk.PhotoImage(file=tmp_img.name)
+        self.canvas.create_image(1, 1, anchor=tk.NW, state=tk.NORMAL,
+                                 image=self.image)
 
     def view_picture(self):
         """View selected picture."""
@@ -342,9 +364,6 @@ class PictureMetadataEditor(ttk.Frame):
         self.save_button = ttk.Button(self.control_frame, text='save',
                                       command=self._save)
         self.save_button.grid(row=0, column=0)
-        cancel_button = ttk.Button(self.control_frame, text='close',
-                                   command=self._close)
-        cancel_button.grid(row=0, column=1)
 
     def _save(self):
         """Save current picture."""
@@ -373,10 +392,6 @@ class PictureMetadataEditor(ttk.Frame):
         persistence.remove_picture_from_set_of_series(self.picture,
                                                       series_to_remove)
         self.picture.series = edt_series
-
-    def _close(self):
-        """Close editor."""
-        self.master.destroy()
 
     def load_picture(self, picture: PictureReference):
         """Load picture into editor."""

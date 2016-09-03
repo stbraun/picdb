@@ -304,6 +304,7 @@ class Persistence:
         records = [self.__create_picture(key, name, path_, description)
                    for (key, name, path_, description) in
                    cursor.fetchall()]
+        records.sort()
         return list(records)
 
     def retrieve_series_by_key(self, key: int):
@@ -338,6 +339,7 @@ class Persistence:
         cursor.execute(stmt, (picture.key,))
         records = [Tag(key, name, description)
                    for (key, name, description) in cursor.fetchall()]
+        records.sort()
         return list(records)
 
     def retrieve_series_for_picture(self, picture: PictureReference):
@@ -354,6 +356,7 @@ class Persistence:
         cursor.execute(stmt, (picture.key,))
         records = [PictureSeries(key, name, description)
                    for (key, name, description) in cursor.fetchall()]
+        records.sort()
         return list(records)
 
     def retrieve_series_by_name(self, name: str):
@@ -392,6 +395,7 @@ class Persistence:
         cursor.execute(stmt, (name, limit))
         records = [Tag(key, name_, description)
                    for (key, name_, description) in cursor.fetchall()]
+        records.sort()
         return list(records)
 
     def retrieve_all_tags(self):
@@ -405,6 +409,7 @@ class Persistence:
         cursor.execute(stmt)
         records = [Tag(key, name, description)
                    for (key, name, description) in cursor.fetchall()]
+        records.sort()
         return list(records)
 
     def retrieve_tag_by_name(self, name: str):
@@ -443,6 +448,7 @@ class Persistence:
         cursor.execute(stmt, (name, limit))
         records = [Tag(key, name_, description)
                    for (key, name_, description) in cursor.fetchall()]
+        records.sort()
         return list(records)
 
     def retrieve_tag_by_key(self, key: int):
@@ -474,6 +480,7 @@ class Persistence:
         records = [PictureSeries(key, name, description)
                    for (key, name, description) in
                    cursor.fetchall()]
+        records.sort()
         return list(records)
 
     def execute_sql(self, stmt, *args):
