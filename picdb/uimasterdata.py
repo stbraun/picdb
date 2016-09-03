@@ -84,6 +84,7 @@ class FilteredTreeview(ttk.Frame):
         self.limit_default = 50
         self.limit_entry = None
         self._create_widgets()
+        self.tree.bind('<<TreeviewSelect>>', self._item_selected)
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=0)
@@ -93,7 +94,6 @@ class FilteredTreeview(ttk.Frame):
         self.filter_frame.grid(row=0, column=0,
                                sticky=(tk.W, tk.N, tk.E, tk.S))
         self.tree = self.tree_factory(self)
-        self.tree.bind('<<TreeviewSelect>>', self._item_selected)
         self.tree.grid(row=1, column=0,
                        sticky=(tk.W, tk.N, tk.E, tk.S))
 
@@ -110,7 +110,7 @@ class FilteredTreeview(ttk.Frame):
         raise NotImplementedError('Please override this method.')
 
     def add_item_to_tree(self, item: Entity):
-        """Add given tag to tree view."""
+        """Add given item to tree view."""
         self.tree.add_item(item)
 
     def bind(self, sequence=None, func=None, add=None):

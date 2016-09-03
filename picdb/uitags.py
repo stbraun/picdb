@@ -252,7 +252,7 @@ class TagSelector(Selector):
     """Provide a selector component for tags."""
     def __init__(self, master, **kwargs):
         super().__init__(master, TagTree.create_instance,
-                         TagTree.create_instance, text='Assign Tags', **kwargs)
+                         TagTree.create_instance, **kwargs)
 
     def selected_items(self):
         items = self.right.get_children()

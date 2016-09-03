@@ -265,7 +265,8 @@ class Persistence:
         (key, name, path_, description) = row
         return self.__create_picture(key, name, path_, description)
 
-    def retrieve_pictures_by_path_segment(self, path: str, limit=50):
+    def retrieve_filtered_pictures(self, path: str, limit,
+                                   series: [PictureSeries], tags: [Tag]):
         """Retrieve picture by path segment using wildcards.
 
         Example: Path: '%jpg'
@@ -274,11 +275,30 @@ class Persistence:
         :type path: str
         :param limit: maximum number of records to retrieve
         :type limit: int
+        :param series: limit result set based on given list of series
+        :type series: [PictureSeries]
+        :param tags: limit result set based on given list of tags
+        :type tags: [Tag]
         :return: picture.
         :rtype:[PictureReference]
         """
-        stmt = 'SELECT id, identifier, path, description ' \
-               'FROM pictures WHERE "path"like? LIMIT ?'
+        stmt_p = 'SELECT DISTINCT id, identifier, path, description ' \
+                 'FROM pictures WHERE ' \
+                 '"path" LIKE ?'
+        stmt_s = 'SELECT DISTINCT id, identifier, path, description ' \
+                 'FROM pictures, picture2series WHERE ' \
+                 'pictures.id=picture2series.picture AND ' \
+                 'picture2series.series={}'
+        stmt_t = 'SELECT DISTINCT id, identifier, path, description ' \
+                 'FROM pictures, picture2tag WHERE ' \
+                 'pictures.id=picture2tag.picture AND picture2tag.tag={}'
+        stmt = stmt_p
+        for item in series:
+            stmt += ' INTERSECT ' + stmt_s.format(str(item.key))
+        for item in tags:
+            stmt += ' INTERSECT ' + stmt_t.format(str(item.key))
+        stmt += ' LIMIT ?'
+        self.logger.info(stmt)
         cursor = self.conn.cursor()
         cursor.execute(stmt, (path, limit))
         records = [self.__create_picture(key, name, path_, description)
@@ -313,7 +333,7 @@ class Persistence:
         """
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description ' \
-               'FROM tags WHERE id in (SELECT tag ' \
+               'FROM tags WHERE id IN (SELECT tag ' \
                'FROM picture2tag WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
         records = [Tag(key, name, description)
@@ -329,8 +349,8 @@ class Persistence:
         """
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description FROM series ' \
-               'WHERE id in (SELECT ' \
-               'series from picture2series WHERE picture=?)'
+               'WHERE id IN (SELECT ' \
+               'series FROM picture2series WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
         records = [PictureSeries(key, name, description)
                    for (key, name, description) in cursor.fetchall()]
@@ -367,7 +387,7 @@ class Persistence:
         :rtype: [Tag]
         """
         stmt = 'SELECT id, identifier, description ' \
-               'FROM series WHERE "identifier"like? LIMIT ?'
+               'FROM series WHERE "identifier"LIKE? LIMIT ?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (name, limit))
         records = [Tag(key, name_, description)
@@ -418,7 +438,7 @@ class Persistence:
         :rtype: [Tag]
         """
         stmt = 'SELECT id, identifier, description ' \
-               'FROM tags WHERE "identifier"like? LIMIT ?'
+               'FROM tags WHERE "identifier"LIKE? LIMIT ?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (name, limit))
         records = [Tag(key, name_, description)
@@ -474,7 +494,7 @@ class Persistence:
         picture = PictureReference(key, name, path, description)
         picture.tags = retrieve_tags_for_picture(picture)
         picture.series = retrieve_series_for_picture(picture)
-        self.logger.info('picture created: {}'.format(picture))
+        self.logger.debug('picture created: {}'.format(picture))
         return picture
 
 
@@ -504,10 +524,11 @@ def retrieve_picture_by_path(path: str):
     return picture
 
 
-def retrieve_pictures_by_path_segment(path: str, limit: int):
+def retrieve_filtered_pictures(path: str, limit: int,
+                               series: [PictureSeries], tags: [Tag]):
     global _picture_cache
     db = get_db()
-    pictures = db.retrieve_pictures_by_path_segment(path, limit)
+    pictures = db.retrieve_filtered_pictures(path, limit, series, tags)
     for picture in pictures:
         _picture_cache.put(picture.key, picture)
     return pictures

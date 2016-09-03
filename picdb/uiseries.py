@@ -168,14 +168,15 @@ class PictureSeriesFilteredTreeview(FilteredTreeview):
         super().add_item_to_tree(series)
 
     def _retrieve_items(self):
-        """Retrieve a bunch of tags from database.
+        """Retrieve a bunch of series from database.
 
         name_filter_var and limit_var are considered for retrieval.
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        tags = persistence.retrieve_series_by_name_segment(name_filter, limit)
-        return tags
+        series = persistence.retrieve_series_by_name_segment(name_filter,
+                                                             limit)
+        return series
 
 
 class PictureSeriesTree(PicTreeView):
@@ -259,7 +260,7 @@ class PictureSeriesSelector(Selector):
     def __init__(self, master, **kwargs):
         super().__init__(master, PictureSeriesTree.create_instance,
                          PictureSeriesTree.create_instance,
-                         text='Assign Series', **kwargs)
+                         **kwargs)
 
     def selected_items(self):
         items = self.right.get_children()

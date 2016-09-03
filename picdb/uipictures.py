@@ -141,10 +141,34 @@ class PictureFilteredTreeview(FilteredTreeview):
         self.logger = logging.getLogger('picdb.ui')
         self.path_filter_var = tk.StringVar()
         self.limit_var = tk.IntVar()
+        self.tag_selector = None
+        self.series_selector = None
         super().__init__(master, PictureReferenceTree.create_instance)
         self.path_filter_var.set('%')
         self.path_filter_entry = None
         self.limit_var.set(self.limit_default)
+        self.tag_selector.load_items([])
+        self.series_selector.load_items([])
+
+    def _create_widgets(self):
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self._create_filter_frame()
+        self.series_selector = PictureSeriesSelector(self,
+                                                     text='Select series')
+        self.series_selector.grid(row=1, column=0,
+                                  sticky=(tk.N, tk.S, tk.W, tk.E))
+        self.tag_selector = TagSelector(self, text='Select tags')
+        self.tag_selector.grid(row=2, column=0,
+                               sticky=(tk.N, tk.S, tk.W, tk.E))
+        self.filter_frame.grid(row=0, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.tree = self.tree_factory(self)
+        self.tree.grid(row=0, column=1, rowspan=3,
+                       sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def _create_filter_frame(self):
         self.filter_frame = ttk.Frame(self)
@@ -185,8 +209,11 @@ class PictureFilteredTreeview(FilteredTreeview):
         """
         name_filter = self.path_filter_var.get()
         limit = self.limit_var.get()
-        pics = persistence.retrieve_pictures_by_path_segment(name_filter,
-                                                             limit)
+        series = self.series_selector.selected_items()
+        tags = self.tag_selector.selected_items()
+        pics = persistence.retrieve_filtered_pictures(name_filter,
+                                                      limit,
+                                                      series, tags)
         return pics
 
 
@@ -301,12 +328,13 @@ class PictureMetadataEditor(ttk.Frame):
         self.content_frame.columnconfigure(0, weight=1)
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.W))
-        self.tag_selector = TagSelector(self.content_frame)
-        self.tag_selector.grid(row=1, column=0,
-                               sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.series_selector = PictureSeriesSelector(self.content_frame)
-        self.series_selector.grid(row=2, column=0,
+        self.series_selector = PictureSeriesSelector(self.content_frame,
+                                                     text='Assign series')
+        self.series_selector.grid(row=1, column=0,
                                   sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.tag_selector = TagSelector(self.content_frame, text='Assign tags')
+        self.tag_selector.grid(row=2, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def _create_control_frame(self, master):
         self.control_frame = ttk.Frame(master)

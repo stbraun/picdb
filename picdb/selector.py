@@ -103,6 +103,6 @@ class Selector(ttk.LabelFrame):
         """Return the selected items."""
         raise NotImplementedError
 
-    def load_items(self, picture_items: [Entity]):
+    def load_items(self, items: [Entity]):
         """Load initial items into left tree."""
         raise NotImplementedError
