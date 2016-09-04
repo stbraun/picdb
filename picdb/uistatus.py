@@ -30,10 +30,13 @@ Main UI.
 # THE SOFTWARE.
 
 
+import os
 import logging
 import tkinter as tk
 from tkinter import ttk
 from pkgutil import get_data
+
+import psutil
 
 
 class StatusPanel(ttk.Frame):
@@ -42,7 +45,10 @@ class StatusPanel(ttk.Frame):
     def __init__(self, master):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger('picdb.ui')
+        self.mem_stats = None  # label for memory statistics
+        self.memory_usage_var = tk.StringVar()
         self.create_widgets()
+        self.report_usage()
 
     def create_widgets(self):
         img = get_data('picdb', 'resources/eye.gif')
@@ -54,5 +60,24 @@ class StatusPanel(ttk.Frame):
         image = ttk.Label(self, image=photo)
         image.photo = photo
         image.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        # stats = ttk.Label(self, text=" - statistics - ").grid(row=0,
-        # column=1)
+        self.mem_stats = ttk.Label(self,
+                                   textvariable=self.memory_usage_var).grid(
+            row=0,
+            column=1)
+
+    def _report_usage(self, prev_mem_info=None):
+        """report memory usage."""
+        info = 'memory usage: {:6.3f}MB'.format(
+            prev_mem_info.rss / (1024 * 1024))
+        self.memory_usage_var.set(info)
+
+    def report_usage(self, prev_mem_info=None, p=psutil.Process(os.getpid())):
+        # find max memory
+        if p.is_running():
+            mem_info = p.memory_info()
+            if (mem_info != prev_mem_info and
+                    (prev_mem_info is None or mem_info.rss >
+                        prev_mem_info.rss)):
+                prev_mem_info = mem_info
+            self.after(500, self._report_usage,
+                       prev_mem_info)  # report in 0.5s
