@@ -81,7 +81,7 @@ class FilteredTreeview(ttk.Frame):
         self.filter_frame = None
         self.tree = None
         self.tree_factory = tree_factory
-        self.limit_default = 50
+        self.limit_default = 1000
         self.limit_entry = None
         self._create_widgets()
         self.tree.bind('<<TreeviewSelect>>', self._item_selected)

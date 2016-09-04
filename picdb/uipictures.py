@@ -199,8 +199,11 @@ class PictureFilteredTreeview(FilteredTreeview):
         self.path_filter_var.set('%')
         self.path_filter_entry = None
         self.limit_var.set(self.limit_default)
+        # initialize selectors
         self.tag_selector.load_items([])
         self.series_selector.load_items([])
+        # Bind listener for visibility change of frame
+        self.bind("<Visibility>", self._visibility_changed)
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=0)
@@ -267,6 +270,14 @@ class PictureFilteredTreeview(FilteredTreeview):
                                                       limit,
                                                       series, tags)
         return pics
+
+    def _visibility_changed(self, event):
+        """Listener is called if visibility of widget changes."""
+        self.logger.info(
+            'Visibility of PictureFilteredTreeview frame changed: {}'.format(
+                event.state))
+        self.tag_selector.load_items(self.tag_selector.selected_items())
+        self.series_selector.load_items(self.series_selector.selected_items())
 
 
 class PictureReferenceTree(PicTreeView):

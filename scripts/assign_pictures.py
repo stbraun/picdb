@@ -79,7 +79,7 @@ def get_pic_list(path: str):
     :return: list of pictures
     :rtype: [PictureReference]
     """
-    return persistence.retrieve_filtered_pictures(path, 1000, [], [])
+    return persistence.retrieve_filtered_pictures(path, None, [], [])
 
 
 def _get_series(names: [str]):

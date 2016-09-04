@@ -301,10 +301,11 @@ class Persistence:
             stmt += ' INTERSECT ' + stmt_s.format(str(item.key))
         for item in tags:
             stmt += ' INTERSECT ' + stmt_t.format(str(item.key))
-        stmt += ' LIMIT ?'
+        if limit is not None:
+            stmt += ' LIMIT {}'.format(limit)
         self.logger.info(stmt)
         cursor = self.conn.cursor()
-        cursor.execute(stmt, (path, limit))
+        cursor.execute(stmt, (path, ))
         records = [self.__create_picture(key, name, path_, description)
                    for (key, name, path_, description) in
                    cursor.fetchall()]
@@ -381,7 +382,7 @@ class Persistence:
         (key, name, description) = row
         return PictureSeries(key, name, description)
 
-    def retrieve_series_by_name_segment(self, name: str, limit=50):
+    def retrieve_series_by_name_segment(self, name: str, limit=1000):
         """Retrieve series by name segment using wildcards.
 
         Example: name: 'a%'
@@ -434,7 +435,7 @@ class Persistence:
         (key, name, description) = row
         return Tag(key, name, description)
 
-    def retrieve_tags_by_name_segment(self, name: str, limit=50):
+    def retrieve_tags_by_name_segment(self, name: str, limit=1000):
         """Retrieve tags by name segment using wildcards.
 
         Example: name: 'a%'

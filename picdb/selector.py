@@ -111,5 +111,5 @@ class Selector(ttk.LabelFrame):
         raise NotImplementedError
 
     def load_items(self, items: [Entity]):
-        """Load initial items into left tree."""
+        """Load initial items into tree views."""
         raise NotImplementedError
