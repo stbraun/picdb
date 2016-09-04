@@ -60,7 +60,9 @@ class PictureManagement(ttk.Frame):
         self.view_button = None
         self.tag_selector = None
         self.series_selector = None
+        # canvas will hold the preview image.
         self.canvas = None
+        # width and height will change when resizing the window.
         self._canvas_width = 800
         self._canvas_height = 1000
         # Currently edited picture
@@ -68,8 +70,11 @@ class PictureManagement(ttk.Frame):
         # Currently displayed image. Only required to hold a reference to
         # the object.
         self.image = None
+        # The tag assigned to the image currently displayed in canvas.
+        self.image_tag = '__image__'
         self._create_widgets()
-        self.canvas.bind("<Configure>", self._fit_image)  # fit image on resize
+        # Bind listener for resize events to adapt image size for preview.
+        self.canvas.bind("<Configure>", self._fit_image)
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -115,6 +120,7 @@ class PictureManagement(ttk.Frame):
 
     def load_pictures(self):
         """Load a bunch of pictures from database."""
+        self.clear()
         self.filter_tree.load_items()
 
     def import_pictures(self):
@@ -138,20 +144,21 @@ class PictureManagement(ttk.Frame):
             self.view_button.state(['!disabled'])
             self.editor.load_picture(self.current_picture)
             self._display_picture()
+        else:
+            self.clear()
 
     def _display_picture(self):
         """Display current picture in canvas."""
         if self.current_picture is not None:
-            image_tag = '__image__'
             img = Image.open(self.current_picture.path)
             img.thumbnail((self._canvas_width - 2, self._canvas_height - 2),
                           Image.ANTIALIAS)
             self.image = ImageTk.PhotoImage(img)
-            self.canvas.delete(image_tag)  # delete old picture if any
+            self.canvas.delete(self.image_tag)  # delete old picture if any
             self.canvas.create_image(1, 1, anchor=tk.NW,
                                      state=tk.NORMAL,
                                      image=self.image,
-                                     tags=image_tag)
+                                     tags=self.image_tag)
 
     def view_picture(self):
         """View selected picture."""
@@ -172,6 +179,11 @@ class PictureManagement(ttk.Frame):
             self._canvas_width = event.width
             self._canvas_height = event.height
             self.after(1, self._display_picture)
+
+    def clear(self):
+        """Clear editor and preview."""
+        self.editor.clear()
+        self.canvas.delete(self.image_tag)
 
 
 class PictureFilteredTreeview(FilteredTreeview):
@@ -336,6 +348,14 @@ class PictureReferenceEditor(ttk.LabelFrame):
         self.path_var.set(pic.path)
         self.description_var.set(pic.description)
 
+    def clear(self):
+        """Clear entries and remove reference to picture."""
+        self.id_var.set('')
+        self.name_var.set('')
+        self.path_var.set('')
+        self.description_var.set('')
+        self.picture_ = None
+
 
 class PictureMetadataEditor(ttk.Frame):
     """Editor component for picture meta data."""
@@ -418,3 +438,10 @@ class PictureMetadataEditor(ttk.Frame):
         self.editor.picture = picture
         self.tag_selector.load_items(picture.tags)
         self.series_selector.load_items(picture.series)
+
+    def clear(self):
+        """Clear the editor."""
+        self.editor.clear()
+        self.picture = None
+        self.series_selector.clear()
+        self.tag_selector.clear()

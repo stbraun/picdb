@@ -92,8 +92,7 @@ class Selector(ttk.LabelFrame):
     def init_trees(self, all_entities: [Entity], right_entities: [Entity]):
         """Write given entities into left tree."""
         left_entities = list(set(all_entities).difference(set(right_entities)))
-        self.left.clear()
-        self.right.clear()
+        self.clear()
         left_entities.sort()
         right_entities = list(right_entities)
         right_entities.sort()
@@ -101,6 +100,11 @@ class Selector(ttk.LabelFrame):
             self.left.add_item(entity)
         for entity in right_entities:
             self.right.add_item(entity)
+
+    def clear(self):
+        """Clear selector."""
+        self.left.clear()
+        self.right.clear()
 
     def selected_items(self):
         """Return the selected items."""
