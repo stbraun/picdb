@@ -31,13 +31,12 @@ Manage pictures via UI.
 
 import os
 import logging
-import tempfile
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 
-from PIL import Image
+from PIL import Image, ImageTk
 
 from .model import PictureReference
 from . import persistence
@@ -62,8 +61,15 @@ class PictureManagement(ttk.Frame):
         self.tag_selector = None
         self.series_selector = None
         self.canvas = None
-        self.image = None  # currently displayed image
+        self._canvas_width = 800
+        self._canvas_height = 1000
+        # Currently edited picture
+        self.current_picture = None
+        # Currently displayed image. Only required to hold a reference to
+        # the object.
+        self.image = None
         self._create_widgets()
+        self.canvas.bind("<Configure>", self._fit_image)  # fit image on resize
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -89,7 +95,8 @@ class PictureManagement(ttk.Frame):
         self.editor = PictureMetadataEditor(self.content_frame)
         self.editor.grid(row=0, column=1,
                          sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.canvas = tk.Canvas(self.content_frame, width=600, height=900)
+        self.canvas = tk.Canvas(self.content_frame, width=self._canvas_width,
+                                height=self._canvas_height)
         self.canvas.grid(row=0, column=2, sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def _create_control_frame(self):
@@ -126,26 +133,25 @@ class PictureManagement(ttk.Frame):
     def item_selected(self, _):
         """An item in the tree view was selected."""
         pics = self.filter_tree.selected_items()
-        self.logger.info('Selected pictures: {}'.format(pics))
-        if len(pics) > 0:
-            pic = pics[0]
+        if len(pics) == 1:
+            self.current_picture = pics[0]
             self.view_button.state(['!disabled'])
-            self.editor.load_picture(pic)
-            self._display_picture(pic)
+            self.editor.load_picture(self.current_picture)
+            self._display_picture()
 
-    def _display_picture(self, pic):
-        """Display given picture in canvas."""
-        img = Image.open(pic.path)
-        # if img.width > self.canvas.size()[0]:
-        #     self.logger.info('Canvas size: {}'.format(self.canvas.size()))
-        #     factor = self.canvas.size()[0] / img.width
-        #     img.resize((int(img.size[0]*factor), int(img.size[1]*factor)))
-        tmp_img = tempfile.NamedTemporaryFile(suffix='.ppm')
-        self.logger.info('tmp_img = {}'.format(tmp_img.name))
-        img.save(tmp_img.name)
-        self.image = tk.PhotoImage(file=tmp_img.name)
-        self.canvas.create_image(1, 1, anchor=tk.NW, state=tk.NORMAL,
-                                 image=self.image)
+    def _display_picture(self):
+        """Display current picture in canvas."""
+        if self.current_picture is not None:
+            image_tag = '__image__'
+            img = Image.open(self.current_picture.path)
+            img.thumbnail((self._canvas_width - 2, self._canvas_height - 2),
+                          Image.ANTIALIAS)
+            self.image = ImageTk.PhotoImage(img)
+            self.canvas.delete(image_tag)  # delete old picture if any
+            self.canvas.create_image(1, 1, anchor=tk.NW,
+                                     state=tk.NORMAL,
+                                     image=self.image,
+                                     tags=image_tag)
 
     def view_picture(self):
         """View selected picture."""
@@ -153,6 +159,19 @@ class PictureManagement(ttk.Frame):
         if len(pics) > 0:
             image = Image.open(pics[0].path)
             image.show()
+
+    def _fit_image(self, event=None, _last=[None] * 2):
+        """Fit image inside application window on resize."""
+        if event is not None and event.widget is self.canvas and (
+                    _last[0] != event.width or _last[1] != event.height):
+            # size changed; update image
+            self.logger.info(
+                'Resize event on canvas: ({}, {})'.format(event.width,
+                                                          event.height))
+            _last[:] = event.width, event.height
+            self._canvas_width = event.width
+            self._canvas_height = event.height
+            self.after(1, self._display_picture)
 
 
 class PictureFilteredTreeview(FilteredTreeview):

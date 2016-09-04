@@ -48,6 +48,10 @@ _series_cache = LRUCache(200)
 _picture_cache = LRUCache(200)
 
 
+class UnknownEntityException(Exception):
+    pass
+
+
 def get_db():
     """Get connected persistence instance."""
     global _db_name
@@ -614,6 +618,9 @@ def retrieve_series_by_key(key: int):
     except KeyError:
         db = get_db()
         series = db.retrieve_series_by_key(key)
+        if series is None:
+            raise UnknownEntityException(
+                'Series with key {} is unknown.'.format(key))
         _series_cache.put(series.key, series)
     return series
 
@@ -622,6 +629,9 @@ def retrieve_series_by_name(name: str):
     global _series_cache
     db = get_db()
     series = db.retrieve_series_by_name(name)
+    if series is None:
+        raise UnknownEntityException(
+            'Series with name {} is unknown.'.format(name))
     _series_cache.put(series.key, series)
     return series
 
@@ -674,6 +684,9 @@ def retrieve_tag_by_key(key: int):
     except KeyError:
         db = get_db()
         tag = db.retrieve_tag_by_key(key)
+        if tag is None:
+            raise UnknownEntityException(
+                'Tag with key {} is unknown.'.format(key))
         _tag_cache.put(tag.key, tag)
     return tag
 
@@ -682,6 +695,9 @@ def retrieve_tag_by_name(name: str):
     global _tag_cache
     db = get_db()
     tag = db.retrieve_tag_by_name(name)
+    if tag is None:
+        raise UnknownEntityException(
+            'Tag with name {} is unknown.'.format(name))
     _tag_cache.put(tag.key, tag)
     return tag
 
