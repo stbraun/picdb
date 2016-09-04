@@ -56,8 +56,9 @@ def main(argv):
     except UnknownEntityException as e:
         print('>>> Error: {}'.format(e))
     else:
-        add_assignments(pics, series, tags)
-        print('{} pictures processed.'.format(len(pics)))
+        if not args.dry_run:
+            add_assignments(pics, series, tags)
+            print('{} pictures processed.'.format(len(pics)))
 
 
 def add_assignments(pics: [PictureReference],
