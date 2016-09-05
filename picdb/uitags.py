@@ -157,7 +157,7 @@ class TagFilteredTreeview(FilteredTreeview):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, tag: Tag):
+    def add_item_to_tree(self, tag):
         """Add given tag to tree view."""
         super().add_item_to_tree(tag)
 
@@ -188,7 +188,7 @@ class TagTree(PicTreeView):
         """Factory method."""
         return TagTree(master, tree_only)
 
-    def add_item(self, tag: Tag):
+    def add_item(self, tag):
         """Add given tag to tree."""
         super().add_item(tag)
 
@@ -241,7 +241,7 @@ class TagEditor(ttk.LabelFrame):
         return self.tag_
 
     @tag.setter
-    def tag(self, tag_: Tag):
+    def tag(self, tag_):
         self.tag_ = tag_
         self.id_var.set(tag_.key)
         self.name_var.set(tag_.name)
@@ -259,6 +259,11 @@ class TagSelector(Selector):
         tags = [persistence.retrieve_tag_by_key(int(item)) for item in items]
         return tags
 
-    def load_items(self, picture_tags: [Tag]):
+    def load_items(self, picture_tags):
+        """Load items into selector.
+
+        :param picture_tags: list of tags already assigned to picture.
+        :type picture_tags: [Tag]
+        """
         all_tags = persistence.get_all_tags()
         self.init_trees(all_tags, picture_tags)

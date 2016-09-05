@@ -32,7 +32,6 @@ The UI for master data management of groups and tags.
 import logging
 import tkinter as tk
 from tkinter import ttk
-from .model import Entity
 
 
 class PicTreeView(ttk.Treeview):
@@ -52,8 +51,12 @@ class PicTreeView(ttk.Treeview):
         if len(items) > 0:
             self.delete(*items)
 
-    def add_item(self, item: Entity):
-        """Add given item to tree."""
+    def add_item(self, item):
+        """Add given item to tree.
+
+        :param item: item to add
+        :type item: Entity
+        """
         self.insert('', 'end', item.key,
                     text=item.name, values=self._additional_values(item))
 
@@ -75,8 +78,9 @@ class FilteredTreeview(ttk.Frame):
     def __init__(self, master, tree_factory):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
-        self.EVT_ITEM_SELECTED = '<<<ItemSelected>>>'
-        self.supported_events = {self.EVT_ITEM_SELECTED}
+        self.EVT_ITEM_SELECTED = '<<ItemSelected>>'
+        self.supported_events = set()
+        self.supported_events.add(self.EVT_ITEM_SELECTED)
         self.listeners = {}
         self.filter_frame = None
         self.tree = None
@@ -109,8 +113,12 @@ class FilteredTreeview(ttk.Frame):
         """
         raise NotImplementedError('Please override this method.')
 
-    def add_item_to_tree(self, item: Entity):
-        """Add given item to tree view."""
+    def add_item_to_tree(self, item):
+        """Add given item to tree view.
+
+        :param item: item to add.
+        :type item: Entity
+        """
         self.tree.add_item(item)
 
     def bind(self, sequence=None, func=None, add=None):

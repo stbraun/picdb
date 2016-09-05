@@ -89,7 +89,7 @@ class Selector(ttk.LabelFrame):
             self.right.delete(item.key)
             self.left.add_item(item)
 
-    def init_trees(self, all_entities: [Entity], right_entities: [Entity]):
+    def init_trees(self, all_entities, right_entities):
         """Write given entities into left tree."""
         left_entities = list(set(all_entities).difference(set(right_entities)))
         self.clear()
@@ -110,6 +110,10 @@ class Selector(ttk.LabelFrame):
         """Return the selected items."""
         raise NotImplementedError
 
-    def load_items(self, items: [Entity]):
-        """Load initial items into tree views."""
+    def load_items(self, items):
+        """Load initial items into tree views.
+
+        :param items: entities to display in right tree.
+        :type items: [Entity]
+        """
         raise NotImplementedError

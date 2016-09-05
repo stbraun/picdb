@@ -32,7 +32,7 @@ A simple LRU cache.
 
 class LRUCache:
     """LRU __cache."""
-    def __init__(self, max_size: int):
+    def __init__(self, max_size):
         self.max_size = max_size
         self.__cache = {}
         self.__usage_list = []

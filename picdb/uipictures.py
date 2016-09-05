@@ -253,7 +253,7 @@ class PictureFilteredTreeview(FilteredTreeview):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, picture: PictureReference):
+    def add_item_to_tree(self, picture):
         """Add given picture to tree view."""
         super().add_item_to_tree(picture)
 
@@ -352,7 +352,7 @@ class PictureReferenceEditor(ttk.LabelFrame):
         return self.picture_
 
     @picture.setter
-    def picture(self, pic: PictureReference):
+    def picture(self, pic):
         self.picture_ = pic
         self.id_var.set(pic.key)
         self.name_var.set(pic.name)
@@ -443,7 +443,7 @@ class PictureMetadataEditor(ttk.Frame):
                                                       series_to_remove)
         self.picture.series = edt_series
 
-    def load_picture(self, picture: PictureReference):
+    def load_picture(self, picture):
         """Load picture into editor."""
         self.picture = picture
         self.editor.picture = picture

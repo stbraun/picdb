@@ -163,8 +163,12 @@ class PictureSeriesFilteredTreeview(FilteredTreeview):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, series: PictureSeries):
-        """Add given series to tree view."""
+    def add_item_to_tree(self, series):
+        """Add given series to tree view.
+
+        :param series: series to add.
+        :type series: PictureSeries
+        """
         super().add_item_to_tree(series)
 
     def _retrieve_items(self):
@@ -195,7 +199,7 @@ class PictureSeriesTree(PicTreeView):
         """Factory method."""
         return PictureSeriesTree(master, tree_only)
 
-    def add_item(self, series: PictureSeries):
+    def add_item(self, series):
         """Add given series to tree."""
         super().add_item(series)
 
@@ -248,7 +252,7 @@ class PictureSeriesEditor(ttk.LabelFrame):
         return self.series_
 
     @series.setter
-    def series(self, series_: PictureSeries):
+    def series(self, series_):
         self.series_ = series_
         self.id_var.set(series_.key)
         self.name_var.set(series_.name)
@@ -268,6 +272,11 @@ class PictureSeriesSelector(Selector):
                   for item in items]
         return series
 
-    def load_items(self, picture_series: [PictureSeries]):
+    def load_items(self, picture_series):
+        """Load items into selector.
+
+        :param picture_series: list of series already assigned to picture.
+        :type picture_series: [PictureSeries]
+        """
         all_series = persistence.get_all_series()
         self.init_trees(all_series, picture_series)
