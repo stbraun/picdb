@@ -59,15 +59,35 @@ class Entity:
 class PictureSeries(Entity):
     """A series of pictures."""
 
-    def __init__(self, key, name, description):
+    def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)
+        self.parent = parent
+        self._children = []
+
+    @property
+    def children(self):
+        return self._children
+
+    @children.setter
+    def children(self, children_):
+        self._children = children_
 
 
 class Tag(Entity):
     """A tag."""
 
-    def __init__(self, key, name, description):
+    def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)
+        self.parent = parent
+        self._children = []
+
+    @property
+    def children(self):
+        return self._children
+
+    @children.setter
+    def children(self, children_):
+        self._children = children_
 
 
 class PictureReference(Entity):
@@ -84,7 +104,7 @@ class PictureReference(Entity):
         return self._tags
 
     @tags.setter
-    def tags(self, tags_: [Tag]):
+    def tags(self, tags_):
         self._tags = tags_
 
     @property
@@ -92,7 +112,7 @@ class PictureReference(Entity):
         return self._series
 
     @series.setter
-    def series(self, series_: [PictureSeries]):
+    def series(self, series_):
         self._series = series_
 
     def __str__(self):

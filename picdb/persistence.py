@@ -65,7 +65,7 @@ def get_db():
 class Persistence:
     """SQLite implementation of MonitorDB API."""
 
-    def __init__(self, db: str):
+    def __init__(self, db):
         """Initialize persistence mechanism.
 
         :param db: path to database.
@@ -103,11 +103,13 @@ class Persistence:
             cursor.execute('CREATE TABLE series ( '
                            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
                            'identifier TEXT UNIQUE, '
-                           'description TEXT)')
+                           'description TEXT,'
+                           'parent INTEGER REFERENCES "series" ("id"))')
             cursor.execute('CREATE TABLE tags ( '
                            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
                            'identifier TEXT UNIQUE, '
-                           'description TEXT)')
+                           'description TEXT,'
+                           'parent INTEGER REFERENCES "tags" ("id"))')
             cursor.execute('CREATE TABLE pictures ( '
                            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
                            'identifier TEXT, '
@@ -122,41 +124,43 @@ class Persistence:
         except Exception as e:
             self.logger.warning(e)
 
-    def add_series(self, series: PictureSeries):
+    def add_series(self, series):
         """Add a new series.
 
         :param series: the series to add
         :type series: PictureSeries
         """
         self.logger.debug("Add series to DB: {}".format(series.name))
-        stmt = '''INSERT INTO series VALUES (?, ?, ?)'''
-        self.execute_sql(stmt, (None, series.name, series.description))
+        stmt = '''INSERT INTO series VALUES (?, ?, ?, ?)'''
+        parent = series.parent.key if series.parent is not None else None
+        self.execute_sql(stmt, (None, series.name, series.description, parent))
 
-    def update_series(self, series: PictureSeries):
+    def update_series(self, series):
         self.logger.debug("Update series: {}".format(series.name))
         stmt = "UPDATE series SET identifier='{}', description='{}' " \
                "WHERE id={}".format(series.name,
                                     series.description, series.key)
         self.execute_sql(stmt)
 
-    def add_tag(self, tag: Tag):
+    def add_tag(self, tag):
         """Add a new tag.
 
         :param tag: tag to add
         :type tag: Tag
         """
         self.logger.debug("Add tag to DB: {}".format(tag))
-        stmt = '''INSERT INTO tags VALUES (?, ?, ?)'''
-        self.execute_sql(stmt, (None, tag.name, tag.description))
+        stmt = '''INSERT INTO tags VALUES (?, ?, ?, ?)'''
+        parent = tag.parent.key if tag.parent is not None else None
+        self.execute_sql(stmt, (None, tag.name, tag.description, parent))
 
-    def update_tag(self, tag: Tag):
+    def update_tag(self, tag):
         self.logger.debug("Update tag: {}".format(tag.name))
         stmt = "UPDATE tags SET identifier='{}', description='{}' " \
                "WHERE id={}".format(tag.name,
                                     tag.description, tag.key)
         self.execute_sql(stmt)
 
-    def add_picture(self, picture: PictureReference):
+    def add_picture(self, picture):
         """Add a new picture.
 
         :param picture: picture to add
@@ -168,7 +172,7 @@ class Persistence:
         self.execute_sql(stmt, (None, picture.name,
                                 picture.path, picture.description))
 
-    def update_picture(self, picture: PictureReference):
+    def update_picture(self, picture):
         self.conn.cursor()
         self.logger.debug("Update picture: {} ({})".format(picture.name,
                                                            picture.path))
@@ -179,7 +183,7 @@ class Persistence:
                                                      picture.key)
         self.execute_sql(stmt)
 
-    def add_tag_to_picture(self, picture: PictureReference, tag: Tag):
+    def add_tag_to_picture(self, picture, tag):
         """Add tag to a picture.
 
         :param picture: the picture
@@ -192,7 +196,7 @@ class Persistence:
         stmt = '''INSERT INTO picture2tag VALUES(?, ?)'''
         self.execute_sql(stmt, (picture.key, tag.key))
 
-    def remove_tag_from_picture(self, picture: PictureReference, tag: Tag):
+    def remove_tag_from_picture(self, picture, tag):
         """Remove tag from given picture.
 
         :param picture: the picture
@@ -205,8 +209,7 @@ class Persistence:
         stmt = '''DELETE FROM picture2tag WHERE picture=? AND tag=?'''
         self.execute_sql(stmt, (picture.key, tag.key))
 
-    def add_picture_to_series(self, picture: PictureReference,
-                              series: PictureSeries):
+    def add_picture_to_series(self, picture, series):
         """Add picture to a series.
 
         :param picture: the picture
@@ -219,8 +222,7 @@ class Persistence:
         stmt = '''INSERT INTO picture2series VALUES(?, ?)'''
         self.execute_sql(stmt, (picture.key, series.key))
 
-    def remove_picture_from_series(self, picture: PictureReference,
-                                   series: PictureSeries):
+    def remove_picture_from_series(self, picture, series):
         """Remove picture from a series.
 
         :param picture: the picture
@@ -233,7 +235,7 @@ class Persistence:
         stmt = '''DELETE FROM picture2series WHERE picture=? AND series=?'''
         self.execute_sql(stmt, (picture.key, series.key))
 
-    def retrieve_picture_by_key(self, key: int):
+    def retrieve_picture_by_key(self, key):
         """Retrieve picture by key.
 
         :param key: the id of the picture
@@ -269,8 +271,7 @@ class Persistence:
         (key, name, path_, description) = row
         return self.__create_picture(key, name, path_, description)
 
-    def retrieve_filtered_pictures(self, path: str, limit,
-                                   series: [PictureSeries], tags: [Tag]):
+    def retrieve_filtered_pictures(self, path, limit, series, tags):
         """Retrieve picture by path segment using wildcards.
 
         Example: Path: '%jpg'
@@ -312,7 +313,7 @@ class Persistence:
         records.sort()
         return list(records)
 
-    def retrieve_series_by_key(self, key: int):
+    def retrieve_series_by_key(self, key):
         """Retrieve series by key.
 
         :param key: the id of the series
@@ -329,7 +330,7 @@ class Persistence:
         (key_, name, description) = row
         return PictureSeries(key_, name, description)
 
-    def retrieve_tags_for_picture(self, picture: PictureReference):
+    def retrieve_tags_for_picture(self, picture):
         """Retrieve all tags for given picture.
 
         :param picture: the picture to get the tags for
@@ -347,7 +348,7 @@ class Persistence:
         records.sort()
         return list(records)
 
-    def retrieve_series_for_picture(self, picture: PictureReference):
+    def retrieve_series_for_picture(self, picture):
         """Retrieve all series for given picture.
 
         :param picture: the id of the picture
@@ -364,7 +365,7 @@ class Persistence:
         records.sort()
         return list(records)
 
-    def retrieve_series_by_name(self, name: str):
+    def retrieve_series_by_name(self, name):
         """Retrieve series by name.
 
         :param name: the name of the tag to retrieve
@@ -382,7 +383,7 @@ class Persistence:
         (key, name, description) = row
         return PictureSeries(key, name, description)
 
-    def retrieve_series_by_name_segment(self, name: str, limit=1000):
+    def retrieve_series_by_name_segment(self, name, limit=1000):
         """Retrieve series by name segment using wildcards.
 
         Example: name: 'a%'
@@ -417,7 +418,7 @@ class Persistence:
         records.sort()
         return list(records)
 
-    def retrieve_tag_by_name(self, name: str):
+    def retrieve_tag_by_name(self, name):
         """Retrieve tag by name.
 
         :param name: the name of the tag to retrieve
@@ -435,7 +436,7 @@ class Persistence:
         (key, name, description) = row
         return Tag(key, name, description)
 
-    def retrieve_tags_by_name_segment(self, name: str, limit=1000):
+    def retrieve_tags_by_name_segment(self, name, limit=1000):
         """Retrieve tags by name segment using wildcards.
 
         Example: name: 'a%'
@@ -456,7 +457,7 @@ class Persistence:
         records.sort()
         return list(records)
 
-    def retrieve_tag_by_key(self, key: int):
+    def retrieve_tag_by_key(self, key):
         """Retrieve tag by key.
 
         :param key: the id of the tag
@@ -500,8 +501,7 @@ class Persistence:
                                  message='{}'.format(e))
             return False
 
-    def __create_picture(self, key: int, name: str,
-                         path: str, description: str):
+    def __create_picture(self, key, name, path, description):
         """Create a PictureReference and retrieve tags and series."""
         picture = PictureReference(key, name, path, description)
         picture.tags = retrieve_tags_for_picture(picture)
@@ -512,12 +512,12 @@ class Persistence:
 
 # Picture
 
-def add_picture(picture: PictureReference):
+def add_picture(picture):
     db = get_db()
     db.add_picture(picture)
 
 
-def retrieve_picture_by_key(key: int):
+def retrieve_picture_by_key(key):
     global _picture_cache
     try:
         picture = _picture_cache.get(key)
@@ -528,7 +528,7 @@ def retrieve_picture_by_key(key: int):
     return picture
 
 
-def retrieve_picture_by_path(path: str):
+def retrieve_picture_by_path(path):
     global _picture_cache
     db = get_db()
     picture = db.retrieve_picture_by_path(path)
@@ -536,8 +536,7 @@ def retrieve_picture_by_path(path: str):
     return picture
 
 
-def retrieve_filtered_pictures(path: str, limit: int,
-                               series: [PictureSeries], tags: [Tag]):
+def retrieve_filtered_pictures(path, limit, series, tags):
     global _picture_cache
     db = get_db()
     pictures = db.retrieve_filtered_pictures(path, limit, series, tags)
@@ -546,59 +545,56 @@ def retrieve_filtered_pictures(path: str, limit: int,
     return pictures
 
 
-def update_picture(picture: PictureReference):
+def update_picture(picture):
     global _picture_cache
     db = get_db()
     db.update_picture(picture)
     _picture_cache.put(picture.key, picture)
 
 
-def add_tag_to_picture(picture: PictureReference, tag: Tag):
+def add_tag_to_picture(picture, tag):
     db = get_db()
     db.add_tag_to_picture(picture, tag)
 
 
-def add_tags_to_picture(picture: PictureReference, tags: [Tag]):
+def add_tags_to_picture(picture, tags):
     for tag in tags:
         add_tag_to_picture(picture, tag)
 
 
-def remove_tag_from_picture(picture: PictureReference, tag: Tag):
+def remove_tag_from_picture(picture, tag):
     db = get_db()
     db.remove_tag_from_picture(picture, tag)
 
 
-def remove_tags_from_picture(picture: PictureReference, tags: [Tag]):
+def remove_tags_from_picture(picture, tags):
     for tag in tags:
         remove_tag_from_picture(picture, tag)
 
 
-def add_picture_to_series(picture: PictureReference, series: PictureSeries):
+def add_picture_to_series(picture, series):
     db = get_db()
     db.add_picture_to_series(picture, series)
 
 
-def add_picture_to_set_of_series(picture: PictureReference,
-                                 series: [PictureSeries]):
+def add_picture_to_set_of_series(picture, series):
     for item in series:
         add_picture_to_series(picture, item)
 
 
-def remove_picture_from_series(picture: PictureReference,
-                               series: PictureSeries):
+def remove_picture_from_series(picture, series):
     db = get_db()
     db.remove_picture_from_series(picture, series)
 
 
-def remove_picture_from_set_of_series(picture: PictureReference,
-                                      series: [PictureSeries]):
+def remove_picture_from_set_of_series(picture, series):
     for item in series:
         remove_picture_from_series(picture, item)
 
 
 # Series
 
-def add_series(series: PictureSeries):
+def add_series(series):
     db = get_db()
     db.add_series(series)
 
@@ -612,7 +608,7 @@ def get_all_series():
     return all_series
 
 
-def retrieve_series_by_key(key: int):
+def retrieve_series_by_key(key):
     global _series_cache
     try:
         series = _series_cache.get(key)
@@ -626,7 +622,7 @@ def retrieve_series_by_key(key: int):
     return series
 
 
-def retrieve_series_by_name(name: str):
+def retrieve_series_by_name(name):
     global _series_cache
     db = get_db()
     series = db.retrieve_series_by_name(name)
@@ -637,7 +633,7 @@ def retrieve_series_by_name(name: str):
     return series
 
 
-def retrieve_series_by_name_segment(name: str, limit):
+def retrieve_series_by_name_segment(name, limit):
     global _series_cache
     db = get_db()
     filtered_series = db.retrieve_series_by_name_segment(name, limit)
@@ -646,7 +642,7 @@ def retrieve_series_by_name_segment(name: str, limit):
     return filtered_series
 
 
-def retrieve_series_for_picture(picture: PictureReference):
+def retrieve_series_for_picture(picture):
     global _series_cache
     db = get_db()
     pic_series = db.retrieve_series_for_picture(picture)
@@ -655,7 +651,7 @@ def retrieve_series_for_picture(picture: PictureReference):
     return pic_series
 
 
-def update_series(series: PictureSeries):
+def update_series(series):
     global _series_cache
     db = get_db()
     db.update_series(series)
@@ -664,7 +660,7 @@ def update_series(series: PictureSeries):
 
 # Tags
 
-def add_tag(tag: Tag):
+def add_tag(tag):
     db = get_db()
     db.add_tag(tag)
 
@@ -678,7 +674,7 @@ def get_all_tags():
     return tags
 
 
-def retrieve_tag_by_key(key: int):
+def retrieve_tag_by_key(key):
     global _tag_cache
     try:
         tag = _tag_cache.get(key)
@@ -692,7 +688,7 @@ def retrieve_tag_by_key(key: int):
     return tag
 
 
-def retrieve_tag_by_name(name: str):
+def retrieve_tag_by_name(name):
     global _tag_cache
     db = get_db()
     tag = db.retrieve_tag_by_name(name)
@@ -703,7 +699,7 @@ def retrieve_tag_by_name(name: str):
     return tag
 
 
-def retrieve_tags_by_name_segment(name: str, limit):
+def retrieve_tags_by_name_segment(name, limit):
     global _tag_cache
     db = get_db()
     tags = db.retrieve_tags_by_name_segment(name, limit)
@@ -712,7 +708,7 @@ def retrieve_tags_by_name_segment(name: str, limit):
     return tags
 
 
-def retrieve_tags_for_picture(picture: PictureReference):
+def retrieve_tags_for_picture(picture):
     global _tag_cache
     db = get_db()
     tags = db.retrieve_tags_for_picture(picture)
@@ -721,7 +717,7 @@ def retrieve_tags_for_picture(picture: PictureReference):
     return tags
 
 
-def update_tag(tag: Tag):
+def update_tag(tag):
     global _tag_cache
     db = get_db()
     db.update_tag(tag)
