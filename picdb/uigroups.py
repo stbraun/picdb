@@ -90,7 +90,7 @@ class GroupManagement(ttk.Frame):
                                  command=self.load_series)
         load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
         add_button = ttk.Button(self.control_frame, text='add series',
-                                command=self.add_series)
+                                command=self.add_group)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
         save_button = ttk.Button(self.control_frame, text='save series',
                                  command=self.save_series)
@@ -100,10 +100,10 @@ class GroupManagement(ttk.Frame):
         """Load a bunch of series from database."""
         self.filter_tree.load_items()
 
-    def add_series(self):
+    def add_group(self):
         """Push an empty series to editor."""
-        series = Group(None, '', '')
-        self.editor.groups = series
+        group_ = Group(None, '', '', None)
+        self.editor.group = group_
 
     def save_series(self):
         """Save the group currently in editor."""
@@ -116,8 +116,8 @@ class GroupManagement(ttk.Frame):
         """An item in the tree view was selected."""
         items = self.filter_tree.selected_items()
         if len(items) > 0:
-            group = items[0]
-            self.editor.group = group
+            group_ = items[0]
+            self.editor.group = group_
 
 
 class PictureGroupFilteredTreeview(FilteredTreeview):
