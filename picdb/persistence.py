@@ -46,7 +46,7 @@ _db_name = None
 
 # Caches for PictureReference, Group, Tag
 _tag_cache = LRUCache(200)
-_series_cache = LRUCache(200)
+_group_cache = LRUCache(200)
 _picture_cache = LRUCache(200)
 
 
@@ -137,7 +137,7 @@ class Persistence:
         parent = series.parent.key if series.parent is not None else None
         self.execute_sql(stmt, (None, series.name, series.description, parent))
 
-    def update_series(self, series):
+    def update_group(self, series):
         self.logger.debug("Update series: {}".format(series.name))
         stmt = "UPDATE series SET identifier='{}', description='{}' " \
                "WHERE id={}".format(series.name,
@@ -596,68 +596,68 @@ def remove_picture_from_set_of_series(picture, series):
 
 # Series
 
-def add_series(series):
+def add_group(group):
     db = get_db()
-    db.add_series(series)
+    db.add_series(group)
 
 
 def get_all_series():
-    global _series_cache
+    global _group_cache
     db = get_db()
     all_series = db.retrieve_all_series()
     for series in all_series:
-        _series_cache.put(series.key, series)
+        _group_cache.put(series.key, series)
     return all_series
 
 
 def retrieve_series_by_key(key):
-    global _series_cache
+    global _group_cache
     try:
-        series = _series_cache.get(key)
+        series = _group_cache.get(key)
     except KeyError:
         db = get_db()
         series = db.retrieve_series_by_key(key)
         if series is None:
             raise UnknownEntityException(
                 'Series with key {} is unknown.'.format(key))
-        _series_cache.put(series.key, series)
+        _group_cache.put(series.key, series)
     return series
 
 
 def retrieve_series_by_name(name):
-    global _series_cache
+    global _group_cache
     db = get_db()
     series = db.retrieve_series_by_name(name)
     if series is None:
         raise UnknownEntityException(
             'Series with name {} is unknown.'.format(name))
-    _series_cache.put(series.key, series)
+    _group_cache.put(series.key, series)
     return series
 
 
 def retrieve_series_by_name_segment(name, limit):
-    global _series_cache
+    global _group_cache
     db = get_db()
     filtered_series = db.retrieve_series_by_name_segment(name, limit)
     for series in filtered_series:
-        _series_cache.put(series.key, series)
+        _group_cache.put(series.key, series)
     return filtered_series
 
 
 def retrieve_series_for_picture(picture):
-    global _series_cache
+    global _group_cache
     db = get_db()
     pic_series = db.retrieve_series_for_picture(picture)
     for series in pic_series:
-        _series_cache.put(series.key, series)
+        _group_cache.put(series.key, series)
     return pic_series
 
 
-def update_series(series):
-    global _series_cache
+def update_group(group):
+    global _group_cache
     db = get_db()
-    db.update_series(series)
-    _series_cache.put(series.key, series)
+    db.update_group(group)
+    _group_cache.put(group.key, group)
 
 
 # Tags

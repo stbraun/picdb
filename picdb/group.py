@@ -28,11 +28,19 @@ An entity for a group of pictures.
 # OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+from . import persistence
 from .entity import Entity
 
 
 class Group(Entity):
     """A series of pictures."""
+
+    def save(self):
+        if self.key is None:
+            persistence.add_group(self)
+        else:
+            persistence.update_group(self)
 
     def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)

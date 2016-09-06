@@ -144,7 +144,7 @@ class TestPersistence(unittest.TestCase):
         series2 = self.db.retrieve_series_by_name(series1.name)
         new_description = 'new description'
         series2.description = new_description
-        self.db.update_series(series2)
+        self.db.update_group(series2)
         series3 = self.db.retrieve_series_by_key(series2.key)
         self.assertIsNot(None, series3)
         self.assertEqual(new_description, series3.description)

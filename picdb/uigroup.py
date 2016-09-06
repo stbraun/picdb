@@ -110,9 +110,9 @@ class GroupManagement(ttk.Frame):
         series = self.editor.groups
         if series is not None:
             if series.key is None:
-                persistence.add_series(series)
+                persistence.add_group(series)
             else:
-                persistence.update_series(series)
+                persistence.update_group(series)
         self.load_series()
 
     def item_selected(self, _):

@@ -30,7 +30,7 @@ An entity for pictures.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
+from . import persistence
 from .entity import Entity
 
 
@@ -42,6 +42,12 @@ class PictureReference(Entity):
         self.path = path
         self._tags = []
         self._groups = []
+
+    def save(self):
+        if self.key is None:
+            persistence.add_picture(self)
+        else:
+            persistence.update_picture(self)
 
     @property
     def tags(self):

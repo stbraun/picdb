@@ -28,11 +28,19 @@ Tag entity.
 # OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+from . import persistence
 from .entity import Entity
 
 
 class Tag(Entity):
     """A tag."""
+
+    def save(self):
+        if self.key is None:
+            persistence.add_tag(self)
+        else:
+            persistence.update_tag(self)
 
     def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)
