@@ -71,7 +71,7 @@ def add_assignments(pics: [Picture],
                     tags: [Tag]):
     for pic in pics:
         for s in series:
-            if s not in pic.groups: group.add_picture_to_series(pic, s)
+            if s not in pic.groups: group.add_picture_to_group(s, pic)
         for t in tags:
             if t not in pic.tags: picture.add_tag_to_picture(pic, t)
 

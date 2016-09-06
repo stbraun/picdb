@@ -425,24 +425,26 @@ class PictureMetadataEditor(ttk.Frame):
         self.picture.save()
 
     def _update_series(self):
-        """Remove and add series according to changes made during editing."""
-        # TODO update groups a picture is assigned to
-        # pic_series = set(self.picture.groups)
-        # edt_series = set(self.series_selector.selected_items())
-        # series_to_add = edt_series.difference(pic_series)
-        # series_to_remove = pic_series.difference(edt_series)
-        # group.add_picture_to_set_of_series(self.picture, series_to_add)
-        # group.remove_picture_from_set_of_series(self.picture,
-        #                                         series_to_remove)
+        """Remove or add picture from groups according to changes made
+        during editing."""
+        saved_groups = set(group.retrieve_series_for_picture(self.picture))
+        edt_groups = set(self.series_selector.selected_items())
+        series_to_add = edt_groups.difference(saved_groups)
+        series_to_remove = saved_groups.difference(edt_groups)
+        for grp in series_to_add:
+            grp.assign_picture(self.picture)
+            grp.save()
+        for grp in series_to_remove:
+            grp.remove_picture(self.picture)
+            grp.save()
 
     def load_picture(self, picture_):
         """Load picture into editor."""
         self.picture = picture_
         self.editor.picture = picture_
         self.tag_selector.load_items(picture_.tags)
-        # self.series_selector.load_items(picture_.groups)
-        self.series_selector.load_items(
-            group.retrieve_series_for_picture(picture_))
+        # Retrieve groups the picture is currently assigned to.
+        self.series_selector.load_items(group.retrieve_series_for_picture(picture_))
 
     def clear(self):
         """Clear the editor."""

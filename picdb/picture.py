@@ -45,9 +45,6 @@ class Picture(Entity):
         self.path = path
         # Currently assigned tags. May not be saved yet.
         self._tags = None
-        # Tags as loaded from database. Used to determine add / remove
-        # operations when saving the picture.
-        self._saved_tags = None
 
     def save(self):
         if self.key is None:
@@ -55,11 +52,10 @@ class Picture(Entity):
         else:
             update_picture(self)
         self._update_tags()
-        self._saved_tags = self._tags
 
     def _update_tags(self):
         """Remove and add tags according to changes made during editing."""
-        saved_tags = set(self._saved_tags)
+        saved_tags = set(retrieve_tags_for_picture(self))
         _tags = set(self._tags)
         tags_to_add = _tags.difference(saved_tags)
         tags_to_remove = saved_tags.difference(_tags)
@@ -70,12 +66,40 @@ class Picture(Entity):
     def tags(self):
         if self._tags is None:
             self._tags = retrieve_tags_for_picture(self)
-            self._saved_tags = self._tags
         return self._tags
 
     @tags.setter
     def tags(self, tags_):
+        """Replace the complete tag set of this picture.
+
+        :param tags_: complete set of tags to assign to the picture.
+        :type tags_: [Tag]
+        """
         self._tags = tags_
+
+    def assign_tag(self, tag_):
+        """Assign a single tag to the picture.
+
+        You must save the picture to persist this assignment.
+
+        :param tag_: a tag to assign.
+        :type tag_: Tag
+        """
+        if self._tags is None:
+            self._tags = [tag_]
+        else:
+            self._tags.append(tag_)
+
+    def remove_tag(self, tag_):
+        """Remove given tag from picture.
+
+        If the tag was not assigned, this operation is ignored.
+
+        :param tag_: tag to remove
+        :type tag_: Tag
+        """
+        if self._tags is not None and tag_ in self._tags:
+            self._tags.remove(tag_)
 
     def __str__(self):
         return '<{} ({}): {}>'.format(self.name, self.key, self.path)
