@@ -35,6 +35,9 @@ import sys
 from pprint import pprint
 import argparse
 
+import group
+import picture
+import tag
 from picdb import persistence
 
 from picdb.picture import PictureReference
@@ -68,9 +71,9 @@ def add_assignments(pics: [PictureReference],
                     tags: [Tag]):
     for pic in pics:
         for s in series:
-            if s not in pic.groups: persistence.add_picture_to_series(pic, s)
+            if s not in pic.groups: group.add_picture_to_series(pic, s)
         for t in tags:
-            if t not in pic.tags: persistence.add_tag_to_picture(pic, t)
+            if t not in pic.tags: picture.add_tag_to_picture(pic, t)
 
 
 def get_pic_list(path: str):
@@ -81,7 +84,7 @@ def get_pic_list(path: str):
     :return: list of pictures
     :rtype: [PictureReference]
     """
-    return persistence.retrieve_filtered_pictures(path, None, [], [])
+    return picture.retrieve_filtered_pictures(path, None, [], [])
 
 
 def _get_series(names: [str]):
@@ -94,7 +97,7 @@ def _get_series(names: [str]):
     """
     series_ = []
     for name in names:
-        series = persistence.retrieve_series_by_name(name)
+        series = group.retrieve_series_by_name(name)
         series_.append(series)
     return series_
 
@@ -109,7 +112,7 @@ def _get_tags(names: [str]):
     """
     tags = []
     for name in names:
-        tag = persistence.retrieve_tag_by_name(name)
+        tag = tag.retrieve_tag_by_name(name)
         tags.append(tag)
     return tags
 

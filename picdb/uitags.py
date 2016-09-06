@@ -33,7 +33,7 @@ import logging
 import tkinter as tk
 from tkinter import ttk
 
-from . import persistence
+from . import tag
 from .tag import Tag
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .selector import Selector
@@ -103,10 +103,7 @@ class TagManagement(ttk.Frame):
         """Save the tag currently in editor."""
         tag = self.editor.tag
         if tag is not None:
-            if tag.key is None:
-                persistence.add_tag(tag)
-            else:
-                persistence.update_tag(tag)
+            tag.save()
         self.load_tags()
 
     def item_selected(self, _):
@@ -168,7 +165,7 @@ class TagFilteredTreeview(FilteredTreeview):
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        tags = persistence.retrieve_tags_by_name_segment(name_filter, limit)
+        tags = tag.retrieve_tags_by_name_segment(name_filter, limit)
         return tags
 
 
@@ -202,7 +199,7 @@ class TagTree(PicTreeView):
         :rtype: list(Tag)
         """
         item_ids = self.selection()
-        tags = [persistence.retrieve_tag_by_key(int(item_id))
+        tags = [tag.retrieve_tag_by_key(int(item_id))
                 for item_id in item_ids]
         return tags
 
@@ -256,7 +253,7 @@ class TagSelector(Selector):
 
     def selected_items(self):
         items = self.right.get_children()
-        tags = [persistence.retrieve_tag_by_key(int(item)) for item in items]
+        tags = [tag.retrieve_tag_by_key(int(item)) for item in items]
         return tags
 
     def load_items(self, picture_tags):
@@ -265,5 +262,5 @@ class TagSelector(Selector):
         :param picture_tags: list of tags already assigned to picture.
         :type picture_tags: [Tag]
         """
-        all_tags = persistence.get_all_tags()
+        all_tags = tag.get_all_tags()
         self.init_trees(all_tags, picture_tags)

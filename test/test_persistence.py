@@ -33,10 +33,8 @@ Tests for persistence.
 import os
 import unittest
 
-from picdb.picture import PictureReference
-from group import Group
-from tag import Tag
 from picdb.persistence import Persistence
+from picdb.dataobjects import DTag, DGroup, DPicture
 
 
 class TestPersistence(unittest.TestCase):
@@ -52,13 +50,13 @@ class TestPersistence(unittest.TestCase):
         # Delete test database
         pass
         if os.path.exists(self.DATABASE):
-            if not self.db is None:
+            if self.db is not None:
                 self.db.close()
             os.remove(self.DATABASE)
             pass
 
     def test_add_and_retrieve_tag(self):
-        tag1 = Tag(None, 'Tag 1', "My first tag.")
+        tag1 = DTag(None, 'Tag 1', "My first tag.", None)
         tags = self.db.retrieve_all_tags()
         self.assertEqual(0, len(tags))
         self.db.add_tag(tag1)
@@ -67,7 +65,7 @@ class TestPersistence(unittest.TestCase):
         tag_retrieved = tags[0]
         self.assertEqual(tag1.name, tag_retrieved.name)
         self.assertEqual(tag1.description, tag_retrieved.description)
-        tag2 = Tag(None, 'Tag 2', "My second tag.")
+        tag2 = DTag(None, 'Tag 2', "My second tag.", None)
         self.db.add_tag(tag2)
         tags = self.db.retrieve_all_tags()
         self.assertEqual(2, len(tags))
@@ -78,7 +76,7 @@ class TestPersistence(unittest.TestCase):
         self.assertEqual(tag_retrieved.description, tag.description)
 
     def test_add_and_retrieve_series(self):
-        series1 = Group(None, 'Series 1', "My first series.")
+        series1 = DGroup(None, 'Series 1', "My first series.", None)
         series = self.db.retrieve_all_series()
         self.assertEqual(0, len(series))
         self.db.add_series(series1)
@@ -87,14 +85,14 @@ class TestPersistence(unittest.TestCase):
         series_retrieved = series[0]
         self.assertEqual(series1.name, series_retrieved.name)
         self.assertEqual(series1.description, series_retrieved.description)
-        series2 = Tag(None, 'Series 2', "My second series.")
+        series2 = DTag(None, 'Series 2', "My second series.", None)
         self.db.add_series(series2)
         series = self.db.retrieve_all_series()
         self.assertEqual(2, len(series))
 
     def test_add_and_retrieve_picture(self):
-        picture1 = PictureReference(None, 'eye', "/resources/eye.gif",
-                                    "My first picture.")
+        picture1 = DPicture(None, 'eye', "/resources/eye.gif",
+                            "My first picture.")
         picture = self.db.retrieve_picture_by_path(picture1.path)
         self.assertIs(None, picture)
         self.db.add_picture(picture1)
@@ -106,16 +104,16 @@ class TestPersistence(unittest.TestCase):
 
     def test_add_tag_to_picture(self):
         path = "/resources/eye.gif"
-        self.db.add_picture(PictureReference(None, 'eye',
-                                             "/resources/eye.gif",
-                                             "My first picture."))
+        self.db.add_picture(DPicture(None, 'eye',
+                                     "/resources/eye.gif",
+                                     "My first picture."))
         picture = self.db.retrieve_picture_by_path(path)
         tag_name_1 = 'Tag 1'
         tag_name_2 = 'Tag 2'
         tag_name_3 = 'Tag 3'
-        self.db.add_tag(Tag(None, tag_name_1, "My first tag."))
-        self.db.add_tag(Tag(None, tag_name_2, "My second tag."))
-        self.db.add_tag(Tag(None, tag_name_3, "My third tag."))
+        self.db.add_tag(DTag(None, tag_name_1, "My first tag.", None))
+        self.db.add_tag(DTag(None, tag_name_2, "My second tag.", None))
+        self.db.add_tag(DTag(None, tag_name_3, "My third tag.", None))
         tag_1 = self.db.retrieve_tag_by_name(tag_name_1)
         tag_2 = self.db.retrieve_tag_by_name(tag_name_2)
         tag_3 = self.db.retrieve_tag_by_name(tag_name_3)
@@ -127,35 +125,56 @@ class TestPersistence(unittest.TestCase):
         self.assertNotIn(tag_2.__str__(), tags.__str__())
 
     def test_update_picture(self):
-        picture1 = PictureReference(None, 'eye',
-                                    "/resources/eye.gif", "My first picture.")
+        picture1 = DPicture(None, 'eye',
+                            "/resources/eye.gif", "My first picture.")
         self.db.add_picture(picture1)
         pic = self.db.retrieve_picture_by_path(picture1.path)
         new_description = 'new description'
-        pic.description = new_description
+        pic = pic._replace(description=new_description)
         self.db.update_picture(pic)
         pic2 = self.db.retrieve_picture_by_key(pic.key)
         self.assertIsNot(None, pic2)
         self.assertEqual(new_description, pic2.description)
 
     def test_update_series(self):
-        series1 = Group(None, 'eyes', "My series.")
+        series1 = DGroup(None, 'eyes', "My series.", None)
         self.db.add_series(series1)
         series2 = self.db.retrieve_series_by_name(series1.name)
         new_description = 'new description'
-        series2.description = new_description
+        series2 = series2._replace(description=new_description)
         self.db.update_group(series2)
         series3 = self.db.retrieve_series_by_key(series2.key)
         self.assertIsNot(None, series3)
         self.assertEqual(new_description, series3.description)
 
     def test_update_tag(self):
-        tag1 = Tag(None, 'eyes', "My tag.")
+        tag1 = DTag(None, 'eyes', "My tag.", None)
         self.db.add_tag(tag1)
         tag2 = self.db.retrieve_tag_by_name(tag1.name)
         new_description = 'new description'
-        tag2.description = new_description
+        tag2 = tag2._replace(description=new_description)
         self.db.update_tag(tag2)
         tag3 = self.db.retrieve_tag_by_key(tag2.key)
         self.assertIsNot(None, tag3)
         self.assertEqual(new_description, tag3.description)
+
+    def test_retrieve_pictures_for_group(self):
+        picture1 = DPicture(None, 'p1',
+                            "/resources/p1.gif", "My first picture.")
+        picture2 = DPicture(None, 'p2',
+                            "/resources/p2.gif", "My first picture.")
+        self.db.add_picture(picture1)
+        self.db.add_picture(picture2)
+        picture1 = self.db.retrieve_picture_by_path(picture1.path)
+        picture2 = self.db.retrieve_picture_by_path(picture2.path)
+        group = DGroup(None, 'grp', 'group', None)
+        self.db.add_series(group)
+        group = self.db.retrieve_series_by_name(group.name)
+        pics = self.db.retrieve_pictures_for_group(group)
+        self.assertEqual(0, len(pics))
+        self.db.add_picture_to_series(picture1, group)
+        pics = self.db.retrieve_pictures_for_group(group)
+        self.assertEqual(1, len(pics))
+        self.db.add_picture_to_series(picture2, group)
+        pics = self.db.retrieve_pictures_for_group(group)
+        self.assertEqual(2, len(pics))

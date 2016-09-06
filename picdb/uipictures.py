@@ -38,11 +38,12 @@ from tkinter import messagebox
 
 from PIL import Image, ImageTk
 
+from . import group
+from . import picture
 from .picture import PictureReference
-from . import persistence
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .uitags import TagSelector
-from .uigroup import PictureGroupSelector
+from .uigroups import PictureGroupSelector
 
 
 class PictureManagement(ttk.Frame):
@@ -129,9 +130,9 @@ class PictureManagement(ttk.Frame):
         self.logger.info('Files selected for import: {}'.format(files))
         pictures = [PictureReference(None, os.path.basename(pth), pth, None)
                     for pth in files]
-        for picture in pictures:
-            persistence.add_picture(picture)
-            pic = persistence.retrieve_picture_by_path(picture.path)
+        for pic in pictures:
+            picture.add_picture(pic)
+            pic = picture.retrieve_picture_by_path(pic.path)
             self.filter_tree.add_item_to_tree(pic)
         messagebox.showinfo(title='Picture Import',
                             message='{} pictures added.'.format(len(pictures)))
@@ -253,9 +254,9 @@ class PictureFilteredTreeview(FilteredTreeview):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, picture):
+    def add_item_to_tree(self, picture_):
         """Add given picture to tree view."""
-        super().add_item_to_tree(picture)
+        super().add_item_to_tree(picture_)
 
     def _retrieve_items(self):
         """Retrieve a bunch of pictures from database.
@@ -266,9 +267,9 @@ class PictureFilteredTreeview(FilteredTreeview):
         limit = self.limit_var.get()
         series = self.series_selector.selected_items()
         tags = self.tag_selector.selected_items()
-        pics = persistence.retrieve_filtered_pictures(name_filter,
-                                                      limit,
-                                                      series, tags)
+        pics = picture.retrieve_filtered_pictures(name_filter,
+                                                  limit,
+                                                  series, tags)
         return pics
 
     def _visibility_changed(self, event):
@@ -307,7 +308,7 @@ class PictureReferenceTree(PicTreeView):
         :rtype: list(PictureReference)
         """
         item_ids = self.selection()
-        pics = [persistence.retrieve_picture_by_key(int(pic_id))
+        pics = [picture.retrieve_picture_by_key(int(pic_id))
                 for pic_id in item_ids]
         return pics
 
@@ -418,9 +419,9 @@ class PictureMetadataEditor(ttk.Frame):
     def _save(self):
         """Save current picture."""
         self.picture = self.editor.picture
-        persistence.update_picture(self.picture)
         self._update_tags()
         self._update_series()
+        self.picture.save()
 
     def _update_tags(self):
         """Remove and add tags according to changes made during editing."""
@@ -428,27 +429,28 @@ class PictureMetadataEditor(ttk.Frame):
         edt_tags = set(self.tag_selector.selected_items())
         tags_to_add = edt_tags.difference(pic_tags)
         tags_to_remove = pic_tags.difference(edt_tags)
-        persistence.add_tags_to_picture(self.picture, tags_to_add)
-        persistence.remove_tags_from_picture(self.picture, tags_to_remove)
-        self.picture.tags = edt_tags
+        picture.add_tags_to_picture(self.picture, tags_to_add)
+        picture.remove_tags_from_picture(self.picture, tags_to_remove)
 
     def _update_series(self):
         """Remove and add series according to changes made during editing."""
-        pic_series = set(self.picture.groups)
-        edt_series = set(self.series_selector.selected_items())
-        series_to_add = edt_series.difference(pic_series)
-        series_to_remove = pic_series.difference(edt_series)
-        persistence.add_picture_to_set_of_series(self.picture, series_to_add)
-        persistence.remove_picture_from_set_of_series(self.picture,
-                                                      series_to_remove)
-        self.picture.groups = edt_series
+        # TODO update groups a picture is assigned to
+        # pic_series = set(self.picture.groups)
+        # edt_series = set(self.series_selector.selected_items())
+        # series_to_add = edt_series.difference(pic_series)
+        # series_to_remove = pic_series.difference(edt_series)
+        # group.add_picture_to_set_of_series(self.picture, series_to_add)
+        # group.remove_picture_from_set_of_series(self.picture,
+        #                                         series_to_remove)
 
-    def load_picture(self, picture):
+    def load_picture(self, picture_):
         """Load picture into editor."""
-        self.picture = picture
-        self.editor.picture = picture
-        self.tag_selector.load_items(picture.tags)
-        self.series_selector.load_items(picture.groups)
+        self.picture = picture_
+        self.editor.picture = picture_
+        self.tag_selector.load_items(picture_.tags)
+        # self.series_selector.load_items(picture_.groups)
+        self.series_selector.load_items(
+            group.retrieve_series_for_picture(picture_))
 
     def clear(self):
         """Clear the editor."""

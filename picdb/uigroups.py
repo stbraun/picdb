@@ -33,7 +33,7 @@ import logging
 import tkinter as tk
 from tkinter import ttk
 
-from . import persistence
+from . import group
 from .group import Group
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .selector import Selector
@@ -106,13 +106,10 @@ class GroupManagement(ttk.Frame):
         self.editor.groups = series
 
     def save_series(self):
-        """Save the series currently in editor."""
-        series = self.editor.groups
-        if series is not None:
-            if series.key is None:
-                persistence.add_group(series)
-            else:
-                persistence.update_group(series)
+        """Save the group currently in editor."""
+        group_ = self.editor.group
+        if group_ is not None:
+            group_.save()
         self.load_series()
 
     def item_selected(self, _):
@@ -178,8 +175,8 @@ class PictureGroupFilteredTreeview(FilteredTreeview):
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        groups = persistence.retrieve_series_by_name_segment(name_filter,
-                                                             limit)
+        groups = group.retrieve_series_by_name_segment(name_filter,
+                                                       limit)
         return groups
 
 
@@ -213,7 +210,7 @@ class PictureGroupTree(PicTreeView):
         :rtype: list(Tag)
         """
         item_ids = self.selection()
-        series = [persistence.retrieve_series_by_key(int(item_id))
+        series = [group.retrieve_series_by_key(int(item_id))
                   for item_id in item_ids]
         return series
 
@@ -268,7 +265,7 @@ class PictureGroupSelector(Selector):
 
     def selected_items(self):
         items = self.right.get_children()
-        groups = [persistence.retrieve_series_by_key(int(item))
+        groups = [group.retrieve_series_by_key(int(item))
                   for item in items]
         return groups
 
@@ -278,5 +275,5 @@ class PictureGroupSelector(Selector):
         :param picture_groups: list of series already assigned to picture.
         :type picture_groups: [Group]
         """
-        groups = persistence.get_all_series()
+        groups = group.get_all_series()
         self.init_trees(groups, picture_groups)

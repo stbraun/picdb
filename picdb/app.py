@@ -37,7 +37,7 @@ import logging
 from .log import initialize_logger
 from .uistatus import StatusPanel
 from .uipictures import PictureManagement
-from .uigroup import GroupManagement
+from .uigroups import GroupManagement
 from .uitags import TagManagement
 
 

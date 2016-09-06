@@ -34,20 +34,11 @@ import os
 import sqlite3
 from tkinter import messagebox
 
-from .cache import LRUCache
-
 from .config import get_configuration
-from .picture import PictureReference
-from .group import Group
-from .tag import Tag
+from .dataobjects import DTag, DPicture, DGroup
 
 # This module global variable will hold the expanded database name
 _db_name = None
-
-# Caches for PictureReference, Group, Tag
-_tag_cache = LRUCache(200)
-_group_cache = LRUCache(200)
-_picture_cache = LRUCache(200)
 
 
 class UnknownEntityException(Exception):
@@ -139,9 +130,11 @@ class Persistence:
 
     def update_group(self, series):
         self.logger.debug("Update series: {}".format(series.name))
-        stmt = "UPDATE series SET identifier='{}', description='{}' " \
+        stmt = "UPDATE series SET identifier='{}', description='{}', " \
+               "parent='{}' " \
                "WHERE id={}".format(series.name,
-                                    series.description, series.key)
+                                    series.description, series.parent,
+                                    series.key)
         self.execute_sql(stmt)
 
     def add_tag(self, tag):
@@ -157,9 +150,10 @@ class Persistence:
 
     def update_tag(self, tag):
         self.logger.debug("Update tag: {}".format(tag.name))
-        stmt = "UPDATE tags SET identifier='{}', description='{}' " \
+        stmt = "UPDATE tags SET identifier='{}', description='{}', parent='{" \
+               "}' " \
                "WHERE id={}".format(tag.name,
-                                    tag.description, tag.key)
+                                    tag.description, tag.parent, tag.key)
         self.execute_sql(stmt)
 
     def add_picture(self, picture):
@@ -252,8 +246,7 @@ class Persistence:
         row = cursor.fetchone()
         if row is None:
             return None
-        (key_, name, path, description) = row
-        return self.__create_picture(key_, name, path, description)
+        return DPicture(*(list(row)))
 
     def retrieve_picture_by_path(self, path):
         """Retrieve picture by path.
@@ -270,8 +263,7 @@ class Persistence:
         row = cursor.fetchone()
         if row is None:
             return None
-        (key, name, path_, description) = row
-        return self.__create_picture(key, name, path_, description)
+        return DPicture(*(list(row)))
 
     def retrieve_filtered_pictures(self, path, limit, series, tags):
         """Retrieve picture by path segment using wildcards.
@@ -308,10 +300,8 @@ class Persistence:
             stmt += ' LIMIT {}'.format(limit)
         self.logger.info(stmt)
         cursor = self.conn.cursor()
-        cursor.execute(stmt, (path, ))
-        records = [self.__create_picture(key, name, path_, description)
-                   for (key, name, path_, description) in
-                   cursor.fetchall()]
+        cursor.execute(stmt, (path,))
+        records = [DPicture(*row) for row in cursor.fetchall()]
         records.sort()
         return list(records)
 
@@ -321,16 +311,17 @@ class Persistence:
         :param key: the id of the series
         :type key: int
         :return: series.
-        :rtype: Group
+        :rtype: DGroup
         """
-        stmt = 'SELECT id, identifier, description FROM series WHERE "id"=?'
+        stmt = 'SELECT id, identifier, description, parent FROM series WHERE ' \
+               '' \
+               '"id"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (key,))
         row = cursor.fetchone()
         if row is None:
             return None
-        (key_, name, description) = row
-        return Group(key_, name, description)
+        return DGroup(*(list(row)))
 
     def retrieve_tags_for_picture(self, picture):
         """Retrieve all tags for given picture.
@@ -338,16 +329,30 @@ class Persistence:
         :param picture: the picture to get the tags for
         :type picture: PictureReference
         :return: tags.
-        :rtype: [Tag]
+        :rtype: [DTag]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description ' \
+        stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE id IN (SELECT tag ' \
                'FROM picture2tag WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
-        records = [Tag(key, name, description)
-                   for (key, name, description) in cursor.fetchall()]
-        records.sort()
+        records = [DTag(*row) for row in cursor.fetchall()]
+        return list(records)
+
+    def retrieve_pictures_for_group(self, group):
+        """Retrieve pictures assigned to given group.
+
+        :param group: given group.
+        :type group: DGroup
+        :return: pictures assigned to group
+        :rtype: [DPicture]
+        """
+        cursor = self.conn.cursor()
+        stmt = 'SELECT id, identifier, path, description FROM pictures ' \
+               'WHERE id IN (SELECT ' \
+               'picture FROM picture2series WHERE series=?)'
+        cursor.execute(stmt, (group.key,))
+        records = [DPicture(*row) for row in cursor.fetchall()]
         return list(records)
 
     def retrieve_series_for_picture(self, picture):
@@ -355,16 +360,14 @@ class Persistence:
 
         :param picture: the id of the picture
         :return: series.
-        :rtype: [Group]
+        :rtype: [DGroup]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description FROM series ' \
+        stmt = 'SELECT id, identifier, description, parent FROM series ' \
                'WHERE id IN (SELECT ' \
                'series FROM picture2series WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
-        records = [Group(key, name, description)
-                   for (key, name, description) in cursor.fetchall()]
-        records.sort()
+        records = [DGroup(*row) for row in cursor.fetchall()]
         return list(records)
 
     def retrieve_series_by_name(self, name):
@@ -373,17 +376,14 @@ class Persistence:
         :param name: the name of the tag to retrieve
         :type name: str
         :return: series or None if name is unknown.
-        :rtype: Group
+        :rtype: DGroup
         """
-        stmt = 'SELECT id, identifier, description ' \
+        stmt = 'SELECT id, identifier, description, parent ' \
                ' FROM series WHERE "identifier"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (name,))
-        row = cursor.fetchone()
-        if not row:
-            return None
-        (key, name, description) = row
-        return Group(key, name, description)
+        row = list(cursor.fetchone())
+        return DGroup(*row)
 
     def retrieve_series_by_name_segment(self, name, limit=1000):
         """Retrieve series by name segment using wildcards.
@@ -394,30 +394,26 @@ class Persistence:
         :type name: str
         :param limit: maximum number of records to retrieve
         :type limit: int
-        :return: tags.
-        :rtype: [Tag]
+        :return: groups.
+        :rtype: [DGroup]
         """
-        stmt = 'SELECT id, identifier, description ' \
+        stmt = 'SELECT id, identifier, description, parent ' \
                'FROM series WHERE "identifier"LIKE? LIMIT ?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (name, limit))
-        records = [Tag(key, name_, description)
-                   for (key, name_, description) in cursor.fetchall()]
-        records.sort()
+        records = [DGroup(*row) for row in cursor.fetchall()]
         return list(records)
 
     def retrieve_all_tags(self):
         """Get all tags from database.
 
         :return: tags.
-        :rtype: [Tag]
+        :rtype: [DTag]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description FROM tags'
+        stmt = 'SELECT id, identifier, description, parent FROM tags'
         cursor.execute(stmt)
-        records = [Tag(key, name, description)
-                   for (key, name, description) in cursor.fetchall()]
-        records.sort()
+        records = [DTag(*row) for row in cursor.fetchall()]
         return list(records)
 
     def retrieve_tag_by_name(self, name):
@@ -428,15 +424,14 @@ class Persistence:
         :return: tag or None if name is unknown.
         :rtype: Tag
         """
-        stmt = 'SELECT id, identifier, description ' \
+        stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE "identifier"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (name,))
         row = cursor.fetchone()
         if not row:
             return None
-        (key, name, description) = row
-        return Tag(key, name, description)
+        return DTag(*(list(row)))
 
     def retrieve_tags_by_name_segment(self, name, limit=1000):
         """Retrieve tags by name segment using wildcards.
@@ -448,15 +443,13 @@ class Persistence:
         :param limit: maximum number of records to retrieve
         :type limit: int
         :return: tags.
-        :rtype: [Tag]
+        :rtype: [DTag]
         """
-        stmt = 'SELECT id, identifier, description ' \
+        stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE "identifier"LIKE? LIMIT ?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (name, limit))
-        records = [Tag(key, name_, description)
-                   for (key, name_, description) in cursor.fetchall()]
-        records.sort()
+        records = [DTag(*row) for row in cursor.fetchall()]
         return list(records)
 
     def retrieve_tag_by_key(self, key):
@@ -465,30 +458,27 @@ class Persistence:
         :param key: the id of the tag
         :type key: int
         :return: tag.
-        :rtype: Tag
+        :rtype: DTag
         """
-        stmt = 'SELECT id, identifier, description FROM tags WHERE "id"=?'
+        stmt = 'SELECT id, identifier, description, parent FROM tags WHERE ' \
+               '"id"=?'
         cursor = self.conn.cursor()
         cursor.execute(stmt, (key,))
         row = cursor.fetchone()
         if row is None:
             return None
-        (key_, name, description) = row
-        return Tag(key_, name, description)
+        return DTag(*(list(row)))
 
     def retrieve_all_series(self):
         """Get all series from database.
 
         :return: series.
-        :rtype: [Group]
+        :rtype: [DGroup]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description FROM series'
+        stmt = 'SELECT id, identifier, description, parent FROM series'
         cursor.execute(stmt)
-        records = [Group(key, name, description)
-                   for (key, name, description) in
-                   cursor.fetchall()]
-        records.sort()
+        records = [DGroup(*row) for row in cursor.fetchall()]
         return list(records)
 
     def execute_sql(self, stmt, *args):
@@ -502,225 +492,3 @@ class Persistence:
             messagebox.showerror(title='Database Error',
                                  message='{}'.format(e))
             return False
-
-    def __create_picture(self, key, name, path, description):
-        """Create a PictureReference and retrieve tags and series."""
-        picture = PictureReference(key, name, path, description)
-        picture.tags = retrieve_tags_for_picture(picture)
-        picture.groups = retrieve_series_for_picture(picture)
-        self.logger.debug('picture created: {}'.format(picture))
-        return picture
-
-
-# Picture
-
-def add_picture(picture):
-    db = get_db()
-    db.add_picture(picture)
-
-
-def retrieve_picture_by_key(key):
-    global _picture_cache
-    try:
-        picture = _picture_cache.get(key)
-    except KeyError:
-        db = get_db()
-        picture = db.retrieve_picture_by_key(key)
-        _picture_cache.put(picture.key, picture)
-    return picture
-
-
-def retrieve_picture_by_path(path):
-    global _picture_cache
-    db = get_db()
-    picture = db.retrieve_picture_by_path(path)
-    _picture_cache.put(picture.key, picture)
-    return picture
-
-
-def retrieve_filtered_pictures(path, limit, series, tags):
-    global _picture_cache
-    db = get_db()
-    pictures = db.retrieve_filtered_pictures(path, limit, series, tags)
-    for picture in pictures:
-        _picture_cache.put(picture.key, picture)
-    return pictures
-
-
-def update_picture(picture):
-    global _picture_cache
-    db = get_db()
-    db.update_picture(picture)
-    _picture_cache.put(picture.key, picture)
-
-
-def add_tag_to_picture(picture, tag):
-    db = get_db()
-    db.add_tag_to_picture(picture, tag)
-
-
-def add_tags_to_picture(picture, tags):
-    for tag in tags:
-        add_tag_to_picture(picture, tag)
-
-
-def remove_tag_from_picture(picture, tag):
-    db = get_db()
-    db.remove_tag_from_picture(picture, tag)
-
-
-def remove_tags_from_picture(picture, tags):
-    for tag in tags:
-        remove_tag_from_picture(picture, tag)
-
-
-def add_picture_to_series(picture, series):
-    db = get_db()
-    db.add_picture_to_series(picture, series)
-
-
-def add_picture_to_set_of_series(picture, series):
-    for item in series:
-        add_picture_to_series(picture, item)
-
-
-def remove_picture_from_series(picture, series):
-    db = get_db()
-    db.remove_picture_from_series(picture, series)
-
-
-def remove_picture_from_set_of_series(picture, series):
-    for item in series:
-        remove_picture_from_series(picture, item)
-
-
-# Series
-
-def add_group(group):
-    db = get_db()
-    db.add_series(group)
-
-
-def get_all_series():
-    global _group_cache
-    db = get_db()
-    all_series = db.retrieve_all_series()
-    for series in all_series:
-        _group_cache.put(series.key, series)
-    return all_series
-
-
-def retrieve_series_by_key(key):
-    global _group_cache
-    try:
-        series = _group_cache.get(key)
-    except KeyError:
-        db = get_db()
-        series = db.retrieve_series_by_key(key)
-        if series is None:
-            raise UnknownEntityException(
-                'Series with key {} is unknown.'.format(key))
-        _group_cache.put(series.key, series)
-    return series
-
-
-def retrieve_series_by_name(name):
-    global _group_cache
-    db = get_db()
-    series = db.retrieve_series_by_name(name)
-    if series is None:
-        raise UnknownEntityException(
-            'Series with name {} is unknown.'.format(name))
-    _group_cache.put(series.key, series)
-    return series
-
-
-def retrieve_series_by_name_segment(name, limit):
-    global _group_cache
-    db = get_db()
-    filtered_series = db.retrieve_series_by_name_segment(name, limit)
-    for series in filtered_series:
-        _group_cache.put(series.key, series)
-    return filtered_series
-
-
-def retrieve_series_for_picture(picture):
-    global _group_cache
-    db = get_db()
-    pic_series = db.retrieve_series_for_picture(picture)
-    for series in pic_series:
-        _group_cache.put(series.key, series)
-    return pic_series
-
-
-def update_group(group):
-    global _group_cache
-    db = get_db()
-    db.update_group(group)
-    _group_cache.put(group.key, group)
-
-
-# Tags
-
-def add_tag(tag):
-    db = get_db()
-    db.add_tag(tag)
-
-
-def get_all_tags():
-    global _tag_cache
-    db = get_db()
-    tags = db.retrieve_all_tags()
-    for tag in tags:
-        _tag_cache.put(tag.key, tag)
-    return tags
-
-
-def retrieve_tag_by_key(key):
-    global _tag_cache
-    try:
-        tag = _tag_cache.get(key)
-    except KeyError:
-        db = get_db()
-        tag = db.retrieve_tag_by_key(key)
-        if tag is None:
-            raise UnknownEntityException(
-                'Tag with key {} is unknown.'.format(key))
-        _tag_cache.put(tag.key, tag)
-    return tag
-
-
-def retrieve_tag_by_name(name):
-    global _tag_cache
-    db = get_db()
-    tag = db.retrieve_tag_by_name(name)
-    if tag is None:
-        raise UnknownEntityException(
-            'Tag with name {} is unknown.'.format(name))
-    _tag_cache.put(tag.key, tag)
-    return tag
-
-
-def retrieve_tags_by_name_segment(name, limit):
-    global _tag_cache
-    db = get_db()
-    tags = db.retrieve_tags_by_name_segment(name, limit)
-    for tag in tags:
-        _tag_cache.put(tag.key, tag)
-    return tags
-
-
-def retrieve_tags_for_picture(picture):
-    global _tag_cache
-    db = get_db()
-    tags = db.retrieve_tags_for_picture(picture)
-    for tag in tags:
-        _tag_cache.put(tag.key, tag)
-    return tags
-
-
-def update_tag(tag):
-    global _tag_cache
-    db = get_db()
-    db.update_tag(tag)
-    _tag_cache.put(tag.key, tag)

@@ -28,24 +28,26 @@ Tag entity.
 # OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-from . import persistence
+from .persistence import get_db, UnknownEntityException
+from .cache import LRUCache
 from .entity import Entity
+
+_tag_cache = LRUCache(200)
 
 
 class Tag(Entity):
     """A tag."""
 
-    def save(self):
-        if self.key is None:
-            persistence.add_tag(self)
-        else:
-            persistence.update_tag(self)
-
     def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)
         self.parent = parent
         self._children = []
+
+    def save(self):
+        if self.key is None:
+            add_tag(self)
+        else:
+            update_tag(self)
 
     @property
     def children(self):
@@ -54,3 +56,72 @@ class Tag(Entity):
     @children.setter
     def children(self, children_):
         self._children = children_
+
+
+def add_tag(tag):
+    db = get_db()
+    db.add_tag(tag)
+
+
+def get_all_tags():
+    db = get_db()
+    d_tags = db.retrieve_all_tags()
+    tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
+    return tags
+
+
+def retrieve_tag_by_key(key):
+    global _tag_cache
+    try:
+        tag = _tag_cache.get(key)
+    except KeyError:
+        db = get_db()
+        d_tag = db.retrieve_tag_by_key(key)
+        if d_tag is None:
+            raise UnknownEntityException(
+                'Tag with key {} is unknown.'.format(key))
+        tag = get_tag_from_d_object(d_tag)
+    return tag
+
+
+def retrieve_tag_by_name(name):
+    global _tag_cache
+    db = get_db()
+    d_tag = db.retrieve_tag_by_name(name)
+    if d_tag is None:
+        raise UnknownEntityException(
+            'Tag with name {} is unknown.'.format(name))
+    tag = get_tag_from_d_object(d_tag)
+    return tag
+
+
+def retrieve_tags_by_name_segment(name, limit):
+    db = get_db()
+    d_tags = db.retrieve_tags_by_name_segment(name, limit)
+    tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
+    return tags
+
+
+def update_tag(tag):
+    global _tag_cache
+    db = get_db()
+    db.update_tag(tag)
+    _tag_cache.put(tag.key, tag)
+
+
+def get_tag_from_d_object(d_tag):
+    """Create tag or retrieve from tag cache.
+
+    :param d_tag: data object of tag
+    :type d_tag: DTag
+    :return: tag object
+    :rtype: Tag
+    """
+    tag = None
+    try:
+        tag = _tag_cache.get(d_tag.key)
+    except KeyError:
+        tag = Tag(*d_tag)
+        _tag_cache.put(tag.key, tag)
+    finally:
+        return tag
