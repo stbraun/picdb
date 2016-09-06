@@ -40,7 +40,7 @@ import picture
 import tag
 from picdb import persistence
 
-from picdb.picture import PictureReference
+from picdb.picture import Picture
 from picdb.group import Group
 from picdb.tag import Tag
 from picdb.persistence import UnknownEntityException
@@ -66,7 +66,7 @@ def main(argv):
             print('{} pictures processed.'.format(len(pics)))
 
 
-def add_assignments(pics: [PictureReference],
+def add_assignments(pics: [Picture],
                     series: [Group],
                     tags: [Tag]):
     for pic in pics:
@@ -82,7 +82,7 @@ def get_pic_list(path: str):
     :param path: path name of pictures with optional wildcards.
     :type path: [str]
     :return: list of pictures
-    :rtype: [PictureReference]
+    :rtype: [Picture]
     """
     return picture.retrieve_filtered_pictures(path, None, [], [])
 

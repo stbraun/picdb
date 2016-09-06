@@ -40,7 +40,7 @@ from PIL import Image, ImageTk
 
 from . import group
 from . import picture
-from .picture import PictureReference
+from .picture import Picture
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .uitags import TagSelector
 from .uigroups import PictureGroupSelector
@@ -128,7 +128,7 @@ class PictureManagement(ttk.Frame):
         """Let user select pictures and import them into database."""
         files = filedialog.askopenfilenames()
         self.logger.info('Files selected for import: {}'.format(files))
-        pictures = [PictureReference(None, os.path.basename(pth), pth, None)
+        pictures = [Picture(None, os.path.basename(pth), pth, None)
                     for pth in files]
         for pic in pictures:
             picture.add_picture(pic)
@@ -250,7 +250,7 @@ class PictureFilteredTreeview(FilteredTreeview):
         """Provide list of pictures selected in tree.
 
         :return: selected pictures
-        :rtype: list(PictureReference)
+        :rtype: list(Picture)
         """
         return self.tree.selected_items()
 
@@ -305,7 +305,7 @@ class PictureReferenceTree(PicTreeView):
         """Provide list of pictures selected in tree.
 
         :return: selected pictures
-        :rtype: list(PictureReference)
+        :rtype: list(Picture)
         """
         item_ids = self.selection()
         pics = [picture.retrieve_picture_by_key(int(pic_id))
@@ -314,7 +314,7 @@ class PictureReferenceTree(PicTreeView):
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
-    """Editor for PictureReference objects."""
+    """Editor for Picture objects."""
 
     def __init__(self, master, text='Edit picture reference'):
         super().__init__(master, text=text)
@@ -419,18 +419,10 @@ class PictureMetadataEditor(ttk.Frame):
     def _save(self):
         """Save current picture."""
         self.picture = self.editor.picture
-        self._update_tags()
         self._update_series()
+        tags = self.tag_selector.selected_items()
+        self.picture.tags = tags
         self.picture.save()
-
-    def _update_tags(self):
-        """Remove and add tags according to changes made during editing."""
-        pic_tags = set(self.picture.tags)
-        edt_tags = set(self.tag_selector.selected_items())
-        tags_to_add = edt_tags.difference(pic_tags)
-        tags_to_remove = pic_tags.difference(edt_tags)
-        picture.add_tags_to_picture(self.picture, tags_to_add)
-        picture.remove_tags_from_picture(self.picture, tags_to_remove)
 
     def _update_series(self):
         """Remove and add series according to changes made during editing."""

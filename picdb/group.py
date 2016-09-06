@@ -117,7 +117,7 @@ def retrieve_pictures_for_group(group):
     :param group: given group.
     :type group: DGroup
     :return: assigned pictures
-    :rtype: [PictureReference]
+    :rtype: [Picture]
     """
     db = get_db()
     d_pictures = db.retrieve_pictures_for_group(group)
@@ -129,7 +129,7 @@ def retrieve_series_for_picture(picture):
     """Retrieve groups for given picture.
 
     :param picture: given group.
-    :type picture: PictureReference
+    :type picture: Picture
     :return: groups the picture is assigned to
     :rtype: [Group]
     """

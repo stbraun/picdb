@@ -160,7 +160,7 @@ class Persistence:
         """Add a new picture.
 
         :param picture: picture to add
-        :type picture: PictureReference
+        :type picture: Picture
         """
         self.logger.debug("Add picture to DB: {} ({})".format(picture.name,
                                                               picture.path))
@@ -183,7 +183,7 @@ class Persistence:
         """Add tag to a picture.
 
         :param picture: the picture
-        :type picture: PictureReference
+        :type picture: Picture
         :param tag: the tag
         :type tag: Tag
         """
@@ -196,7 +196,7 @@ class Persistence:
         """Remove tag from given picture.
 
         :param picture: the picture
-        :type picture: PictureReference
+        :type picture: Picture
         :param tag: the tag
         :type tag: Tag
         """
@@ -209,7 +209,7 @@ class Persistence:
         """Add picture to a series.
 
         :param picture: the picture
-        :type picture: PictureReference
+        :type picture: Picture
         :param series: the series
         :type series: Group
         """
@@ -222,7 +222,7 @@ class Persistence:
         """Remove picture from a series.
 
         :param picture: the picture
-        :type picture: PictureReference
+        :type picture: Picture
         :param series: the series
         :type series: Group
         """
@@ -237,7 +237,7 @@ class Persistence:
         :param key: the id of the picture
         :type key: int
         :return: picture.
-        :rtype: PictureReference
+        :rtype: Picture
         """
         stmt = 'SELECT id, identifier, path, description ' \
                'FROM pictures WHERE "id"=?'
@@ -254,7 +254,7 @@ class Persistence:
         :param path: the path to the picture
         :type path: str
         :return: picture.
-        :rtype: PictureReference
+        :rtype: Picture
         """
         stmt = 'SELECT id, identifier, path, description ' \
                'FROM pictures WHERE "path"=?'
@@ -279,7 +279,7 @@ class Persistence:
         :param tags: limit result set based on given list of tags
         :type tags: [Tag]
         :return: picture.
-        :rtype:[PictureReference]
+        :rtype:[Picture]
         """
         stmt_p = 'SELECT DISTINCT id, identifier, path, description ' \
                  'FROM pictures WHERE ' \
@@ -327,7 +327,7 @@ class Persistence:
         """Retrieve all tags for given picture.
 
         :param picture: the picture to get the tags for
-        :type picture: PictureReference
+        :type picture: Picture
         :return: tags.
         :rtype: [DTag]
         """

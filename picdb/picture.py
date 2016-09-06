@@ -37,27 +37,45 @@ from .tag import get_tag_from_d_object
 _picture_cache = LRUCache(200)
 
 
-class PictureReference(Entity):
+class Picture(Entity):
     """A reference to an image on the file system."""
 
     def __init__(self, key, name, path, description=""):
         super().__init__(key, name, description)
         self.path = path
+        # Currently assigned tags. May not be saved yet.
         self._tags = None
+        # Tags as loaded from database. Used to determine add / remove
+        # operations when saving the picture.
+        self._saved_tags = None
 
     def save(self):
-        # TODO consider tag links
         if self.key is None:
             add_picture(self)
         else:
             update_picture(self)
-        self._tags = None
+        self._update_tags()
+        self._saved_tags = self._tags
+
+    def _update_tags(self):
+        """Remove and add tags according to changes made during editing."""
+        saved_tags = set(self._saved_tags)
+        _tags = set(self._tags)
+        tags_to_add = _tags.difference(saved_tags)
+        tags_to_remove = saved_tags.difference(_tags)
+        add_tags_to_picture(self, tags_to_add)
+        remove_tags_from_picture(self, tags_to_remove)
 
     @property
     def tags(self):
         if self._tags is None:
             self._tags = retrieve_tags_for_picture(self)
+            self._saved_tags = self._tags
         return self._tags
+
+    @tags.setter
+    def tags(self, tags_):
+        self._tags = tags_
 
     def __str__(self):
         return '<{} ({}): {}>'.format(self.name, self.key, self.path)
@@ -86,7 +104,7 @@ def retrieve_picture_by_key(key):
     :param key: key of picture
     :type key: int
     :return: picture object
-    :rtype: PictureReference
+    :rtype: Picture
     """
     global _picture_cache
     try:
@@ -94,7 +112,7 @@ def retrieve_picture_by_key(key):
     except KeyError:
         db = get_db()
         d_pic = db.retrieve_picture_by_key(key)
-        picture = PictureReference(*d_pic)
+        picture = Picture(*d_pic)
         _picture_cache.put(key, picture)
     return picture
 
@@ -105,12 +123,12 @@ def retrieve_picture_by_path(path):
     :param path: path to picture
     :type path: str
     :return: picture object
-    :rtype: PictureReference
+    :rtype: Picture
     """
     global _picture_cache
     db = get_db()
     d_pic = db.retrieve_picture_by_path(path)
-    picture = PictureReference(*d_pic)
+    picture = Picture(*d_pic)
     _picture_cache.put(picture.key, picture)
     return picture
 
@@ -128,7 +146,7 @@ def retrieve_filtered_pictures(path, limit, groups, tags):
     :param tags: tags which shall be assigned to the pictures.
     :type tags: [Tag]
     :return: pictures matching given criteria.
-    :rtype: [PictureReference]
+    :rtype: [Picture]
     """
     global _picture_cache
     db = get_db()
@@ -179,13 +197,13 @@ def get_picture_from_d_object(picture_):
     :param picture_: data object of picture
     :type picture_: DPicture
     :return: picture object
-    :rtype: PictureReference
+    :rtype: Picture
     """
     pic = None
     try:
         pic = _picture_cache.get(picture_.key)
     except KeyError:
-        pic = PictureReference(*picture_)
+        pic = Picture(*picture_)
         _picture_cache.put(pic.key, pic)
     finally:
         return pic
