@@ -38,11 +38,11 @@ from tkinter import messagebox
 
 from PIL import Image, ImageTk
 
-from .model import PictureReference
+from .picture import PictureReference
 from . import persistence
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .uitags import TagSelector
-from .uiseries import PictureSeriesSelector
+from .uigroup import PictureGroupSelector
 
 
 class PictureManagement(ttk.Frame):
@@ -212,8 +212,8 @@ class PictureFilteredTreeview(FilteredTreeview):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self._create_filter_frame()
-        self.series_selector = PictureSeriesSelector(self,
-                                                     text='Select series')
+        self.series_selector = PictureGroupSelector(self,
+                                                    text='Select series')
         self.series_selector.grid(row=1, column=0,
                                   sticky=(tk.N, tk.S, tk.W, tk.E))
         self.tag_selector = TagSelector(self, text='Select tags')
@@ -400,8 +400,8 @@ class PictureMetadataEditor(ttk.Frame):
         self.content_frame.columnconfigure(0, weight=1)
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.W))
-        self.series_selector = PictureSeriesSelector(self.content_frame,
-                                                     text='Assign series')
+        self.series_selector = PictureGroupSelector(self.content_frame,
+                                                    text='Assign series')
         self.series_selector.grid(row=1, column=0,
                                   sticky=(tk.W, tk.N, tk.E, tk.S))
         self.tag_selector = TagSelector(self.content_frame, text='Assign tags')
@@ -434,21 +434,21 @@ class PictureMetadataEditor(ttk.Frame):
 
     def _update_series(self):
         """Remove and add series according to changes made during editing."""
-        pic_series = set(self.picture.series)
+        pic_series = set(self.picture.groups)
         edt_series = set(self.series_selector.selected_items())
         series_to_add = edt_series.difference(pic_series)
         series_to_remove = pic_series.difference(edt_series)
         persistence.add_picture_to_set_of_series(self.picture, series_to_add)
         persistence.remove_picture_from_set_of_series(self.picture,
                                                       series_to_remove)
-        self.picture.series = edt_series
+        self.picture.groups = edt_series
 
     def load_picture(self, picture):
         """Load picture into editor."""
         self.picture = picture
         self.editor.picture = picture
         self.tag_selector.load_items(picture.tags)
-        self.series_selector.load_items(picture.series)
+        self.series_selector.load_items(picture.groups)
 
     def clear(self):
         """Clear the editor."""

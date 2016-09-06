@@ -1,8 +1,7 @@
 # coding=utf-8
 """
-Model classes.
+An entity for pictures.
 """
-
 
 # Copyright (c) 2016 Stefan Braun
 #
@@ -32,62 +31,7 @@ Model classes.
 # THE SOFTWARE.
 
 
-class Entity:
-    """An abstract entity."""
-
-    def __init__(self, key, name, description):
-        self.key = key
-        self.name = name
-        self.description = description
-
-    def __str__(self):
-        return '<{} ({})>'.format(self.name, self.key)
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __eq__(self, other):
-        return self.name == other.name
-
-    def __lt__(self, other):
-        return self.name < other.name
-
-    def __hash__(self):
-        return hash(self.name)
-
-
-class PictureSeries(Entity):
-    """A series of pictures."""
-
-    def __init__(self, key, name, description, parent=None):
-        super().__init__(key, name, description)
-        self.parent = parent
-        self._children = []
-
-    @property
-    def children(self):
-        return self._children
-
-    @children.setter
-    def children(self, children_):
-        self._children = children_
-
-
-class Tag(Entity):
-    """A tag."""
-
-    def __init__(self, key, name, description, parent=None):
-        super().__init__(key, name, description)
-        self.parent = parent
-        self._children = []
-
-    @property
-    def children(self):
-        return self._children
-
-    @children.setter
-    def children(self, children_):
-        self._children = children_
+from .entity import Entity
 
 
 class PictureReference(Entity):
@@ -97,7 +41,7 @@ class PictureReference(Entity):
         super().__init__(key, name, description)
         self.path = path
         self._tags = []
-        self._series = []
+        self._groups = []
 
     @property
     def tags(self):
@@ -108,12 +52,12 @@ class PictureReference(Entity):
         self._tags = tags_
 
     @property
-    def series(self):
-        return self._series
+    def groups(self):
+        return self._groups
 
-    @series.setter
-    def series(self, series_):
-        self._series = series_
+    @groups.setter
+    def groups(self, groups_):
+        self._groups = groups_
 
     def __str__(self):
         return '<{} ({}): {}>'.format(self.name, self.key, self.path)
@@ -129,4 +73,3 @@ class PictureReference(Entity):
 
     def __hash__(self):
         return hash(self.path)
-

@@ -34,7 +34,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from . import persistence
-from .model import Tag
+from .tag import Tag
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .selector import Selector
 

@@ -37,12 +37,14 @@ from tkinter import messagebox
 from .cache import LRUCache
 
 from .config import get_configuration
-from .model import PictureReference, PictureSeries, Tag
+from .picture import PictureReference
+from .group import Group
+from .tag import Tag
 
 # This module global variable will hold the expanded database name
 _db_name = None
 
-# Caches for PictureReference, PictureSeries, Tag
+# Caches for PictureReference, Group, Tag
 _tag_cache = LRUCache(200)
 _series_cache = LRUCache(200)
 _picture_cache = LRUCache(200)
@@ -128,7 +130,7 @@ class Persistence:
         """Add a new series.
 
         :param series: the series to add
-        :type series: PictureSeries
+        :type series: Group
         """
         self.logger.debug("Add series to DB: {}".format(series.name))
         stmt = '''INSERT INTO series VALUES (?, ?, ?, ?)'''
@@ -215,7 +217,7 @@ class Persistence:
         :param picture: the picture
         :type picture: PictureReference
         :param series: the series
-        :type series: PictureSeries
+        :type series: Group
         """
         self.logger.debug(
             "Adding picture {} to series {}.".format(picture, series))
@@ -228,7 +230,7 @@ class Persistence:
         :param picture: the picture
         :type picture: PictureReference
         :param series: the series
-        :type series: PictureSeries
+        :type series: Group
         """
         self.logger.debug(
             "Removing picture {} from series {}.".format(picture, series))
@@ -281,7 +283,7 @@ class Persistence:
         :param limit: maximum number of records to retrieve
         :type limit: int
         :param series: limit result set based on given list of series
-        :type series: [PictureSeries]
+        :type series: [Group]
         :param tags: limit result set based on given list of tags
         :type tags: [Tag]
         :return: picture.
@@ -319,7 +321,7 @@ class Persistence:
         :param key: the id of the series
         :type key: int
         :return: series.
-        :rtype: PictureSeries
+        :rtype: Group
         """
         stmt = 'SELECT id, identifier, description FROM series WHERE "id"=?'
         cursor = self.conn.cursor()
@@ -328,7 +330,7 @@ class Persistence:
         if row is None:
             return None
         (key_, name, description) = row
-        return PictureSeries(key_, name, description)
+        return Group(key_, name, description)
 
     def retrieve_tags_for_picture(self, picture):
         """Retrieve all tags for given picture.
@@ -353,14 +355,14 @@ class Persistence:
 
         :param picture: the id of the picture
         :return: series.
-        :rtype: [PictureSeries]
+        :rtype: [Group]
         """
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description FROM series ' \
                'WHERE id IN (SELECT ' \
                'series FROM picture2series WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
-        records = [PictureSeries(key, name, description)
+        records = [Group(key, name, description)
                    for (key, name, description) in cursor.fetchall()]
         records.sort()
         return list(records)
@@ -371,7 +373,7 @@ class Persistence:
         :param name: the name of the tag to retrieve
         :type name: str
         :return: series or None if name is unknown.
-        :rtype: PictureSeries
+        :rtype: Group
         """
         stmt = 'SELECT id, identifier, description ' \
                ' FROM series WHERE "identifier"=?'
@@ -381,7 +383,7 @@ class Persistence:
         if not row:
             return None
         (key, name, description) = row
-        return PictureSeries(key, name, description)
+        return Group(key, name, description)
 
     def retrieve_series_by_name_segment(self, name, limit=1000):
         """Retrieve series by name segment using wildcards.
@@ -478,12 +480,12 @@ class Persistence:
         """Get all series from database.
 
         :return: series.
-        :rtype: [PictureSeries]
+        :rtype: [Group]
         """
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description FROM series'
         cursor.execute(stmt)
-        records = [PictureSeries(key, name, description)
+        records = [Group(key, name, description)
                    for (key, name, description) in
                    cursor.fetchall()]
         records.sort()
@@ -505,7 +507,7 @@ class Persistence:
         """Create a PictureReference and retrieve tags and series."""
         picture = PictureReference(key, name, path, description)
         picture.tags = retrieve_tags_for_picture(picture)
-        picture.series = retrieve_series_for_picture(picture)
+        picture.groups = retrieve_series_for_picture(picture)
         self.logger.debug('picture created: {}'.format(picture))
         return picture
 

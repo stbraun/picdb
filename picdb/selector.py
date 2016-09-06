@@ -33,8 +33,6 @@ import tkinter as tk
 from tkinter import ttk
 import logging
 
-from .model import Entity
-
 
 class Selector(ttk.LabelFrame):
     """A component for moving items between two tree views."""

@@ -33,7 +33,9 @@ Tests for persistence.
 import os
 import unittest
 
-from picdb.model import Tag, PictureSeries, PictureReference
+from picdb.picture import PictureReference
+from group import Group
+from tag import Tag
 from picdb.persistence import Persistence
 
 
@@ -76,7 +78,7 @@ class TestPersistence(unittest.TestCase):
         self.assertEqual(tag_retrieved.description, tag.description)
 
     def test_add_and_retrieve_series(self):
-        series1 = PictureSeries(None, 'Series 1', "My first series.")
+        series1 = Group(None, 'Series 1', "My first series.")
         series = self.db.retrieve_all_series()
         self.assertEqual(0, len(series))
         self.db.add_series(series1)
@@ -137,7 +139,7 @@ class TestPersistence(unittest.TestCase):
         self.assertEqual(new_description, pic2.description)
 
     def test_update_series(self):
-        series1 = PictureSeries(None, 'eyes', "My series.")
+        series1 = Group(None, 'eyes', "My series.")
         self.db.add_series(series1)
         series2 = self.db.retrieve_series_by_name(series1.name)
         new_description = 'new description'

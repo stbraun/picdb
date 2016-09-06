@@ -37,7 +37,9 @@ import argparse
 
 from picdb import persistence
 
-from picdb.model import PictureReference, PictureSeries, Tag
+from picdb.picture import PictureReference
+from picdb.group import Group
+from picdb.tag import Tag
 from picdb.persistence import UnknownEntityException
 
 
@@ -46,7 +48,7 @@ def main(argv):
     if args.verbose:
         print('Namespace: {}'.format(args))
     try:
-        series = _get_series(args.series)
+        series = _get_series(args.groups)
         tags = _get_tags(args.tag)
         pics = get_pic_list(args.path)
         if args.verbose:
@@ -62,11 +64,11 @@ def main(argv):
 
 
 def add_assignments(pics: [PictureReference],
-                    series: [PictureSeries],
+                    series: [Group],
                     tags: [Tag]):
     for pic in pics:
         for s in series:
-            if s not in pic.series: persistence.add_picture_to_series(pic, s)
+            if s not in pic.groups: persistence.add_picture_to_series(pic, s)
         for t in tags:
             if t not in pic.tags: persistence.add_tag_to_picture(pic, t)
 
@@ -88,7 +90,7 @@ def _get_series(names: [str]):
     :param names: list of series names.
     :type names: [str]
     :return: list of series
-    :rtype: [PictureSeries]
+    :rtype: [Group]
     """
     series_ = []
     for name in names:

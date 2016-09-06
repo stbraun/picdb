@@ -34,18 +34,18 @@ import tkinter as tk
 from tkinter import ttk
 
 from . import persistence
-from .model import PictureSeries
+from .group import Group
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .selector import Selector
 
 
-class SeriesManagement(ttk.Frame):
+class GroupManagement(ttk.Frame):
     """Manage picture series master data."""
 
     def __init__(self, master):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
-        self.logger.info("Creating SeriesManagement UI")
+        self.logger.info("Creating GroupManagement UI")
         self.content_frame = None
         self.control_frame = None
         self.filter_tree = None
@@ -68,12 +68,12 @@ class SeriesManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.filter_tree = PictureSeriesFilteredTreeview(self.content_frame)
+        self.filter_tree = PictureGroupFilteredTreeview(self.content_frame)
         self.filter_tree.grid(row=0, column=0,
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
                               self.item_selected)
-        self.editor = PictureSeriesEditor(self.content_frame)
+        self.editor = PictureGroupEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
     def create_control_frame(self):
@@ -102,12 +102,12 @@ class SeriesManagement(ttk.Frame):
 
     def add_series(self):
         """Push an empty series to editor."""
-        series = PictureSeries(None, '', '')
-        self.editor.series = series
+        series = Group(None, '', '')
+        self.editor.groups = series
 
     def save_series(self):
         """Save the series currently in editor."""
-        series = self.editor.series
+        series = self.editor.groups
         if series is not None:
             if series.key is None:
                 persistence.add_series(series)
@@ -119,18 +119,18 @@ class SeriesManagement(ttk.Frame):
         """An item in the tree view was selected."""
         items = self.filter_tree.selected_items()
         if len(items) > 0:
-            series = items[0]
-            self.editor.series = series
+            group = items[0]
+            self.editor.group = group
 
 
-class PictureSeriesFilteredTreeview(FilteredTreeview):
-    """Provide a series tree and selection panel."""
+class PictureGroupFilteredTreeview(FilteredTreeview):
+    """Provide a group tree and selection panel."""
 
     def __init__(self, master):
         self.logger = logging.getLogger('picdb.ui')
         self.name_filter_var = tk.StringVar()
         self.limit_var = tk.IntVar()
-        super().__init__(master, PictureSeriesTree.create_instance)
+        super().__init__(master, PictureGroupTree.create_instance)
         self.name_filter_var.set('%')
         self.name_filter_entry = None
         self.limit_var.set(self.limit_default)
@@ -156,34 +156,34 @@ class PictureSeriesFilteredTreeview(FilteredTreeview):
         self.limit_entry.grid(row=1, column=1, sticky=(tk.W,))
 
     def selected_items(self):
-        """Provide list of series selected in tree.
+        """Provide list of groups selected in tree.
 
-        :return: selected tags
-        :rtype: list(Tag)
+        :return: selected groups
+        :rtype: [Group]
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, series):
+    def add_item_to_tree(self, group):
         """Add given series to tree view.
 
-        :param series: series to add.
-        :type series: PictureSeries
+        :param group: series to add.
+        :type group: Group
         """
-        super().add_item_to_tree(series)
+        super().add_item_to_tree(group)
 
     def _retrieve_items(self):
-        """Retrieve a bunch of series from database.
+        """Retrieve a bunch of groups from database.
 
         name_filter_var and limit_var are considered for retrieval.
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        series = persistence.retrieve_series_by_name_segment(name_filter,
+        groups = persistence.retrieve_series_by_name_segment(name_filter,
                                                              limit)
-        return series
+        return groups
 
 
-class PictureSeriesTree(PicTreeView):
+class PictureGroupTree(PicTreeView):
     """A tree handling picture series."""
 
     def __init__(self, master, tree_only=False):
@@ -197,7 +197,7 @@ class PictureSeriesTree(PicTreeView):
     @classmethod
     def create_instance(cls, master, tree_only=False):
         """Factory method."""
-        return PictureSeriesTree(master, tree_only)
+        return PictureGroupTree(master, tree_only)
 
     def add_item(self, series):
         """Add given series to tree."""
@@ -218,12 +218,12 @@ class PictureSeriesTree(PicTreeView):
         return series
 
 
-class PictureSeriesEditor(ttk.LabelFrame):
-    """Editor for PictureSeries objects."""
+class PictureGroupEditor(ttk.LabelFrame):
+    """Editor for Group objects."""
 
     def __init__(self, master, text='Edit series'):
         super().__init__(master, text=text)
-        self.series_ = None
+        self.group_ = None
         self.id_var = tk.IntVar()
         self.name_var = tk.StringVar()
         self.description_var = tk.StringVar()
@@ -245,38 +245,38 @@ class PictureSeriesEditor(ttk.LabelFrame):
                                                           sticky=(tk.E, tk.W))
 
     @property
-    def series(self):
-        if self.series_ is not None:
-            self.series_.name = self.name_var.get()
-            self.series_.description = self.description_var.get()
-        return self.series_
+    def group(self):
+        if self.group_ is not None:
+            self.group_.name = self.name_var.get()
+            self.group_.description = self.description_var.get()
+        return self.group_
 
-    @series.setter
-    def series(self, series_):
-        self.series_ = series_
+    @group.setter
+    def group(self, series_):
+        self.group_ = series_
         self.id_var.set(series_.key)
         self.name_var.set(series_.name)
         self.description_var.set(series_.description)
 
 
-class PictureSeriesSelector(Selector):
+class PictureGroupSelector(Selector):
     """Provide a selector component for series."""
     def __init__(self, master, **kwargs):
-        super().__init__(master, PictureSeriesTree.create_instance,
-                         PictureSeriesTree.create_instance,
+        super().__init__(master, PictureGroupTree.create_instance,
+                         PictureGroupTree.create_instance,
                          **kwargs)
 
     def selected_items(self):
         items = self.right.get_children()
-        series = [persistence.retrieve_series_by_key(int(item))
+        groups = [persistence.retrieve_series_by_key(int(item))
                   for item in items]
-        return series
+        return groups
 
-    def load_items(self, picture_series):
+    def load_items(self, picture_groups):
         """Load items into selector.
 
-        :param picture_series: list of series already assigned to picture.
-        :type picture_series: [PictureSeries]
+        :param picture_groups: list of series already assigned to picture.
+        :type picture_groups: [Group]
         """
-        all_series = persistence.get_all_series()
-        self.init_trees(all_series, picture_series)
+        groups = persistence.get_all_series()
+        self.init_trees(groups, picture_groups)
