@@ -58,9 +58,9 @@ class Tag(Entity):
         self._children = children_
 
 
-def add_tag(tag):
+def add_tag(tag_):
     db = get_db()
-    db.add_tag(tag)
+    db.add_tag(tag_)
 
 
 def get_all_tags():
@@ -102,11 +102,11 @@ def retrieve_tags_by_name_segment(name, limit):
     return tags
 
 
-def update_tag(tag):
+def update_tag(tag_):
     global _tag_cache
     db = get_db()
-    db.update_tag(tag)
-    _tag_cache.put(tag.key, tag)
+    db.update_tag(tag_)
+    _tag_cache.put(tag_.key, tag_)
 
 
 def get_tag_from_d_object(d_tag):

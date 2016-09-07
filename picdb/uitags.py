@@ -178,16 +178,15 @@ class TagTree(PicTreeView):
         super().__init__(master, columns=columns)
         if not tree_only:
             self.heading('description', text='Description')
-        # self.column('#0', stretch=False)  # tree column shall not resize
 
     @classmethod
     def create_instance(cls, master, tree_only=False):
         """Factory method."""
         return TagTree(master, tree_only)
 
-    def add_item(self, tag):
+    def add_item(self, tag_):
         """Add given tag to tree."""
-        super().add_item(tag)
+        super().add_item(tag_)
 
     def _additional_values(self, item):
         return () if self.tree_only else (item.description,)
