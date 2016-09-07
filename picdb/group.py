@@ -51,10 +51,10 @@ class Group(Entity):
             add_group(self)
         else:
             update_group(self)
-        self._update_series()
+        self._update_pictures()
 
-    def _update_series(self):
-        """Remove and add series according to changes made during editing."""
+    def _update_pictures(self):
+        """Remove and add pictures according to changes made during editing."""
         saved_pics = set(retrieve_pictures_for_group(self))
         _pictures = set(self._pictures)
         pictures_to_add = _pictures.difference(saved_pics)

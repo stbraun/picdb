@@ -87,36 +87,41 @@ class GroupManagement(ttk.Frame):
                                 sticky=(tk.W, tk.N, tk.E, tk.S))
         self.columnconfigure(0, weight=1)
         load_button = ttk.Button(self.control_frame, text='load series',
-                                 command=self.load_series)
+                                 command=self.load_groups)
         load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
         add_button = ttk.Button(self.control_frame, text='add series',
                                 command=self.add_group)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
         save_button = ttk.Button(self.control_frame, text='save series',
-                                 command=self.save_series)
+                                 command=self.save_group)
         save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
 
-    def load_series(self):
-        """Load a bunch of series from database."""
+    def load_groups(self):
+        """Load a bunch of groups from database."""
         self.filter_tree.load_items()
 
     def add_group(self):
-        """Push an empty series to editor."""
+        """Push an empty group to editor."""
         group_ = Group(None, '', '', None)
         self.editor.group = group_
 
-    def save_series(self):
+    def save_group(self):
         """Save the group currently in editor."""
         group_ = self.editor.group
         if group_ is not None:
             group_.save()
-        self.load_series()
+        self.load_groups()
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
         items = self.filter_tree.selected_items()
         if len(items) > 0:
             group_ = items[0]
+            # This loads the pictures for this group. Just to be sure that save
+            # will work.
+            # As soon as we can edit the pictures of a group here we will need
+            # this cll anyway.
+            _ = group_.pictures
             self.editor.group = group_
 
 
@@ -172,6 +177,9 @@ class PictureGroupFilteredTreeview(FilteredTreeview):
         """Retrieve a bunch of groups from database.
 
         name_filter_var and limit_var are considered for retrieval.
+
+        :return: groups as selected by filter criteria.
+        :rtype: [Group]
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
@@ -189,7 +197,7 @@ class PictureGroupTree(PicTreeView):
         super().__init__(master, columns=columns)
         if not tree_only:
             self.heading('description', text='Description')
-        # self.column('#0', stretch=False)  # tree column shall not resize
+            # self.column('#0', stretch=False)  # tree column shall not resize
 
     @classmethod
     def create_instance(cls, master, tree_only=False):
@@ -207,7 +215,7 @@ class PictureGroupTree(PicTreeView):
         """Provide list of series selected in tree.
 
         :return: selected tags
-        :rtype: list(Tag)
+        :rtype: [Tag]
         """
         item_ids = self.selection()
         series = [group.retrieve_series_by_key(int(item_id))
@@ -249,21 +257,27 @@ class PictureGroupEditor(ttk.LabelFrame):
         return self.group_
 
     @group.setter
-    def group(self, series_):
-        self.group_ = series_
-        self.id_var.set(series_.key)
-        self.name_var.set(series_.name)
-        self.description_var.set(series_.description)
+    def group(self, group_):
+        self.group_ = group_
+        self.id_var.set(group_.key)
+        self.name_var.set(group_.name)
+        self.description_var.set(group_.description)
 
 
 class PictureGroupSelector(Selector):
     """Provide a selector component for series."""
+
     def __init__(self, master, **kwargs):
         super().__init__(master, PictureGroupTree.create_instance,
                          PictureGroupTree.create_instance,
                          **kwargs)
 
     def selected_items(self):
+        """Get selected groups.
+
+        :return: selected groups
+        :rtype: [Group]
+        """
         items = self.right.get_children()
         groups = [group.retrieve_series_by_key(int(item))
                   for item in items]

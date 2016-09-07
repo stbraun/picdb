@@ -251,6 +251,11 @@ class TagSelector(Selector):
                          TagTree.create_instance, **kwargs)
 
     def selected_items(self):
+        """Get selected tags.
+
+        :return: selected tags
+        :rtype: [Tag]
+        """
         items = self.right.get_children()
         tags = [tag.retrieve_tag_by_key(int(item)) for item in items]
         return tags
