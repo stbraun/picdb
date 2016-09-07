@@ -95,14 +95,16 @@ class Persistence:
         try:
             cursor.execute('CREATE TABLE series ( '
                            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                           'identifier TEXT UNIQUE, '
-                           'description TEXT,'
-                           'parent INTEGER REFERENCES "series" ("id"))')
+                           'identifier TEXT, '
+                           'description TEXT, '
+                           'parent INTEGER REFERENCES "series" ("id"), '
+                           'UNIQUE (identifier, parent))')
             cursor.execute('CREATE TABLE tags ( '
                            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                           'identifier TEXT UNIQUE, '
-                           'description TEXT,'
-                           'parent INTEGER REFERENCES "tags" ("id"))')
+                           'identifier TEXT, '
+                           'description TEXT, '
+                           'parent INTEGER REFERENCES "tags" ("id"), '
+                           'UNIQUE(identifier, parent))')
             cursor.execute('CREATE TABLE pictures ( '
                            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
                            'identifier TEXT, '
