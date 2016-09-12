@@ -37,6 +37,7 @@ from . import group
 from .group import Group
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .selector import Selector
+from .uicommon import tag_all_children
 
 
 class GroupManagement(ttk.Frame):
@@ -51,6 +52,23 @@ class GroupManagement(ttk.Frame):
         self.filter_tree = None
         self.editor = None
         self.create_widgets()
+        self.bind('<Meta_L>s', self._save_group)
+        self.bind('<Meta_L>n', self._add_group)
+        # add key bindings: use self as (tk-)tag to bind a listener also to all
+        # children widgets
+        tag_all_children(self, self)
+        self.bind('<Meta_L>s', self._save_group)
+        self.bind('<Meta_L>n', self._add_group)
+        # finally load tags into the tree
+        self.load_groups()
+
+    def _save_group(self, _):
+        self.save_group()
+        return "break"
+
+    def _add_group(self, _):
+        self.add_group()
+        return "break"
 
     def create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -232,6 +250,7 @@ class PictureGroupEditor(ttk.LabelFrame):
         self.id_var = tk.IntVar()
         self.name_var = tk.StringVar()
         self.description_var = tk.StringVar()
+        self.name_entry = None
         self.create_widgets()
 
     def create_widgets(self):
@@ -242,8 +261,8 @@ class PictureGroupEditor(ttk.LabelFrame):
         ttk.Label(self, text='description').grid(row=2, column=0, sticky=tk.E)
         ttk.Entry(self, textvariable=self.id_var,
                   state='readonly').grid(row=0, column=1, sticky=tk.W)
-        ttk.Entry(self, textvariable=self.name_var).grid(row=1, column=1,
-                                                         sticky=(tk.E, tk.W))
+        self.name_entry = ttk.Entry(self, textvariable=self.name_var)
+        self.name_entry.grid(row=1, column=1, sticky=(tk.E, tk.W))
         ttk.Entry(self,
                   textvariable=self.description_var).grid(row=2,
                                                           column=1,
@@ -262,6 +281,7 @@ class PictureGroupEditor(ttk.LabelFrame):
         self.id_var.set(group_.key)
         self.name_var.set(group_.name)
         self.description_var.set(group_.description)
+        self.name_entry.focus()
 
 
 class PictureGroupSelector(Selector):

@@ -37,6 +37,7 @@ from . import tag
 from .tag import Tag
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .selector import Selector
+from .uicommon import tag_all_children
 
 
 class TagManagement(ttk.Frame):
@@ -51,6 +52,21 @@ class TagManagement(ttk.Frame):
         self.filter_tree = None
         self.editor = None
         self.create_widgets()
+        # add key bindings: use self as (tk-)tag to bind a listener also to all
+        # children widgets
+        tag_all_children(self, self)
+        self.bind('<Meta_L>s', self._save_tag)
+        self.bind('<Meta_L>n', self._add_tag)
+        # finally load tags into the tree
+        self.load_tags()
+
+    def _save_tag(self, _):
+        self.save_tag()
+        return "break"
+
+    def _add_tag(self, _):
+        self.add_tag()
+        return "break"
 
     def create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -117,6 +133,7 @@ class TagManagement(ttk.Frame):
 
 class TagFilteredTreeview(FilteredTreeview):
     """Provide a tag tree and selection panel."""
+
     def __init__(self, master):
         self.logger = logging.getLogger('picdb.ui')
         self.name_filter_var = tk.StringVar()
@@ -212,6 +229,7 @@ class TagEditor(ttk.LabelFrame):
         self.id_var = tk.IntVar()
         self.name_var = tk.StringVar()
         self.description_var = tk.StringVar()
+        self.name_entry = None
         self.create_widgets()
 
     def create_widgets(self):
@@ -222,8 +240,8 @@ class TagEditor(ttk.LabelFrame):
         ttk.Label(self, text='description').grid(row=2, column=0, sticky=tk.E)
         ttk.Entry(self, textvariable=self.id_var,
                   state='readonly').grid(row=0, column=1, sticky=tk.W)
-        ttk.Entry(self, textvariable=self.name_var).grid(row=1, column=1,
-                                                         sticky=(tk.E, tk.W))
+        self.name_entry = ttk.Entry(self, textvariable=self.name_var)
+        self.name_entry.grid(row=1, column=1, sticky=(tk.E, tk.W))
         ttk.Entry(self,
                   textvariable=self.description_var).grid(row=2,
                                                           column=1,
@@ -242,10 +260,12 @@ class TagEditor(ttk.LabelFrame):
         self.id_var.set(tag_.key)
         self.name_var.set(tag_.name)
         self.description_var.set(tag_.description)
+        self.name_entry.focus()
 
 
 class TagSelector(Selector):
     """Provide a selector component for tags."""
+
     def __init__(self, master, **kwargs):
         super().__init__(master, TagTree.create_instance,
                          TagTree.create_instance, **kwargs)

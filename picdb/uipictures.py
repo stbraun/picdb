@@ -44,6 +44,7 @@ from .picture import Picture
 from .uimasterdata import PicTreeView, FilteredTreeview
 from .uitags import TagSelector
 from .uigroups import PictureGroupSelector
+from .uicommon import tag_all_children
 
 
 class PictureManagement(ttk.Frame):
@@ -398,6 +399,10 @@ class PictureMetadataEditor(ttk.Frame):
         self.save_button = None
         self.picture = None
         self._create_widgets()
+        # add key bindings: use self as (tk-)tag to bind a listener also to all
+        # children widgets
+        tag_all_children(self, self)
+        self.bind('<Meta_L>s', self._save_picture)
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -430,6 +435,10 @@ class PictureMetadataEditor(ttk.Frame):
         self.save_button = ttk.Button(self.control_frame, text='save',
                                       command=self._save)
         self.save_button.grid(row=0, column=0)
+
+    def _save_picture(self, _):
+        self._save()
+        return "break"
 
     def _save(self):
         """Save current picture."""
