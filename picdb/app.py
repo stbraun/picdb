@@ -29,16 +29,18 @@ Application entry for PicDB.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
+import argparse
+import logging
 import tkinter as tk
 from tkinter import ttk
-import logging
 
 from .log import initialize_logger
 from .uistatus import StatusPanel
 from .uipictures import PictureManagement
 from .uigroups import GroupManagement
 from .uitags import TagManagement
+from .persistence import set_db
+from .config import get_configuration
 
 
 class Application(ttk.Frame):
@@ -73,12 +75,38 @@ class Application(ttk.Frame):
         self.columnconfigure(0, weight=1, minsize=600)
 
 
-def start_application():
+def _parse_arguments(args):
+    """Parse command line arguments.
+
+    :param args: given arguments, e.g. sys.argc[1:]
+    :type args: [str]
+    :return: configuration namespace
+    :rtype: {<key>:<value>}
+    """
+    parser = argparse.ArgumentParser(
+        description='Assign tags to pictures and pictures to groups.')
+    parser.add_argument('--db', action='store', dest='db',
+                        default=get_configuration('database'),
+                        help='Path to database to use. Overrides '
+                             'configuration file.')
+    parser.add_argument('--title', action='store', dest='title',
+                        default='PicDB',
+                        help='Window title.')
+    parser.add_argument('--geometry', action='store', dest='geometry',
+                        default='2200x1000+100+100',
+                        help='Window geometry, e.g. "2200x1000+100+100".')
+    arguments = parser.parse_args(args)
+    return arguments
+
+
+def start_application(argv):
     initialize_logger()
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
-    root.geometry('2200x1000+100+100')
+    args = _parse_arguments(argv)
+    root.geometry(args.geometry)
     app = Application(root)
-    app.master.title('PicDB')
+    app.master.title(args.title)
+    set_db(args.db)
     app.mainloop()

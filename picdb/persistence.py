@@ -45,6 +45,12 @@ class UnknownEntityException(Exception):
     pass
 
 
+def set_db(db_name_):
+    """Set the database to use."""
+    global _db_name
+    _db_name = os.path.expanduser(db_name_)
+
+
 def get_db():
     """Get connected persistence instance."""
     global _db_name
@@ -64,7 +70,6 @@ class Persistence:
         :param db: path to database.
         :type db: str
         """
-        global _db_name
         self.logger = logging.getLogger('picdb.db')
         self.db_name = None
         self.determine_db_name(db)
