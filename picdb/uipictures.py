@@ -116,7 +116,7 @@ class PictureManagement(ttk.Frame):
                                 command=self.import_pictures)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
         clear_button = ttk.Button(self.control_frame, text='clear selection',
-                                  command=self.clear)
+                                  command=self._reset)
         clear_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
         self.view_button = ttk.Button(self.control_frame, text='view picture',
                                       command=self.view_picture)
@@ -185,11 +185,15 @@ class PictureManagement(ttk.Frame):
             self._canvas_height = event.height
             self.after(1, self._display_picture)
 
+    def _reset(self):
+        """Reset all."""
+        self.clear()
+        self.filter_tree.clear_selection()
+
     def clear(self):
         """Clear editor and preview."""
         self.editor.clear()
         self.canvas.delete(self.image_tag)
-        self.filter_tree.clear_selection()
 
 
 class PictureFilteredTreeview(FilteredTreeview):
@@ -292,8 +296,8 @@ class PictureFilteredTreeview(FilteredTreeview):
         """Clear current selection and reset filters to default."""
         self._set_default_path_filter()
         self.limit_var.set(self.limit_default)
-        self.tag_selector.clear()
-        self.series_selector.clear()
+        self.tag_selector.load_items([])
+        self.series_selector.load_items([])
         self.tree.clear()
 
 
