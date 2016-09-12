@@ -93,7 +93,7 @@ def _parse_arguments(args):
                         default='PicDB',
                         help='Window title.')
     parser.add_argument('--geometry', action='store', dest='geometry',
-                        default='2200x1000+100+100',
+                        default=get_configuration('geometry'),
                         help='Window geometry, e.g. "2200x1000+100+100".')
     arguments = parser.parse_args(args)
     return arguments
