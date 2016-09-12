@@ -35,10 +35,9 @@ import sys
 from pprint import pprint
 import argparse
 
-import group
-import picture
-import tag
-from picdb import persistence
+import picdb.group
+import picdb.picture
+import picdb.tag
 
 from picdb.picture import Picture
 from picdb.group import Group
@@ -51,29 +50,29 @@ def main(argv):
     if args.verbose:
         print('Namespace: {}'.format(args))
     try:
-        series = _get_series(args.groups)
+        groups = _get_groups(args.groups)
         tags = _get_tags(args.tag)
         pics = get_pic_list(args.path)
         if args.verbose:
-            print('Series: {}'.format(series))
+            print('Series: {}'.format(groups))
             print('Tags: {}'.format(tags))
             _show_selected_pictures(pics, args.verbose)
     except UnknownEntityException as e:
         print('>>> Error: {}'.format(e))
     else:
         if not args.dry_run:
-            add_assignments(pics, series, tags)
+            add_assignments(pics, groups, tags)
             print('{} pictures processed.'.format(len(pics)))
 
 
 def add_assignments(pics: [Picture],
-                    series: [Group],
+                    groups: [Group],
                     tags: [Tag]):
     for pic in pics:
-        for s in series:
-            if s not in pic.groups: group.add_picture_to_group(s, pic)
+        for g in groups:
+            if pic not in g.pictures: picdb.group.add_picture_to_group(g, pic)
         for t in tags:
-            if t not in pic.tags: picture.add_tag_to_picture(pic, t)
+            if t not in pic.tags: picdb.picture.add_tag_to_picture(pic, t)
 
 
 def get_pic_list(path: str):
@@ -84,22 +83,22 @@ def get_pic_list(path: str):
     :return: list of pictures
     :rtype: [Picture]
     """
-    return picture.retrieve_filtered_pictures(path, None, [], [])
+    return picdb.picture.retrieve_filtered_pictures(path, None, [], [])
 
 
-def _get_series(names: [str]):
-    """Retrieve requested series.
+def _get_groups(names: [str]):
+    """Retrieve requested groups.
 
-    :param names: list of series names.
+    :param names: list of group names.
     :type names: [str]
-    :return: list of series
+    :return: list of groups
     :rtype: [Group]
     """
-    series_ = []
+    groups_ = []
     for name in names:
-        series = group.retrieve_series_by_name(name)
-        series_.append(series)
-    return series_
+        groups = picdb.group.retrieve_series_by_name(name)
+        groups_.append(groups)
+    return groups_
 
 
 def _get_tags(names: [str]):
@@ -112,7 +111,7 @@ def _get_tags(names: [str]):
     """
     tags = []
     for name in names:
-        tag = tag.retrieve_tag_by_name(name)
+        tag = picdb.tag.retrieve_tag_by_name(name)
         tags.append(tag)
     return tags
 
@@ -133,9 +132,9 @@ def _parse_arguments(args):
     parser.add_argument('path', action='store',
                         help='Path of pictures as an SQL like expression '
                              'using %% as wildcard.')
-    parser.add_argument('-s', '--series', action='append', dest='series',
+    parser.add_argument('-g', '--group', action='append', dest='groups',
                         default=[],
-                        help='Name of series. Multiple use allowed.')
+                        help='Name of group. Multiple use allowed.')
     parser.add_argument('-t', '--tag', action='append', dest='tag',
                         default=[],
                         help='Name of tag. Multiple use allowed.')
