@@ -55,12 +55,13 @@ class Group(Entity):
 
     def _update_pictures(self):
         """Remove and add pictures according to changes made during editing."""
-        saved_pics = set(retrieve_pictures_for_group(self))
-        _pictures = set(self._pictures)
-        pictures_to_add = _pictures.difference(saved_pics)
-        pictures_to_remove = saved_pics.difference(_pictures)
-        add_pictures_to_group(self, pictures_to_add)
-        remove_pictures_from_group(self, pictures_to_remove)
+        if self._pictures is not None:
+            saved_pics = set(retrieve_pictures_for_group(self))
+            _pictures = set(self._pictures)
+            pictures_to_add = _pictures.difference(saved_pics)
+            pictures_to_remove = saved_pics.difference(_pictures)
+            add_pictures_to_group(self, pictures_to_add)
+            remove_pictures_from_group(self, pictures_to_remove)
 
     @property
     def pictures(self):

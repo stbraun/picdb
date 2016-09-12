@@ -96,14 +96,14 @@ class TagManagement(ttk.Frame):
 
     def add_tag(self):
         """Push an empty tag to editor."""
-        tag = Tag(None, '', '')
-        self.editor.tag = tag
+        tag_ = Tag(None, '', '')
+        self.editor.tag = tag_
 
     def save_tag(self):
         """Save the tag currently in editor."""
-        tag = self.editor.tag
-        if tag is not None:
-            tag.save()
+        tag_ = self.editor.tag
+        if tag_ is not None:
+            tag_.save()
         self.load_tags()
 
     def item_selected(self, _):
