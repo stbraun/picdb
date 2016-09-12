@@ -197,7 +197,7 @@ class PictureFilteredTreeview(FilteredTreeview):
         self.tag_selector = None
         self.series_selector = None
         super().__init__(master, PictureReferenceTree.create_instance)
-        self.path_filter_var.set('%')
+        self._set_default_path_filter()
         self.path_filter_entry = None
         self.limit_var.set(self.limit_default)
         # initialize selectors
@@ -225,6 +225,9 @@ class PictureFilteredTreeview(FilteredTreeview):
         self.tree = self.tree_factory(self)
         self.tree.grid(row=0, column=1, rowspan=3,
                        sticky=(tk.W, tk.N, tk.E, tk.S))
+        clear_button = ttk.Button(self, text='clear selection',
+                                  command=self._clear_selection)
+        clear_button.grid(row=3, column=0)
 
     def _create_filter_frame(self):
         self.filter_frame = ttk.Frame(self)
@@ -245,6 +248,9 @@ class PictureFilteredTreeview(FilteredTreeview):
                                      validate='focusout',
                                      validatecommand=self._validate_limit)
         self.limit_entry.grid(row=1, column=1, sticky=(tk.W,))
+
+    def _set_default_path_filter(self):
+        self.path_filter_var.set('%')
 
     def selected_items(self):
         """Provide list of pictures selected in tree.
@@ -279,6 +285,14 @@ class PictureFilteredTreeview(FilteredTreeview):
                 event.state))
         self.tag_selector.load_items(self.tag_selector.selected_items())
         self.series_selector.load_items(self.series_selector.selected_items())
+
+    def _clear_selection(self):
+        """Clear current selection and reset filters to default."""
+        self._set_default_path_filter()
+        self.limit_var.set(self.limit_default)
+        self.tag_selector.clear()
+        self.series_selector.clear()
+        self.tree.clear()
 
 
 class PictureReferenceTree(PicTreeView):
@@ -444,7 +458,8 @@ class PictureMetadataEditor(ttk.Frame):
         self.editor.picture = picture_
         self.tag_selector.load_items(picture_.tags)
         # Retrieve groups the picture is currently assigned to.
-        self.series_selector.load_items(group.retrieve_series_for_picture(picture_))
+        self.series_selector.load_items(
+            group.retrieve_series_for_picture(picture_))
 
     def clear(self):
         """Clear the editor."""
