@@ -43,10 +43,13 @@ from picdb.picture import Picture
 from picdb.group import Group
 from picdb.tag import Tag
 from picdb.persistence import UnknownEntityException
+from picdb.config import get_configuration
+from picdb.persistence import set_db
 
 
 def main(argv):
     args = _parse_arguments(argv)
+    set_db(args.db)
     if args.verbose:
         print('Namespace: {}'.format(args))
     try:
@@ -132,6 +135,10 @@ def _parse_arguments(args):
     parser.add_argument('path', action='store',
                         help='Path of pictures as an SQL like expression '
                              'using %% as wildcard.')
+    parser.add_argument('--db', action='store', dest='db',
+                        default=get_configuration('database'),
+                        help='Path to database to use. Overrides '
+                             'configuration file.')
     parser.add_argument('-g', '--group', action='append', dest='groups',
                         default=[],
                         help='Name of group. Multiple use allowed.')
