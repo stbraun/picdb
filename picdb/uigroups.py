@@ -240,6 +240,14 @@ class PictureGroupTree(PicTreeView):
                   for item_id in item_ids]
         return series
 
+    def _map_items_to_names(self, items):
+        mapping = {}
+        for item in items:
+            group_ = group.retrieve_series_by_key(int(item))
+            mapping[item] = group_.name
+        return mapping
+
+
 
 class PictureGroupEditor(ttk.LabelFrame):
     """Editor for Group objects."""

@@ -57,8 +57,26 @@ class PicTreeView(ttk.Treeview):
         :param item: item to add
         :type item: Entity
         """
-        self.insert('', 'end', item.key,
+        children = self.get_children(item=None)
+        names = self._map_items_to_names(children)
+        self.logger.info('Current items: {}'.format(children))
+        index = 'end'
+        for idx, child in enumerate(children):
+            if item.name < names[child]:
+                index = idx
+                break
+        self.insert('', index, item.key,
                     text=item.name, values=self._additional_values(item))
+
+    def _map_items_to_names(self, items):
+        """Provide mapping of names to items.
+
+        :param items: item identifier in tree.
+        :type items: [str]
+        :return: mapping of names to item identifiers: {<item-id> : <name>}
+        :rtype: {str : str}
+        """
+        raise NotImplementedError
 
     def _additional_values(self, item):
         """Provide a tuple with values to display in the tree."""
