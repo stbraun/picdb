@@ -1,5 +1,5 @@
 version: 1
-# database: /Volumes/B3T/data_sets/picdb.db
+# database: /Volumes/B3T/data_sets/pixdb.db
 # database: /Volumes/stories/picdb.db
 database: /Users/sb/Development/projects/picdb/test.db
 
