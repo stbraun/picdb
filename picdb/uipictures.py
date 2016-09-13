@@ -332,12 +332,8 @@ class PictureReferenceTree(PicTreeView):
                 for pic_id in item_ids]
         return pics
 
-    def _map_items_to_names(self, items):
-        mapping = {}
-        for item in items:
-            pic = picture.retrieve_picture_by_key(int(item))
-            mapping[item] = pic.name
-        return mapping
+    def _is_less(self, item, key):
+        return item < picture.retrieve_picture_by_key(int(key))
 
 
 class PictureReferenceEditor(ttk.LabelFrame):

@@ -60,23 +60,24 @@ class PicTreeView(ttk.Treeview):
         :type item: Entity
         """
         children = self.get_children(item=None)
-        names = self._map_items_to_names(children)
         self.logger.info('Current items: {}'.format(children))
         index = 'end'
         for idx, child in enumerate(children):
-            if item.name < names[child]:
+            if self._is_less(item, child):
                 index = idx
                 break
         self.insert('', index, item.key,
                     text=item.name, values=self._additional_values(item))
 
-    def _map_items_to_names(self, items):
-        """Provide mapping of names to items.
+    def _is_less(self, item, key):
+        """Is given item less than item by key?
 
-        :param items: item identifier in tree.
-        :type items: [str]
-        :return: mapping of names to item identifiers: {<item-id> : <name>}
-        :rtype: {str : str}
+        :param item: item to compare.
+        :type item: Entity
+        :param key: item identifier in tree.
+        :type key: str
+        :return: True if item is less
+        :rtype: bool
         """
         raise NotImplementedError
 
