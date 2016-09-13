@@ -60,7 +60,6 @@ class PicTreeView(ttk.Treeview):
         :type item: Entity
         """
         children = self.get_children(item=None)
-        self.logger.info('Current items: {}'.format(children))
         index = 'end'
         for idx, child in enumerate(children):
             if self._is_less(item, child):

@@ -121,6 +121,7 @@ class TagManagement(ttk.Frame):
         if tag_ is not None:
             tag_.save()
         self.load_tags()
+        self.editor.tag = tag.retrieve_tag_by_name(tag_.name)
 
     def item_selected(self, _):
         """An item in the tree view was selected."""

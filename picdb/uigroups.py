@@ -129,6 +129,7 @@ class GroupManagement(ttk.Frame):
         if group_ is not None:
             group_.save()
         self.load_groups()
+        self.editor.group = group.retrieve_series_by_name(group_.name)
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
@@ -183,13 +184,13 @@ class PictureGroupFilteredTreeview(FilteredTreeview):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, group):
-        """Add given series to tree view.
+    def add_item_to_tree(self, group_):
+        """Add given group to tree view.
 
-        :param group: series to add.
-        :type group: Group
+        :param group_: group to add.
+        :type group_: Group
         """
-        super().add_item_to_tree(group)
+        super().add_item_to_tree(group_)
 
     def _retrieve_items(self):
         """Retrieve a bunch of groups from database.
@@ -207,7 +208,7 @@ class PictureGroupFilteredTreeview(FilteredTreeview):
 
 
 class PictureGroupTree(PicTreeView):
-    """A tree handling picture series."""
+    """A tree handling picture groups."""
 
     def __init__(self, master, tree_only=False):
         self.tree_only = tree_only
@@ -215,7 +216,6 @@ class PictureGroupTree(PicTreeView):
         super().__init__(master, columns=columns)
         if not tree_only:
             self.heading('description', text='Description')
-            # self.column('#0', stretch=False)  # tree column shall not resize
 
     @classmethod
     def create_instance(cls, master, tree_only=False):
@@ -230,10 +230,10 @@ class PictureGroupTree(PicTreeView):
         return () if self.tree_only else (item.description,)
 
     def selected_items(self):
-        """Provide list of series selected in tree.
+        """Provide list of groups selected in tree.
 
-        :return: selected tags
-        :rtype: [Tag]
+        :return: selected group
+        :rtype: [Group]
         """
         item_ids = self.selection()
         series = [group.retrieve_series_by_key(int(item_id))
@@ -288,7 +288,7 @@ class PictureGroupEditor(ttk.LabelFrame):
 
 
 class PictureGroupSelector(Selector):
-    """Provide a selector component for series."""
+    """Provide a selector component for groups."""
 
     def __init__(self, master, **kwargs):
         super().__init__(master, PictureGroupTree.create_instance,
@@ -309,7 +309,7 @@ class PictureGroupSelector(Selector):
     def load_items(self, picture_groups):
         """Load items into selector.
 
-        :param picture_groups: list of series already assigned to picture.
+        :param picture_groups: list of groups already assigned to picture.
         :type picture_groups: [Group]
         """
         groups = group.get_all_series()
