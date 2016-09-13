@@ -54,6 +54,8 @@ class PicTreeView(ttk.Treeview):
     def add_item(self, item):
         """Add given item to tree.
 
+        Keeps tree sorted by item names.
+
         :param item: item to add
         :type item: Entity
         """
