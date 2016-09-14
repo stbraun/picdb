@@ -65,7 +65,11 @@ class Tag(Entity):
 
     @parent.setter
     def parent(self, parent_):
-        self.parent_ = parent_.key
+        if parent_ is None:
+            self.parent_ = None
+        else:
+            self.parent_ = parent_.key
+
 
 def add_tag(tag_):
     db = get_db()

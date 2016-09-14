@@ -137,8 +137,6 @@ class HierarchicalTreeView(PicTreeView):
 
     def _dnd_motion(self, _):
         """Start dnd action."""
-        self.logger.info(
-            '>>> Start DND on item: {}'.format(self._dnd_start_item))
         self.config(cursor='exchange')
         self.unbind('<Motion>')
         self._dnd_start_active = True
