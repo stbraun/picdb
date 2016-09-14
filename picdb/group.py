@@ -41,7 +41,7 @@ class Group(Entity):
 
     def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)
-        self.parent_ = parent
+        self._parent = parent
         self._children = []
         # Currently assigned pictures. May not be saved yet.
         self._pictures = None
@@ -80,9 +80,13 @@ class Group(Entity):
 
     @property
     def parent(self):
-        if self.parent_ is None:
+        if self._parent is None:
             return None
-        return retrieve_series_by_key(self.parent_)
+        return retrieve_series_by_key(self._parent)
+
+    @parent.setter
+    def parent(self, parent_):
+        self._parent = parent_.key
 
     def assign_picture(self, picture_):
         """Assign a single picture to the group.

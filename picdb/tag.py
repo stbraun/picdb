@@ -63,6 +63,9 @@ class Tag(Entity):
             return None
         return retrieve_tag_by_key(self.parent_)
 
+    @parent.setter
+    def parent(self, parent_):
+        self.parent_ = parent_.key
 
 def add_tag(tag_):
     db = get_db()

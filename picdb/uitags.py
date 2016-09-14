@@ -32,12 +32,14 @@ Tak management.
 import logging
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 from . import tag
 from .tag import Tag
 from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
+from .persistence import UnknownEntityException
 
 
 class TagManagement(ttk.Frame):
@@ -226,6 +228,27 @@ class TagTree(HierarchicalTreeView):
 
     def _is_less(self, item, key):
         return item.name < tag.retrieve_tag_by_key(int(key)).name
+
+    def _dnd_action(self, start_item, target_item):
+        """Set target_item as parent of start_item.
+
+        :param start_item: item which is dragged
+        :type start_item: str
+        :param target_item: item to drop on
+        :type target_item: str
+        """
+        try:
+            start_item_ = tag.retrieve_tag_by_key(int(start_item))
+            target_item_ = tag.retrieve_tag_by_key(int(target_item))
+        except UnknownEntityException:
+            messagebox.showwarning(
+                "Invalid items for drag 'n' drop: {} --> {}".format(start_item,
+                                                                    target_item))
+        else:
+            start_item_.parent = target_item_
+            index = self._determine_index_for_insert(start_item_)
+            self.move(start_item, target_item, index)
+            start_item_.save()
 
 
 class TagEditor(ttk.LabelFrame):

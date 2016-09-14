@@ -96,9 +96,50 @@ class PicTreeView(ttk.Treeview):
 
 class HierarchicalTreeView(PicTreeView):
     """Tree view supporting hierarchical items."""
+
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.logger = logging.getLogger('picdb.ui')
+        self._dnd_active = False
+        self._dnd_start_item = None
+        self.bind('<Button-1>', self._dnd_start)
+        self.bind('<ButtonRelease-1>', self._dnd_finish)
+
+    def _dnd_start(self, event):
+        """Start possible dnd action."""
+        item = self.identify_row(event.y)
+        self._dnd_start_item = item
+        self.bind('<Motion>', self._dnd_motion)
+
+    def _dnd_finish(self, event):
+        """Finish dnd action."""
+        item = self.identify_row(event.y)
+        try:
+            if item != self._dnd_start_item:
+                self.logger.info('Finish DND on item {}'.format(item))
+                self._dnd_action(self._dnd_start_item, item)
+        finally:
+            self._dnd_start_item = None
+            self._dnd_active = False
+
+    def _dnd_action(self, start_item, target_item):
+        """Item start was dragged to item target.
+
+        Override this method to implement the desired action.
+
+        :param start_item: item which is dragged
+        :type start_item: str
+        :param target_item: item to drop on
+        :type target_item: str
+        """
+        self.logger.info(
+            'Item {} was dragged to {}'.format(start_item, target_item))
+
+    def _dnd_motion(self, _):
+        """Start dnd action."""
+        self.logger.info(
+            '>>> Start DND on item: {}'.format(self._dnd_start_item))
+        self.unbind('<Motion>')
+        self._dnd_start_active = True
 
     def add_item(self, item):
         """Add given item to tree.
@@ -115,14 +156,20 @@ class HierarchicalTreeView(PicTreeView):
             parent_key = str(item.parent.key)
         children = self.get_children(
             item=item.parent.key if item.parent is not None else None)
+        index = self._determine_index_for_insert(item)
+        if not self.exists(item.key):
+            self.insert(parent_key, index, item.key,
+                        text=item.name, values=self._additional_values(item))
+
+    def _determine_index_for_insert(self, item):
+        children = self.get_children(
+            item=item.parent.key if item.parent is not None else None)
         index = 'end'
         for idx, child in enumerate(children):
             if self._is_less(item, child):
                 index = idx
                 break
-        if not self.exists(item.key):
-            self.insert(parent_key, index, item.key,
-                        text=item.name, values=self._additional_values(item))
+        return index
 
     def get_all_items(self):
         """Provide all items currently in the tree.
@@ -137,6 +184,30 @@ class HierarchicalTreeView(PicTreeView):
             all_items.append(int(item))
             items.extend(self.get_children(item))
         return all_items
+
+    def _is_less(self, item, key):
+        """Is given item less than item by key?
+
+        :param item: item to compare.
+        :type item: Entity
+        :param key: item identifier in tree.
+        :type key: str
+        :return: True if item is less
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    def _additional_values(self, item):
+        """Provide a tuple with values to display in the tree."""
+        raise NotImplementedError
+
+    def selected_items(self):
+        """Provide list of items selected in tree.
+
+        :return: selected items
+        :rtype: [Entity]
+        """
+        raise NotImplementedError
 
 
 class FilteredTreeView(ttk.Frame):
