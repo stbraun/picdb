@@ -173,6 +173,7 @@ class PictureManagement(ttk.Frame):
                                                'mount a volume.\n\n{}'.format(
                                            e.filename))
             except OSError as e:
+                self.canvas.delete(self.image_tag)
                 messagebox.showwarning(title='Display Picture',
                                        message='Image file type cannot be '
                                                'displayed.\n\n{}'.format(
