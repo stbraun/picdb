@@ -35,7 +35,7 @@ from tkinter import ttk
 
 from . import tag
 from .tag import Tag
-from .uimasterdata import PicTreeView, FilteredTreeview
+from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
 
@@ -84,7 +84,7 @@ class TagManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.filter_tree = TagFilteredTreeview(self.content_frame)
+        self.filter_tree = TagFilteredTreeView(self.content_frame)
         self.filter_tree.grid(row=0, column=0,
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
@@ -132,7 +132,7 @@ class TagManagement(ttk.Frame):
             self.editor.tag = tag
 
 
-class TagFilteredTreeview(FilteredTreeview):
+class TagFilteredTreeView(FilteredTreeView):
     """Provide a tag tree and selection panel."""
 
     def __init__(self, master):
@@ -187,7 +187,7 @@ class TagFilteredTreeview(FilteredTreeview):
         return tags
 
 
-class TagTree(PicTreeView):
+class TagTree(HierarchicalTreeView):
     """A tree handling tags."""
 
     def __init__(self, master, tree_only=False):
@@ -203,7 +203,11 @@ class TagTree(PicTreeView):
         return TagTree(master, tree_only)
 
     def add_item(self, tag_):
-        """Add given tag to tree."""
+        """Add given tag to tree.
+
+        :param tag_: tag to add.
+        :type tag_: Tag
+        """
         super().add_item(tag_)
 
     def _additional_values(self, item):
@@ -280,7 +284,7 @@ class TagSelector(Selector):
         :return: selected tags
         :rtype: [Tag]
         """
-        items = self.right.get_children()
+        items = self.right.get_all_items()
         tags = [tag.retrieve_tag_by_key(int(item)) for item in items]
         return tags
 

@@ -36,6 +36,7 @@ from tkinter import ttk
 
 class PicTreeView(ttk.Treeview):
     """Extended tree view."""
+
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
@@ -93,8 +94,54 @@ class PicTreeView(ttk.Treeview):
         raise NotImplementedError
 
 
-class FilteredTreeview(ttk.Frame):
+class HierarchicalTreeView(PicTreeView):
+    """Tree view supporting hierarchical items."""
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.logger = logging.getLogger('picdb.ui')
+
+    def add_item(self, item):
+        """Add given item to tree.
+
+        Keeps tree sorted by item names.
+
+        :param item: item to add
+        :type item: Entity
+        """
+        parent_key = ''
+        if item.parent is not None:
+            if not self.exists(item.parent.key):
+                self.add_item(item.parent)
+            parent_key = str(item.parent.key)
+        children = self.get_children(
+            item=item.parent.key if item.parent is not None else None)
+        index = 'end'
+        for idx, child in enumerate(children):
+            if self._is_less(item, child):
+                index = idx
+                break
+        if not self.exists(item.key):
+            self.insert(parent_key, index, item.key,
+                        text=item.name, values=self._additional_values(item))
+
+    def get_all_items(self):
+        """Provide all items currently in the tree.
+
+        :return: list of all items (keys) in the tree.
+        :rtype: [int]
+        """
+        all_items = []
+        items = list(self.get_children())
+        while len(items) > 0:
+            item = items.pop()
+            all_items.append(int(item))
+            items.extend(self.get_children(item))
+        return all_items
+
+
+class FilteredTreeView(ttk.Frame):
     """Abstract filter_tree class."""
+
     def __init__(self, master, tree_factory):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')

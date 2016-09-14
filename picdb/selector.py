@@ -77,7 +77,6 @@ class Selector(ttk.LabelFrame):
         items = self.left.selected_items()
         self.logger.info('add item: {}'.format(items))
         for item in items:
-            self.left.delete(item.key)
             self.right.add_item(item)
 
     def _remove_item(self):
@@ -85,7 +84,6 @@ class Selector(ttk.LabelFrame):
         self.logger.info('remove item: {}'.format(items))
         for item in items:
             self.right.delete(item.key)
-            self.left.add_item(item)
 
     def init_trees(self, all_entities, right_entities):
         """Write given entities into left tree."""

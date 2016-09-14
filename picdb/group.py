@@ -41,7 +41,7 @@ class Group(Entity):
 
     def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)
-        self.parent = parent
+        self.parent_ = parent
         self._children = []
         # Currently assigned pictures. May not be saved yet.
         self._pictures = None
@@ -77,6 +77,12 @@ class Group(Entity):
         :type picture_: [Tag]
         """
         self._pictures = picture_
+
+    @property
+    def parent(self):
+        if self.parent_ is None:
+            return None
+        return retrieve_series_by_key(self.parent_)
 
     def assign_picture(self, picture_):
         """Assign a single picture to the group.
@@ -170,7 +176,7 @@ def retrieve_pictures_for_group(group):
     return pics
 
 
-def retrieve_series_for_picture(picture):
+def retrieve_groups_for_picture(picture):
     """Retrieve groups for given picture.
 
     :param picture: given group.
@@ -193,7 +199,7 @@ def update_group(group):
 
 def add_picture_to_group(group_, picture):
     db = get_db()
-    db.add_picture_to_series(picture, group_)
+    db.add_picture_to_group(picture, group_)
 
 
 def add_pictures_to_group(group_, pictures_):

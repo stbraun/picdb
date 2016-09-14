@@ -41,9 +41,9 @@ from PIL import Image, ImageTk
 from . import group
 from . import picture
 from .picture import Picture
-from .uimasterdata import PicTreeView, FilteredTreeview
+from .uimasterdata import PicTreeView, FilteredTreeView
 from .uitags import TagSelector
-from .uigroups import PictureGroupSelector
+from .uigroups import GroupSelector
 from .uicommon import tag_all_children
 
 
@@ -94,7 +94,7 @@ class PictureManagement(ttk.Frame):
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
         self.content_frame.columnconfigure(2, weight=4)
-        self.filter_tree = PictureFilteredTreeview(self.content_frame)
+        self.filter_tree = PictureFilteredTreeView(self.content_frame)
         self.filter_tree.grid(row=0, column=0,
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
@@ -210,7 +210,7 @@ class PictureManagement(ttk.Frame):
         self.canvas.delete(self.image_tag)
 
 
-class PictureFilteredTreeview(FilteredTreeview):
+class PictureFilteredTreeView(FilteredTreeView):
     """Provide a picture tree and a selection panel."""
 
     def __init__(self, master):
@@ -236,8 +236,8 @@ class PictureFilteredTreeview(FilteredTreeview):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self._create_filter_frame()
-        self.series_selector = PictureGroupSelector(self,
-                                                    text='Select series')
+        self.series_selector = GroupSelector(self,
+                                             text='Select series')
         self.series_selector.grid(row=1, column=0,
                                   sticky=(tk.N, tk.S, tk.W, tk.E))
         self.tag_selector = TagSelector(self, text='Select tags')
@@ -301,7 +301,7 @@ class PictureFilteredTreeview(FilteredTreeview):
     def _visibility_changed(self, event):
         """Listener is called if visibility of widget changes."""
         self.logger.info(
-            'Visibility of PictureFilteredTreeview frame changed: {}'.format(
+            'Visibility of PictureFilteredTreeView frame changed: {}'.format(
                 event.state))
         self.tag_selector.load_items(self.tag_selector.selected_items())
         self.series_selector.load_items(self.series_selector.selected_items())
@@ -415,7 +415,7 @@ class PictureMetadataEditor(ttk.Frame):
         self.content_frame = None
         self.control_frame = None
         self.tag_selector = None
-        self.series_selector = None
+        self.group_selector = None
         self.editor = None
         self.save_button = None
         self.picture = None
@@ -442,10 +442,10 @@ class PictureMetadataEditor(ttk.Frame):
         self.content_frame.columnconfigure(0, weight=1)
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.W))
-        self.series_selector = PictureGroupSelector(self.content_frame,
-                                                    text='Assign series')
-        self.series_selector.grid(row=1, column=0,
-                                  sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.group_selector = GroupSelector(self.content_frame,
+                                            text='Assign series')
+        self.group_selector.grid(row=1, column=0,
+                                 sticky=(tk.W, tk.N, tk.E, tk.S))
         self.tag_selector = TagSelector(self.content_frame, text='Assign tags')
         self.tag_selector.grid(row=2, column=0,
                                sticky=(tk.W, tk.N, tk.E, tk.S))
@@ -472,14 +472,14 @@ class PictureMetadataEditor(ttk.Frame):
     def _update_series(self):
         """Remove or add picture from groups according to changes made
         during editing."""
-        saved_groups = set(group.retrieve_series_for_picture(self.picture))
-        edt_groups = set(self.series_selector.selected_items())
-        series_to_add = edt_groups.difference(saved_groups)
-        series_to_remove = saved_groups.difference(edt_groups)
-        for grp in series_to_add:
+        saved_groups = set(group.retrieve_groups_for_picture(self.picture))
+        edt_groups = set(self.group_selector.selected_items())
+        groups_to_add = edt_groups.difference(saved_groups)
+        groups_to_remove = saved_groups.difference(edt_groups)
+        for grp in groups_to_add:
             grp.assign_picture(self.picture)
             grp.save()
-        for grp in series_to_remove:
+        for grp in groups_to_remove:
             grp.remove_picture(self.picture)
             grp.save()
 
@@ -489,12 +489,12 @@ class PictureMetadataEditor(ttk.Frame):
         self.editor.picture = picture_
         self.tag_selector.load_items(picture_.tags)
         # Retrieve groups the picture is currently assigned to.
-        self.series_selector.load_items(
-            group.retrieve_series_for_picture(picture_))
+        self.group_selector.load_items(
+            group.retrieve_groups_for_picture(picture_))
 
     def clear(self):
         """Clear the editor."""
         self.editor.clear()
         self.picture = None
-        self.series_selector.clear()
+        self.group_selector.clear()
         self.tag_selector.clear()

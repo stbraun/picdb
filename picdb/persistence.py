@@ -137,12 +137,14 @@ class Persistence:
 
     def update_group(self, series):
         self.logger.debug("Update series: {}".format(series.name))
-        stmt = "UPDATE series SET identifier='{}', description='{}', " \
-               "parent='{}' " \
-               "WHERE id={}".format(series.name,
-                                    series.description, series.parent,
-                                    series.key)
-        self.execute_sql(stmt)
+        stmt = "UPDATE series SET identifier=?, description=?, " \
+               "parent=? " \
+               "WHERE id=?"
+        self.execute_sql(stmt, (series.name,
+                                series.description,
+                                series.parent.key if series.parent is not
+                                                     None else None,
+                                series.key))
 
     def add_tag(self, tag):
         """Add a new tag.
@@ -157,11 +159,13 @@ class Persistence:
 
     def update_tag(self, tag):
         self.logger.debug("Update tag: {}".format(tag.name))
-        stmt = "UPDATE tags SET identifier='{}', description='{}', parent='{" \
-               "}' " \
-               "WHERE id={}".format(tag.name,
-                                    tag.description, tag.parent, tag.key)
-        self.execute_sql(stmt)
+        stmt = "UPDATE tags SET identifier=?, description=?, parent=? " \
+               "WHERE id=?"
+        self.execute_sql(stmt, (tag.name,
+                                tag.description,
+                                tag.parent.key if tag.parent is not None
+                                else None,
+                                tag.key))
 
     def add_picture(self, picture):
         """Add a new picture.
@@ -179,12 +183,12 @@ class Persistence:
         self.conn.cursor()
         self.logger.debug("Update picture: {} ({})".format(picture.name,
                                                            picture.path))
-        stmt = "UPDATE pictures SET identifier='{}', path='{}', " \
-               "description='{}' WHERE id={}".format(picture.name,
-                                                     picture.path,
-                                                     picture.description,
-                                                     picture.key)
-        self.execute_sql(stmt)
+        stmt = "UPDATE pictures SET identifier=?, path=?, " \
+               "description=? WHERE id=?"
+        self.execute_sql(stmt, (picture.name,
+                                picture.path,
+                                picture.description,
+                                picture.key))
 
     def add_tag_to_picture(self, picture, tag):
         """Add tag to a picture.
@@ -212,18 +216,18 @@ class Persistence:
         stmt = '''DELETE FROM picture2tag WHERE picture=? AND tag=?'''
         self.execute_sql(stmt, (picture.key, tag.key))
 
-    def add_picture_to_series(self, picture, series):
-        """Add picture to a series.
+    def add_picture_to_group(self, picture, group_):
+        """Add picture to a group.
 
         :param picture: the picture
         :type picture: Picture
-        :param series: the series
-        :type series: Group
+        :param group_: the series
+        :type group_: Group
         """
         self.logger.debug(
-            "Adding picture {} to series {}.".format(picture, series))
+            "Adding picture {} to group_ {}.".format(picture, group_))
         stmt = '''INSERT INTO picture2series VALUES(?, ?)'''
-        self.execute_sql(stmt, (picture.key, series.key))
+        self.execute_sql(stmt, (picture.key, group_.key))
 
     def remove_picture_from_series(self, picture, series):
         """Remove picture from a series.
@@ -321,6 +325,8 @@ class Persistence:
         :rtype: DGroup
         """
         stmt = 'SELECT id, identifier, description, parent FROM series WHERE ' \
+               '' \
+               '' \
                '' \
                '"id"=?'
         cursor = self.conn.cursor()

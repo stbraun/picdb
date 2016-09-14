@@ -40,7 +40,7 @@ class Tag(Entity):
 
     def __init__(self, key, name, description, parent=None):
         super().__init__(key, name, description)
-        self.parent = parent
+        self.parent_ = parent
         self._children = []
 
     def save(self):
@@ -56,6 +56,12 @@ class Tag(Entity):
     @children.setter
     def children(self, children_):
         self._children = children_
+
+    @property
+    def parent(self):
+        if self.parent_ is None:
+            return None
+        return retrieve_tag_by_key(self.parent_)
 
 
 def add_tag(tag_):

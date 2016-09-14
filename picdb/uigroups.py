@@ -35,7 +35,7 @@ from tkinter import ttk
 
 from . import group
 from .group import Group
-from .uimasterdata import PicTreeView, FilteredTreeview
+from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
 
@@ -86,12 +86,12 @@ class GroupManagement(ttk.Frame):
         self.content_frame.rowconfigure(0, weight=1)
         self.content_frame.columnconfigure(0, weight=1)
         self.content_frame.columnconfigure(1, weight=1)
-        self.filter_tree = PictureGroupFilteredTreeview(self.content_frame)
+        self.filter_tree = GroupFilteredTreeView(self.content_frame)
         self.filter_tree.grid(row=0, column=0,
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
                               self.item_selected)
-        self.editor = PictureGroupEditor(self.content_frame)
+        self.editor = GroupEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
     def create_control_frame(self):
@@ -144,14 +144,14 @@ class GroupManagement(ttk.Frame):
             self.editor.group = group_
 
 
-class PictureGroupFilteredTreeview(FilteredTreeview):
+class GroupFilteredTreeView(FilteredTreeView):
     """Provide a group tree and selection panel."""
 
     def __init__(self, master):
         self.logger = logging.getLogger('picdb.ui')
         self.name_filter_var = tk.StringVar()
         self.limit_var = tk.IntVar()
-        super().__init__(master, PictureGroupTree.create_instance)
+        super().__init__(master, GroupTree.create_instance)
         self.name_filter_var.set('%')
         self.name_filter_entry = None
         self.limit_var.set(self.limit_default)
@@ -207,7 +207,7 @@ class PictureGroupFilteredTreeview(FilteredTreeview):
         return groups
 
 
-class PictureGroupTree(PicTreeView):
+class GroupTree(HierarchicalTreeView):
     """A tree handling picture groups."""
 
     def __init__(self, master, tree_only=False):
@@ -220,11 +220,15 @@ class PictureGroupTree(PicTreeView):
     @classmethod
     def create_instance(cls, master, tree_only=False):
         """Factory method."""
-        return PictureGroupTree(master, tree_only)
+        return GroupTree(master, tree_only)
 
-    def add_item(self, series):
-        """Add given series to tree."""
-        super().add_item(series)
+    def add_item(self, group_):
+        """Add given group to tree.
+
+        :param group_: group to add
+        :type group_: Group
+        """
+        super().add_item(group_)
 
     def _additional_values(self, item):
         return () if self.tree_only else (item.description,)
@@ -244,7 +248,7 @@ class PictureGroupTree(PicTreeView):
         return item.name < group.retrieve_series_by_key(int(key)).name
 
 
-class PictureGroupEditor(ttk.LabelFrame):
+class GroupEditor(ttk.LabelFrame):
     """Editor for Group objects."""
 
     def __init__(self, master, text='Edit series'):
@@ -287,12 +291,12 @@ class PictureGroupEditor(ttk.LabelFrame):
         self.name_entry.focus()
 
 
-class PictureGroupSelector(Selector):
+class GroupSelector(Selector):
     """Provide a selector component for groups."""
 
     def __init__(self, master, **kwargs):
-        super().__init__(master, PictureGroupTree.create_instance,
-                         PictureGroupTree.create_instance,
+        super().__init__(master, GroupTree.create_instance,
+                         GroupTree.create_instance,
                          **kwargs)
 
     def selected_items(self):
@@ -301,7 +305,7 @@ class PictureGroupSelector(Selector):
         :return: selected groups
         :rtype: [Group]
         """
-        items = self.right.get_children()
+        items = self.right.get_all_items()
         groups = [group.retrieve_series_by_key(int(item))
                   for item in items]
         return groups
