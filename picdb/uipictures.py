@@ -155,15 +155,28 @@ class PictureManagement(ttk.Frame):
     def _display_picture(self):
         """Display current picture in canvas."""
         if self.current_picture is not None:
-            img = Image.open(self.current_picture.path)
-            img.thumbnail((self._canvas_width - 2, self._canvas_height - 2),
-                          Image.ANTIALIAS)
-            self.image = ImageTk.PhotoImage(img)
-            self.canvas.delete(self.image_tag)  # delete old picture if any
-            self.canvas.create_image(1, 1, anchor=tk.NW,
-                                     state=tk.NORMAL,
-                                     image=self.image,
-                                     tags=self.image_tag)
+            try:
+                img = Image.open(self.current_picture.path)
+                img.thumbnail(
+                    (self._canvas_width - 2, self._canvas_height - 2),
+                    Image.ANTIALIAS)
+                self.image = ImageTk.PhotoImage(img)
+                self.canvas.delete(self.image_tag)  # delete old picture if any
+                self.canvas.create_image(1, 1, anchor=tk.NW,
+                                         state=tk.NORMAL,
+                                         image=self.image,
+                                         tags=self.image_tag)
+            except FileNotFoundError as e:
+                messagebox.showwarning(title='Display Picture',
+                                       message='Image file not '
+                                               'found!\nYou might need to '
+                                               'mount a volume.\n\n{}'.format(
+                                           e.filename))
+            except OSError as e:
+                messagebox.showwarning(title='Display Picture',
+                                       message='Image file type cannot be '
+                                               'displayed.\n\n{}'.format(
+                                           self.current_picture.path))
 
     def view_picture(self):
         """View selected picture."""
