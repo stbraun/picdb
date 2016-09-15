@@ -44,7 +44,7 @@ from .picture import Picture
 from .uimasterdata import PicTreeView, FilteredTreeView
 from .uitags import TagSelector
 from .uigroups import GroupSelector
-from .uicommon import tag_all_children
+from .uicommon import tag_all_children, Observable
 
 
 class PictureManagement(ttk.Frame):
@@ -80,6 +80,8 @@ class PictureManagement(ttk.Frame):
         # children widgets
         tag_all_children(self, self)
         self.bind('<Meta_L>r', self._reset)
+        # bind listener for save event
+        self.editor.bind(self.editor.EVT_ITEM_SAVED, self._refresh_saved_item)
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -155,6 +157,11 @@ class PictureManagement(ttk.Frame):
     def _item_deleted(self, _):
         """An item in the tree view was deleted."""
         self.clear()
+
+    def _refresh_saved_item(self, _=None):
+        """Item in editor was saved. Refresh tree view."""
+        pic = self.editor.picture
+        self.filter_tree.refresh_item_in_tree(pic)
 
     def _display_picture(self):
         """Display current picture in canvas."""
@@ -312,6 +319,8 @@ class PictureFilteredTreeView(FilteredTreeView):
         self.series_selector.load_items([])
         self.tree.clear()
 
+    def refresh_item_in_tree(self, pic):
+        self.tree.refresh_item(pic)
 
 class PictureReferenceTree(PicTreeView):
     """A tree handling pictures."""
@@ -348,6 +357,11 @@ class PictureReferenceTree(PicTreeView):
 
     def _is_less(self, item, key):
         return item < picture.retrieve_picture_by_key(int(key))
+
+    def refresh_item(self, pic):
+        """Refresh item in tree view with data from pic."""
+        self.delete(pic.key)
+        self.add_item(pic)
 
     def _delete_items(self, items):
         """Delete given pictures.
@@ -426,11 +440,13 @@ class PictureReferenceEditor(ttk.LabelFrame):
         self.picture_ = None
 
 
-class PictureMetadataEditor(ttk.Frame):
+class PictureMetadataEditor(ttk.Frame, Observable):
     """Editor component for picture meta data."""
 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self.EVT_ITEM_SAVED = '<<ItemSaved>>'
+        Observable.__init__(self, super().bind, {self.EVT_ITEM_SAVED})
         self.master = master
         self.content_frame = None
         self.control_frame = None
@@ -470,6 +486,9 @@ class PictureMetadataEditor(ttk.Frame):
         self.tag_selector.grid(row=2, column=0,
                                sticky=(tk.W, tk.N, tk.E, tk.S))
 
+    def bind(self, sequence=None, func=None, add=None):
+        Observable.bind(self, sequence, func, add)
+
     def _create_control_frame(self, master):
         self.control_frame = ttk.Frame(master)
         self.columnconfigure(0, weight=1)
@@ -488,6 +507,7 @@ class PictureMetadataEditor(ttk.Frame):
         tags = self.tag_selector.selected_items()
         self.picture.tags = tags
         self.picture.save()
+        self._call_listeners(self.EVT_ITEM_SAVED, None)
 
     def _update_series(self):
         """Remove or add picture from groups according to changes made
