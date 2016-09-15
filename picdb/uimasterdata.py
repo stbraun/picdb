@@ -122,6 +122,7 @@ class HierarchicalTreeView(PicTreeView):
             self.config(cursor='')
             self._dnd_start_item = None
             self._dnd_active = False
+            self.unbind('<Motion>')
 
     def _dnd_action(self, start_item, target_item):
         """Item start was dragged to item target.
@@ -136,11 +137,13 @@ class HierarchicalTreeView(PicTreeView):
         self.logger.info(
             'Item {} was dragged to {}'.format(start_item, target_item))
 
-    def _dnd_motion(self, _):
+    def _dnd_motion(self, event):
         """Start dnd action."""
-        self.config(cursor='exchange')
-        self.unbind('<Motion>')
-        self._dnd_start_active = True
+        if not self._dnd_active:
+            self._dnd_active = True
+            self.config(cursor='exchange')
+        item = self.identify_row(event.y)
+        self.item(item, open=True)
 
     def add_item(self, item):
         """Add given item to tree.
