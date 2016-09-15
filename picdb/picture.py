@@ -56,7 +56,7 @@ class Picture(Entity):
     def _update_tags(self):
         """Remove and add tags according to changes made during editing."""
         saved_tags = set(retrieve_tags_for_picture(self))
-        _tags = set(self._tags)
+        _tags = set(self.tags)
         tags_to_add = _tags.difference(saved_tags)
         tags_to_remove = saved_tags.difference(_tags)
         add_tags_to_picture(self, tags_to_add)
