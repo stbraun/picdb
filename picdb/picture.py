@@ -34,7 +34,7 @@ from .persistence import get_db
 from .entity import Entity
 from .tag import get_tag_from_d_object
 
-_picture_cache = LRUCache(200)
+_picture_cache = LRUCache(20000)
 
 
 class Picture(Entity):

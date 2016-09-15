@@ -33,7 +33,7 @@ from .persistence import get_db, UnknownEntityException
 from .entity import Entity
 from .picture import get_picture_from_d_object
 
-_group_cache = LRUCache(200)
+_group_cache = LRUCache(2000)
 
 
 class Group(Entity):

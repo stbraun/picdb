@@ -32,7 +32,7 @@ from .persistence import get_db, UnknownEntityException
 from .cache import LRUCache
 from .entity import Entity
 
-_tag_cache = LRUCache(200)
+_tag_cache = LRUCache(2000)
 
 
 class Tag(Entity):
