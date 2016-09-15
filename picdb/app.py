@@ -104,6 +104,8 @@ def start_application(argv):
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
+    # no tear-off menus
+    root.option_add('*tearoff', False)
     args = _parse_arguments(argv)
     set_db(args.db)
     root.geometry(args.geometry)

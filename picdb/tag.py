@@ -49,6 +49,10 @@ class Tag(Entity):
         else:
             update_tag(self)
 
+    def delete(self):
+        """Delete tag and its assignments."""
+        delete_tag(self)
+
     @property
     def children(self):
         return self._children
@@ -74,6 +78,11 @@ class Tag(Entity):
 def add_tag(tag_):
     db = get_db()
     db.add_tag(tag_)
+
+
+def delete_tag(tag_):
+    db = get_db()
+    db.delete_tag(tag_)
 
 
 def get_all_tags():

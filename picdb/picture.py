@@ -62,6 +62,13 @@ class Picture(Entity):
         add_tags_to_picture(self, tags_to_add)
         remove_tags_from_picture(self, tags_to_remove)
 
+    def delete(self):
+        """Delete picture from database.
+
+        Does also remove group and tag assignments.
+        """
+        delete_picture(self)
+
     @property
     def tags(self):
         if self._tags is None:
@@ -120,6 +127,16 @@ class Picture(Entity):
 def add_picture(picture):
     db = get_db()
     db.add_picture(picture)
+
+
+def delete_picture(picture):
+    """Delete picture and tag assignments.
+
+    :param picture: picture to delete
+    :type picture: Picture
+    """
+    db = get_db()
+    db.delete_picture(picture)
 
 
 def retrieve_picture_by_key(key):

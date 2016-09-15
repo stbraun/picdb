@@ -146,6 +146,13 @@ class Persistence:
                                                      None else None,
                                 series.key))
 
+    def delete_group(self, group_):
+        """Delete group and picture assignments."""
+        stmt_pics = "DELETE FROM picture2series WHERE series=?"
+        stmt_grp = "DELETE FROM series WHERE id=?"
+        self.execute_sql(stmt_pics, (group_.key,))
+        self.execute_sql(stmt_grp, (group_.key,))
+
     def add_tag(self, tag):
         """Add a new tag.
 
@@ -166,6 +173,13 @@ class Persistence:
                                 tag.parent.key if tag.parent is not None
                                 else None,
                                 tag.key))
+
+    def delete_tag(self, tag_):
+        """Delete given tag and all its assignments."""
+        stmt_pic = "DELETE FROM picture2tag WHERE tag=?"
+        stmt_tag = "DELETE FROM tags WHERE id=?"
+        self.execute_sql(stmt_pic, (tag_.key,))
+        self.execute_sql(stmt_tag, (tag_.key,))
 
     def add_picture(self, picture):
         """Add a new picture.
@@ -189,6 +203,14 @@ class Persistence:
                                 picture.path,
                                 picture.description,
                                 picture.key))
+
+    def delete_picture(self, picture):
+        """Delete given picture. Does also remove tag assignments."""
+        self.conn.cursor()
+        stmt_tags = "DELETE FROM picture2tag WHERE picture=?"
+        stmt_pic = "DELETE FROM pictures WHERE id=?"
+        self.execute_sql(stmt_tags, (picture.key,))
+        self.execute_sql(stmt_pic, (picture.key,))
 
     def add_tag_to_picture(self, picture, tag):
         """Add tag to a picture.

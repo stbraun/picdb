@@ -270,6 +270,15 @@ class GroupTree(HierarchicalTreeView):
             self.move(start_item, target_item, index)
             start_item_.save()
 
+    def _delete_items(self, items):
+        """Delete given groups.
+
+        :param items: groups to delete.
+        :type items: [Group]
+        """
+        for group_ in items:
+            group_.delete()
+
 
 class GroupEditor(ttk.LabelFrame):
     """Editor for Group objects."""

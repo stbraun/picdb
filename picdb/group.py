@@ -63,6 +63,12 @@ class Group(Entity):
             add_pictures_to_group(self, pictures_to_add)
             remove_pictures_from_group(self, pictures_to_remove)
 
+    def delete(self):
+        """Delete group from database.
+        Also deletes picture assignments.
+        """
+        delete_group(self)
+
     @property
     def pictures(self):
         if self._pictures is None:
@@ -125,6 +131,11 @@ class Group(Entity):
 def add_group(group):
     db = get_db()
     db.add_series(group)
+
+
+def delete_group(group_):
+    db = get_db()
+    db.delete_group(group_)
 
 
 def get_all_series():

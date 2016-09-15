@@ -250,6 +250,15 @@ class TagTree(HierarchicalTreeView):
             self.move(start_item, target_item, index)
             start_item_.save()
 
+    def _delete_items(self, items):
+        """Delete given tags.
+
+        :param items: tags to delete.
+        :type items: [Tag]
+        """
+        for tag_ in items:
+            tag_.delete()
+
 
 class TagEditor(ttk.LabelFrame):
     """Editor for Tag objects."""

@@ -99,6 +99,8 @@ class PictureManagement(ttk.Frame):
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
                               self.item_selected)
+        self.filter_tree.bind(self.filter_tree.EVT_ITEM_DELETED,
+                              self._item_deleted)
         self.editor = PictureMetadataEditor(self.content_frame)
         self.editor.grid(row=0, column=1,
                          sticky=(tk.W, tk.N, tk.E, tk.S))
@@ -151,6 +153,10 @@ class PictureManagement(ttk.Frame):
             self._display_picture()
         else:
             self.clear()
+
+    def _item_deleted(self, _):
+        """An item in the tree view was deleted."""
+        self.clear()
 
     def _display_picture(self):
         """Display current picture in canvas."""
@@ -348,6 +354,19 @@ class PictureReferenceTree(PicTreeView):
 
     def _is_less(self, item, key):
         return item < picture.retrieve_picture_by_key(int(key))
+
+    def _delete_items(self, items):
+        """Delete given pictures.
+
+        :param items: items to delete.
+        :type items: [Picture]
+        """
+        for pic in items:
+            groups = group.retrieve_groups_for_picture(pic)
+            for group_ in groups:
+                group_.remove_picture(pic)
+                group_.save()
+            pic.delete()
 
 
 class PictureReferenceEditor(ttk.LabelFrame):

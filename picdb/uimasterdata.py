@@ -32,6 +32,7 @@ The UI for master data management of groups and tags.
 import logging
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 
 class PicTreeView(ttk.Treeview):
@@ -40,6 +41,14 @@ class PicTreeView(ttk.Treeview):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
+        self.EVT_ITEM_DELETED = '<<ItemDeleted>>'
+        self.supported_events = set()
+        self.supported_events.add(self.EVT_ITEM_DELETED)
+        self.listeners = {}
+        self.menu = tk.Menu(self)
+        self.menu.add_command(label='Delete selected items',
+                              command=self.__delete_selected_items)
+        self.bind('<2>', lambda e: self.menu.post(e.x_root, e.y_root))
 
     @classmethod
     def create_instance(cls, master):
@@ -69,6 +78,13 @@ class PicTreeView(ttk.Treeview):
         self.insert('', index, item.key,
                     text=item.name, values=self._additional_values(item))
 
+    def bind(self, sequence=None, func=None, add=None):
+        """Bind to this widget at event SEQUENCE a call to function FUNC."""
+        if sequence in self.supported_events:
+            self.listeners[sequence] = func
+        else:
+            super().bind(sequence, func, add)
+
     def _is_less(self, item, key):
         """Is given item less than item by key?
 
@@ -90,6 +106,32 @@ class PicTreeView(ttk.Treeview):
 
         :return: selected items
         :rtype: [Entity]
+        """
+        raise NotImplementedError
+
+    def __delete_selected_items(self):
+        """Delete selected items."""
+        items = self.selected_items()
+        yes = messagebox.askyesno(title='Delete items?',
+                                  message='Do you want to delete the selected '
+                                          'items from database?\nNothing '
+                                          'will be deleted from the file '
+                                          'system.')
+        if yes:
+            self.logger.info(
+                'Delete item command triggered on: {}'.format(items))
+            self._delete_items(items)
+            for item in items:
+                self.delete(item.key)
+            if self.EVT_ITEM_DELETED in self.listeners.keys():
+                listener = self.listeners[self.EVT_ITEM_DELETED]
+                listener(None)  # TODO provide Event instance
+
+    def _delete_items(self, items):
+        """Delete given items.
+
+        :param items: items to delete.
+        :type items: [Entity]
         """
         raise NotImplementedError
 
@@ -213,6 +255,14 @@ class HierarchicalTreeView(PicTreeView):
         """
         raise NotImplementedError
 
+    def _delete_items(self, items):
+        """Delete given items.
+
+        :param items: items to delete.
+        :type items: [Entity]
+        """
+        raise NotImplementedError
+
 
 class FilteredTreeView(ttk.Frame):
     """Abstract filter_tree class."""
@@ -221,8 +271,10 @@ class FilteredTreeView(ttk.Frame):
         super().__init__(master)
         self.logger = logging.getLogger('picdb.ui')
         self.EVT_ITEM_SELECTED = '<<ItemSelected>>'
+        self.EVT_ITEM_DELETED = '<<ItemDeleted>>'
         self.supported_events = set()
         self.supported_events.add(self.EVT_ITEM_SELECTED)
+        self.supported_events.add(self.EVT_ITEM_DELETED)
         self.listeners = {}
         self.filter_frame = None
         self.tree = None
@@ -231,6 +283,7 @@ class FilteredTreeView(ttk.Frame):
         self.limit_entry = None
         self._create_widgets()
         self.tree.bind('<<TreeviewSelect>>', self._item_selected)
+        self.tree.bind(self.tree.EVT_ITEM_DELETED, self._item_deleted)
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=0)
@@ -292,6 +345,12 @@ class FilteredTreeView(ttk.Frame):
             if self.EVT_ITEM_SELECTED in self.listeners.keys():
                 listener = self.listeners[self.EVT_ITEM_SELECTED]
                 listener(event)
+
+    def _item_deleted(self, event):
+        """A tree item was deleted. Call listeners."""
+        if self.EVT_ITEM_DELETED in self.listeners.keys():
+            listener = self.listeners[self.EVT_ITEM_DELETED]
+            listener(event)
 
     def _validate_limit(self):
         """Validator for limit entry."""
