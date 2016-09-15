@@ -134,15 +134,27 @@ class PicTreeView(ttk.Treeview, Observable):
 class HierarchicalTreeView(PicTreeView):
     """Tree view supporting hierarchical items."""
 
-    def __init__(self, master, open_items=False, **kwargs):
+    def __init__(self, master, open_items=False, allow_change_parent=False,
+                 **kwargs):
+        """Initialize tree view.
+
+        :param master: widget's master
+        :type master: tk.Widget
+        :param open_items: always open hierarchical items.
+        :type open_items: bool
+        :param allow_change_parent: allow changing an item's parent.
+        :type allow_change_parent: bool
+        """
         super().__init__(master, **kwargs)
         self.open_items = open_items
+        self._allow_change_parent = allow_change_parent
         self._dnd_active = False
         self._dnd_start_item = None
-        self.bind('<Button-1>', self._dnd_start)
-        self.bind('<ButtonRelease-1>', self._dnd_finish)
-        self.menu.add_command(label='Unlink from parent',
-                              command=self._unlink_from_parent)
+        if self._allow_change_parent:
+            self.bind('<Button-1>', self._dnd_start)
+            self.bind('<ButtonRelease-1>', self._dnd_finish)
+            self.menu.add_command(label='Unlink from parent',
+                                  command=self._unlink_from_parent)
 
     def _dnd_start(self, event):
         """Start possible dnd action."""
@@ -276,8 +288,8 @@ class HierarchicalTreeView(PicTreeView):
 class FilteredTreeView(ttk.Frame, Observable):
     """Abstract filter_tree class."""
 
-    def __init__(self, master, tree_factory):
-        super().__init__(master)
+    def __init__(self, master, tree_factory, **kwargs):
+        super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
         self.EVT_ITEM_SELECTED = '<<ItemSelected>>'
         self.EVT_ITEM_DELETED = '<<ItemDeleted>>'

@@ -144,11 +144,12 @@ class TagManagement(ttk.Frame):
 class TagFilteredTreeView(FilteredTreeView):
     """Provide a tag tree and selection panel."""
 
-    def __init__(self, master):
+    def __init__(self, master, **kwargs):
         self.logger = logging.getLogger('picdb.ui')
         self.name_filter_var = tk.StringVar()
         self.limit_var = tk.IntVar()
-        super().__init__(master, TagTree.create_instance)
+        super().__init__(master, TagTree.create_instance_change_parent,
+                         **kwargs)
         self.name_filter_var.set('%')
         self.name_filter_entry = None
         self.limit_var.set(self.limit_default)
@@ -210,6 +211,11 @@ class TagTree(HierarchicalTreeView):
     def create_instance(cls, master, tree_only=False, **kwargs):
         """Factory method."""
         return TagTree(master, tree_only, **kwargs)
+
+    @classmethod
+    def create_instance_change_parent(cls, master, tree_only=False, **kwargs):
+        """Factory method."""
+        return TagTree(master, tree_only, allow_change_parent=True, **kwargs)
 
     def add_item(self, tag_):
         """Add given tag to tree.

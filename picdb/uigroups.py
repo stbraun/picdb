@@ -155,11 +155,12 @@ class GroupManagement(ttk.Frame):
 class GroupFilteredTreeView(FilteredTreeView):
     """Provide a group tree and selection panel."""
 
-    def __init__(self, master):
+    def __init__(self, master, **kwargs):
         self.logger = logging.getLogger('picdb.ui')
         self.name_filter_var = tk.StringVar()
         self.limit_var = tk.IntVar()
-        super().__init__(master, GroupTree.create_instance)
+        super().__init__(master, GroupTree.create_instance_change_parent,
+                         **kwargs)
         self.name_filter_var.set('%')
         self.name_filter_entry = None
         self.limit_var.set(self.limit_default)
@@ -229,6 +230,11 @@ class GroupTree(HierarchicalTreeView):
     def create_instance(cls, master, tree_only=False, **kwargs):
         """Factory method."""
         return GroupTree(master, tree_only, **kwargs)
+
+    @classmethod
+    def create_instance_change_parent(cls, master, tree_only=False, **kwargs):
+        """Factory method."""
+        return GroupTree(master, tree_only, allow_change_parent=True, **kwargs)
 
     def add_item(self, group_):
         """Add given group to tree.
