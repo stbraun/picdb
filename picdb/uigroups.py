@@ -289,6 +289,15 @@ class GroupTree(HierarchicalTreeView):
         for group_ in items:
             group_.delete()
 
+    def _unlink_from_parent(self):
+        """Unlink selected groups from parent group."""
+        groups = self.selected_items()
+        for group_ in groups:
+            group_.parent = None
+            group_.save()
+            index = self._determine_index_for_insert(group_)
+            self.move(group_.key, '', index)
+
 
 class GroupEditor(ttk.LabelFrame):
     """Editor for Group objects."""
@@ -344,6 +353,7 @@ class GroupEditor(ttk.LabelFrame):
         """Unlink group from parent group."""
         if self.group is not None:
             self.group.parent = None
+            self.group.save()
 
     def clear(self):
         self.group = None

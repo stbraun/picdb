@@ -274,6 +274,15 @@ class TagTree(HierarchicalTreeView):
                 pic.save()
             tag_.delete()
 
+    def _unlink_from_parent(self):
+        """Unlink selected tag from parent tag."""
+        tags = self.selected_items()
+        for tag_ in tags:
+            tag_.parent = None
+            tag_.save()
+            index = self._determine_index_for_insert(tag_)
+            self.move(tag_.key, '', index)
+
 
 class TagEditor(ttk.LabelFrame):
     """Editor for Tag objects."""
@@ -329,9 +338,11 @@ class TagEditor(ttk.LabelFrame):
         """Unlink tag from parent tag."""
         if self.tag is not None:
             self.tag.parent = None
+            self.tag.save()
 
     def clear(self):
         self.tag = None
+
 
 class TagSelector(Selector):
     """Provide a selector component for tags."""

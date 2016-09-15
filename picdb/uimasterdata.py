@@ -146,6 +146,8 @@ class HierarchicalTreeView(PicTreeView):
         self._dnd_start_item = None
         self.bind('<Button-1>', self._dnd_start)
         self.bind('<ButtonRelease-1>', self._dnd_finish)
+        self.menu.add_command(label='Unlink from parent',
+                              command=self._unlink_from_parent)
 
     def _dnd_start(self, event):
         """Start possible dnd action."""
@@ -208,6 +210,13 @@ class HierarchicalTreeView(PicTreeView):
                 self.item(item.key, open=True)
 
     def _determine_index_for_insert(self, item):
+        """Determine the index in parents children list to insert the given item.
+
+        :param item: item to insert
+        :type item: Entity
+        :return: index to insert item
+        :rtype: str
+        """
         children = self.get_children(
             item=item.parent.key if item.parent is not None else None)
         index = 'end'
@@ -230,6 +239,10 @@ class HierarchicalTreeView(PicTreeView):
             all_items.append(int(item))
             items.extend(self.get_children(item))
         return all_items
+
+    def _unlink_from_parent(self):
+        """Unlink item from parent."""
+        raise NotImplementedError
 
     def _is_less(self, item, key):
         """Is given item less than item by key?
