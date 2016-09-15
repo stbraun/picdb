@@ -176,10 +176,8 @@ class Persistence:
 
     def delete_tag(self, tag_):
         """Delete given tag and all its assignments."""
-        stmt_pic = "DELETE FROM picture2tag WHERE tag=?"
-        stmt_tag = "DELETE FROM tags WHERE id=?"
-        self.execute_sql(stmt_pic, (tag_.key,))
-        self.execute_sql(stmt_tag, (tag_.key,))
+        stmt = "DELETE FROM tags WHERE id=?"
+        self.execute_sql(stmt, (tag_.key,))
 
     def add_picture(self, picture):
         """Add a new picture.
@@ -374,11 +372,28 @@ class Persistence:
         records = [DTag(*row) for row in cursor.fetchall()]
         return list(records)
 
-    def retrieve_pictures_for_group(self, group):
+    def retrieve_pictures_by_tag(self, tag_):
+        """Retrieve pictures which have tag_ assigned.
+
+        :param tag_: pictures shall have assignes this tag
+        :type tag_: Tag
+        :return: pictures with tag
+        :rtype: [DPicture]
+        """
+        cursor = self.conn.cursor()
+        stmt = 'SELECT id, identifier, path, description FROM pictures ' \
+               'WHERE id IN (SELECT ' \
+               'picture FROM picture2tag WHERE tag=?)'
+        cursor.execute(stmt, (tag_.key,))
+        records = [DPicture(*row) for row in cursor.fetchall()]
+        return list(records)
+
+
+    def retrieve_pictures_for_group(self, group_):
         """Retrieve pictures assigned to given group.
 
-        :param group: given group.
-        :type group: DGroup
+        :param group_: given group.
+        :type group_: DGroup
         :return: pictures assigned to group
         :rtype: [DPicture]
         """
@@ -386,7 +401,7 @@ class Persistence:
         stmt = 'SELECT id, identifier, path, description FROM pictures ' \
                'WHERE id IN (SELECT ' \
                'picture FROM picture2series WHERE series=?)'
-        cursor.execute(stmt, (group.key,))
+        cursor.execute(stmt, (group_.key,))
         records = [DPicture(*row) for row in cursor.fetchall()]
         return list(records)
 

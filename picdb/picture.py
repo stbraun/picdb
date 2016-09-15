@@ -232,6 +232,13 @@ def retrieve_tags_for_picture(picture):
     return tags
 
 
+def retrieve_pictures_by_tag(tag_):
+    db = get_db()
+    d_pics = db.retrieve_pictures_by_tag(tag_)
+    pics = [get_picture_from_d_object(d_pic) for d_pic in d_pics]
+    return pics
+
+
 def get_picture_from_d_object(picture_):
     """Create picture or retrieve from picture cache.
 

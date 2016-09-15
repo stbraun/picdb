@@ -40,6 +40,7 @@ from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
 from .persistence import UnknownEntityException
+from . import picture
 
 
 class TagManagement(ttk.Frame):
@@ -257,6 +258,10 @@ class TagTree(HierarchicalTreeView):
         :type items: [Tag]
         """
         for tag_ in items:
+            pics = picture.retrieve_pictures_by_tag(tag_)
+            for pic in pics:
+                pic.remove_tag(tag_)
+                pic.save()
             tag_.delete()
 
 
