@@ -93,6 +93,8 @@ class GroupManagement(ttk.Frame):
                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.filter_tree.bind(self.filter_tree.EVT_ITEM_SELECTED,
                               self.item_selected)
+        self.filter_tree.bind(self.filter_tree.EVT_ITEM_DELETED,
+                              self._item_deleted)
         self.editor = GroupEditor(self.content_frame)
         self.editor.grid(row=0, column=1, sticky=(tk.N, tk.E, tk.W))
 
@@ -144,6 +146,10 @@ class GroupManagement(ttk.Frame):
             # this cll anyway.
             _ = group_.pictures
             self.editor.group = group_
+
+    def _item_deleted(self, _):
+        """An item was deleted. Clear editor."""
+        self.editor.clear()
 
 
 class GroupFilteredTreeView(FilteredTreeView):
@@ -264,6 +270,10 @@ class GroupTree(HierarchicalTreeView):
             messagebox.showwarning(
                 "Invalid items for drag 'n' drop: {} --> {}".format(start_item,
                                                                     target_item))
+        except ValueError:
+            # This will be raised if an item was dropped outside the tree view.
+            # We tolerate this as cancel dragging.
+            pass
         else:
             start_item_.parent = target_item_
             index = self._determine_index_for_insert(start_item_)
@@ -320,15 +330,23 @@ class GroupEditor(ttk.LabelFrame):
     @group.setter
     def group(self, group_):
         self.group_ = group_
-        self.id_var.set(group_.key)
-        self.name_var.set(group_.name)
-        self.description_var.set(group_.description)
+        if group_ is None:
+            self.id_var.set(0)
+            self.name_var.set('')
+            self.description_var.set('')
+        else:
+            self.id_var.set(group_.key)
+            self.name_var.set(group_.name)
+            self.description_var.set(group_.description)
         self.name_entry.focus()
 
     def _unlink_from_parent(self):
         """Unlink group from parent group."""
         if self.group is not None:
             self.group.parent = None
+
+    def clear(self):
+        self.group = None
 
 
 class GroupSelector(Selector):
