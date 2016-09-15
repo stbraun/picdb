@@ -195,8 +195,7 @@ class TagTree(HierarchicalTreeView):
     def __init__(self, master, tree_only=False, **kwargs):
         self.tree_only = tree_only
         columns = () if tree_only else ('description',)
-        kwargs['columns'] = columns
-        super().__init__(master, **kwargs)
+        super().__init__(master, columns=columns, **kwargs)
         if not tree_only:
             self.heading('description', text='Description')
 
