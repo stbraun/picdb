@@ -212,17 +212,17 @@ class GroupFilteredTreeView(FilteredTreeView):
 class GroupTree(HierarchicalTreeView):
     """A tree handling picture groups."""
 
-    def __init__(self, master, tree_only=False):
+    def __init__(self, master, tree_only=False, **kwargs):
         self.tree_only = tree_only
         columns = () if tree_only else ('description',)
-        super().__init__(master, columns=columns)
+        super().__init__(master, columns=columns, **kwargs)
         if not tree_only:
             self.heading('description', text='Description')
 
     @classmethod
-    def create_instance(cls, master, tree_only=False):
+    def create_instance(cls, master, tree_only=False, **kwargs):
         """Factory method."""
-        return GroupTree(master, tree_only)
+        return GroupTree(master, tree_only, **kwargs)
 
     def add_item(self, group_):
         """Add given group to tree.

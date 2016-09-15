@@ -192,17 +192,18 @@ class TagFilteredTreeView(FilteredTreeView):
 class TagTree(HierarchicalTreeView):
     """A tree handling tags."""
 
-    def __init__(self, master, tree_only=False):
+    def __init__(self, master, tree_only=False, **kwargs):
         self.tree_only = tree_only
         columns = () if tree_only else ('description',)
-        super().__init__(master, columns=columns)
+        kwargs['columns'] = columns
+        super().__init__(master, **kwargs)
         if not tree_only:
             self.heading('description', text='Description')
 
     @classmethod
-    def create_instance(cls, master, tree_only=False):
+    def create_instance(cls, master, tree_only=False, **kwargs):
         """Factory method."""
-        return TagTree(master, tree_only)
+        return TagTree(master, tree_only, **kwargs)
 
     def add_item(self, tag_):
         """Add given tag to tree.

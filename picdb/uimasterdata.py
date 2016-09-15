@@ -97,8 +97,9 @@ class PicTreeView(ttk.Treeview):
 class HierarchicalTreeView(PicTreeView):
     """Tree view supporting hierarchical items."""
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, open_items=False, **kwargs):
         super().__init__(master, **kwargs)
+        self.open_items = open_items
         self._dnd_active = False
         self._dnd_start_item = None
         self.bind('<Button-1>', self._dnd_start)
@@ -154,12 +155,12 @@ class HierarchicalTreeView(PicTreeView):
             if not self.exists(item.parent.key):
                 self.add_item(item.parent)
             parent_key = str(item.parent.key)
-        children = self.get_children(
-            item=item.parent.key if item.parent is not None else None)
         index = self._determine_index_for_insert(item)
         if not self.exists(item.key):
             self.insert(parent_key, index, item.key,
                         text=item.name, values=self._additional_values(item))
+            if self.open_items:
+                self.item(item.key, open=True)
 
     def _determine_index_for_insert(self, item):
         children = self.get_children(

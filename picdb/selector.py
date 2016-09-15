@@ -36,6 +36,7 @@ import logging
 
 class Selector(ttk.LabelFrame):
     """A component for moving items between two tree views."""
+
     def __init__(self, master, tree_factory_left,
                  tree_factory_right, **kwargs):
         super().__init__(master, **kwargs)
@@ -54,9 +55,11 @@ class Selector(ttk.LabelFrame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
         self.columnconfigure(2, weight=1)
-        self.left = self.tree_factory_left(self, tree_only=True)
+        self.left = self.tree_factory_left(self, tree_only=True,
+                                           open_items=False)
         self.left.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
-        self.right = self.tree_factory_right(self, tree_only=True)
+        self.right = self.tree_factory_right(self, tree_only=True,
+                                             open_items=True)
         self.right.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.control_frame = self._create_control_frame()
         self.control_frame.grid(row=0, column=1)
