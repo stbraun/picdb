@@ -59,7 +59,6 @@ class PictureManagement(ttk.Frame):
         self.filter_tree = None
         self.editor = None
         self.edit_button = None
-        self.view_button = None
         self.tag_selector = None
         self.series_selector = None
         # canvas will hold the preview image.
@@ -77,6 +76,10 @@ class PictureManagement(ttk.Frame):
         self._create_widgets()
         # Bind listener for resize events to adapt image size for preview.
         self.canvas.bind("<Configure>", self._fit_image)
+        # add key bindings: use self as (tk-)tag to bind a listener also to all
+        # children widgets
+        tag_all_children(self, self)
+        self.bind('<Meta_L>r', self._reset)
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -114,16 +117,12 @@ class PictureManagement(ttk.Frame):
         load_button = ttk.Button(self.control_frame, text='load pictures',
                                  command=self.load_pictures)
         load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        add_button = ttk.Button(self.control_frame, text='add pictures',
+        add_button = ttk.Button(self.control_frame, text='import pictures',
                                 command=self.import_pictures)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        clear_button = ttk.Button(self.control_frame, text='clear selection',
+        clear_button = ttk.Button(self.control_frame, text='reset selection',
                                   command=self._reset)
         clear_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
-        self.view_button = ttk.Button(self.control_frame, text='view picture',
-                                      command=self.view_picture)
-        self.view_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
-        self.view_button.state(['disabled'])
 
     def load_pictures(self):
         """Load a bunch of pictures from database."""
@@ -148,7 +147,6 @@ class PictureManagement(ttk.Frame):
         pics = self.filter_tree.selected_items()
         if len(pics) == 1:
             self.current_picture = pics[0]
-            self.view_button.state(['!disabled'])
             self.editor.load_picture(self.current_picture)
             self._display_picture()
         else:
@@ -185,13 +183,6 @@ class PictureManagement(ttk.Frame):
                                                'displayed.\n\n{}'.format(
                                            self.current_picture.path))
 
-    def view_picture(self):
-        """View selected picture."""
-        pics = self.filter_tree.selected_items()
-        if len(pics) > 0:
-            image = Image.open(pics[0].path)
-            image.show()
-
     def _fit_image(self, event=None, _last=[None] * 2):
         """Fit image inside application window on resize."""
         if event is not None and event.widget is self.canvas and (
@@ -205,10 +196,11 @@ class PictureManagement(ttk.Frame):
             self._canvas_height = event.height
             self.after(1, self._display_picture)
 
-    def _reset(self):
+    def _reset(self, _=None):
         """Reset all."""
         self.clear()
         self.filter_tree.clear_selection()
+        return "break"
 
     def clear(self):
         """Clear editor and preview."""
@@ -332,6 +324,8 @@ class PictureReferenceTree(PicTreeView):
             self.heading('path', text='Path')
             self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column shall not resize
+        self.menu.add_command(label='Show in external viewer',
+                              command=self._show_selected_pic_in_external_viewer)
 
     @classmethod
     def create_instance(cls, master, tree_only=False):
@@ -367,6 +361,13 @@ class PictureReferenceTree(PicTreeView):
                 group_.remove_picture(pic)
                 group_.save()
             pic.delete()
+
+    def _show_selected_pic_in_external_viewer(self):
+        """Show selected pictures in external viewer."""
+        pics = self.selected_items()
+        for pic in pics:
+            image = Image.open(pic.path)
+            image.show()
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
