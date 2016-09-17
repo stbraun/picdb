@@ -1,0 +1,16 @@
+How to deploy locally
+
+Update version number in setup.py:
+    version=<major>.<minor>.<maintenance>.<build>
+
+First cd into project folder
+> rm -rf build/ dist/
+> pip3 uninstall picdb
+> pip3 install .
+
+
+
+
+py2app
+
+* Probably a virtual environment with complete Python installation is required.
