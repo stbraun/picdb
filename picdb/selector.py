@@ -37,14 +37,24 @@ import logging
 class Selector(ttk.LabelFrame):
     """A component for moving items between two tree views."""
 
-    def __init__(self, master, tree_factory_left,
-                 tree_factory_right, **kwargs):
+    def __init__(self, master, tree_factory_left, tree_factory_right,
+                 left_tree_options=None, right_tree_options=None, **kwargs):
         super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
         self.tree_factory_left = tree_factory_left
         self.tree_factory_right = tree_factory_right
+        self._default_left_tree_options = {
+            'tree_only': True, 'open_items': False}
+        self._default_right_tree_options = {
+            'tree_only': True, 'open_items': True}
         self.left = None
+        self.left_tree_options = self._default_left_tree_options
+        if left_tree_options is not None:
+            self.left_tree_options.update(left_tree_options)
         self.right = None
+        self.right_tree_options = self._default_right_tree_options
+        if right_tree_options is not None:
+            self.right_tree_options.update(right_tree_options)
         self.control_frame = None
         self.add_button = None
         self.remove_button = None
@@ -55,11 +65,9 @@ class Selector(ttk.LabelFrame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
         self.columnconfigure(2, weight=1)
-        self.left = self.tree_factory_left(self, tree_only=True,
-                                           open_items=False)
+        self.left = self.tree_factory_left(self, **self.left_tree_options)
         self.left.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
-        self.right = self.tree_factory_right(self, tree_only=True,
-                                             open_items=True)
+        self.right = self.tree_factory_right(self, **self.right_tree_options)
         self.right.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.control_frame = self._create_control_frame()
         self.control_frame.grid(row=0, column=1)

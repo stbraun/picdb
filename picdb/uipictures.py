@@ -322,6 +322,7 @@ class PictureFilteredTreeView(FilteredTreeView):
     def refresh_item_in_tree(self, pic):
         self.tree.refresh_item(pic)
 
+
 class PictureReferenceTree(PicTreeView):
     """A tree handling pictures."""
 
@@ -478,11 +479,15 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         self.content_frame.columnconfigure(0, weight=1)
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.W))
+        left_tree_options = {'open_items': True}
         self.group_selector = GroupSelector(self.content_frame,
+                                            left_tree_options=left_tree_options,
                                             text='Assign series')
         self.group_selector.grid(row=1, column=0,
                                  sticky=(tk.W, tk.N, tk.E, tk.S))
-        self.tag_selector = TagSelector(self.content_frame, text='Assign tags')
+        self.tag_selector = TagSelector(self.content_frame,
+                                        left_tree_options=left_tree_options,
+                                        text='Assign tags')
         self.tag_selector.grid(row=2, column=0,
                                sticky=(tk.W, tk.N, tk.E, tk.S))
 
