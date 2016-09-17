@@ -45,6 +45,7 @@ from .uimasterdata import PicTreeView, FilteredTreeView
 from .uitags import TagSelector
 from .uigroups import GroupSelector
 from .uicommon import tag_all_children, Observable
+from .commons import get_resource_path
 
 
 class PictureManagement(ttk.Frame):
@@ -167,7 +168,11 @@ class PictureManagement(ttk.Frame):
         """Display current picture in canvas."""
         if self.current_picture is not None:
             try:
-                img = Image.open(self.current_picture.path)
+                try:
+                    img = Image.open(self.current_picture.path)
+                except OSError:
+                    placeholder = get_resource_path('picdb', 'resources/not_supported.png')
+                    img = Image.open(placeholder)
                 img.thumbnail(
                     (self._canvas_width - 2, self._canvas_height - 2),
                     Image.ANTIALIAS)
@@ -183,12 +188,6 @@ class PictureManagement(ttk.Frame):
                                                'found!\nYou might need to '
                                                'mount a volume.\n\n{}'.format(
                                            e.filename))
-            except OSError:
-                self.canvas.delete(self.image_tag)
-                messagebox.showwarning(title='Display Picture',
-                                       message='Image file type cannot be '
-                                               'displayed.\n\n{}'.format(
-                                           self.current_picture.path))
 
     def _fit_image(self, event=None, _last=[None] * 2):
         """Fit image inside application window on resize."""
