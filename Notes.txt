@@ -5,7 +5,7 @@ Update version number in setup.py:
 
 First cd into project folder
 > rm -rf build/ dist/
-> pip3 uninstall picdb
+> pip3 uninstall picdb  # if version did not change
 > pip3 install .
 
 
