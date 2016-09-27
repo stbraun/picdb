@@ -14,3 +14,21 @@ First cd into project folder
 py2app
 
 * Probably a virtual environment with complete Python installation is required.
+
+$ py2applet --make-setup start_picdb.py
+$ rm -rf build dist
+
+# To build the application in alias mode during development,
+# execute setup.py with the py2app command
+# and specify the -A option (or --alias):
+$ python3 setup.py py2app -A
+
+# run from terminal
+$ ./dist/MyApplication.app/Contents/MacOS/MyApplication
+
+# or start with launch service
+$ open -a dist/start_picdb.app
+
+
+# build for deployment
+$ python3 setup_py2app.py py2app
