@@ -1,5 +1,9 @@
 How to deploy locally
 
+
+> pip3 install py-postgresql
+
+
 Update version number in setup.py:
     version=<major>.<minor>.<maintenance>.<build>
 
