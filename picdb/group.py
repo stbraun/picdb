@@ -172,7 +172,7 @@ def retrieve_series_by_name(name):
 
 def retrieve_series_by_name_segment(name, limit):
     db = get_db()
-    d_groups = db.retrieve_series_by_name_segment(name, limit)
+    d_groups = db.retrieve_series_by_name_segment(name)
     groups = [get_group_from_d_object(d_grp) for d_grp in d_groups]
     return groups
 

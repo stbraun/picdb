@@ -65,7 +65,7 @@ class DBParameters:
         return DBParameters(name, user, passwd, port)
 
 
-def create_db(db_):
+def create_db(db_=None):
     """Set the database to use.
 
     :param db_: parameters or None to use configuration.
@@ -94,7 +94,7 @@ class Persistence:
         """Initialize persistence mechanism.
 
         :param db: database parameters.
-        :type db: DBParamaters
+        :type db: DBParameters
         """
         self.logger = logging.getLogger('picdb.db')
         self.db_params = db
@@ -120,27 +120,28 @@ class Persistence:
         :type series: Group
         """
         self.logger.debug("Add series to DB: {}".format(series.name))
-        stmt = '''INSERT INTO groups VALUES (?, ?, ?, ?)'''
+        stmt = '''INSERT INTO groups (identifier, description, parent)
+        VALUES ($1, $2, $3)'''
         parent = series.parent.key if series.parent is not None else None
-        self.execute_sql(stmt, (None, series.name, series.description, parent))
+        self.execute_sql(stmt, series.name, series.description, parent)
 
     def update_group(self, series):
         self.logger.debug("Update series: {}".format(series.name))
-        stmt = "UPDATE groups SET identifier=?, description=?, " \
-               "parent=? " \
-               "WHERE id=?"
-        self.execute_sql(stmt, (series.name,
-                                series.description,
-                                series.parent.key if series.parent is not
-                                                     None else None,
-                                series.key))
+        stmt = "UPDATE groups SET identifier=$1, description=$2, " \
+               "parent=$3 " \
+               "WHERE id=$4"
+        self.execute_sql(stmt, series.name,
+                         series.description,
+                         series.parent.key if series.parent is not
+                                              None else None,
+                         series.key)
 
     def delete_group(self, group_):
         """Delete group and picture assignments."""
-        stmt_pics = "DELETE FROM picture2group WHERE series=?"
-        stmt_grp = "DELETE FROM groups WHERE id=?"
-        self.execute_sql(stmt_pics, (group_.key,))
-        self.execute_sql(stmt_grp, (group_.key,))
+        stmt_pics = "DELETE FROM picture2group WHERE series=$1"
+        stmt_grp = "DELETE FROM groups WHERE id=$1"
+        self.execute_sql(stmt_pics, group_.key)
+        self.execute_sql(stmt_grp, group_.key)
 
     def add_tag(self, tag):
         """Add a new tag.
@@ -149,23 +150,24 @@ class Persistence:
         :type tag: Tag
         """
         self.logger.debug("Add tag to DB: {}".format(tag))
-        stmt = '''INSERT INTO tags VALUES (?, ?, ?, ?)'''
+        stmt = "INSERT INTO tags(identifier, description, parent) VALUES (" \
+               "$1, $2, $3)"
         parent = tag.parent.key if tag.parent is not None else None
-        self.execute_sql(stmt, (None, tag.name, tag.description, parent))
+        self.execute_sql(stmt, tag.name, tag.description, parent)
 
     def update_tag(self, tag):
         self.logger.debug("Update tag: {}".format(tag.name))
-        stmt = "UPDATE tags SET identifier=?, description=?, parent=? " \
-               "WHERE id=?"
-        self.execute_sql(stmt, (tag.name,
-                                tag.description,
-                                tag.parent.key if tag.parent is not None
-                                else None,
-                                tag.key))
+        stmt = "UPDATE tags SET identifier=$1, description=$2, parent=$3 " \
+               "WHERE id=$4"
+        self.execute_sql(stmt, tag.name,
+                         tag.description,
+                         tag.parent.key if tag.parent is not None
+                         else None,
+                         tag.key)
 
     def delete_tag(self, tag_):
         """Delete given tag and all its assignments."""
-        stmt = "DELETE FROM tags WHERE id=?"
+        stmt = "DELETE FROM tags WHERE id=$1"
         self.execute_sql(stmt, (tag_.key,))
 
     def add_picture(self, picture):
@@ -176,28 +178,27 @@ class Persistence:
         """
         self.logger.debug("Add picture to DB: {} ({})".format(picture.name,
                                                               picture.path))
-        stmt = '''INSERT INTO pictures VALUES (?, ?, ?, ?)'''
-        self.execute_sql(stmt, (None, picture.name,
-                                picture.path, picture.description))
+        stmt = "INSERT INTO pictures (identifier, path, description) VALUES " \
+               "($1, $2, $3)"
+        self.execute_sql(stmt, picture.name,
+                         picture.path, picture.description)
 
     def update_picture(self, picture):
-        self.conn.cursor()
         self.logger.debug("Update picture: {} ({})".format(picture.name,
                                                            picture.path))
-        stmt = "UPDATE pictures SET identifier=?, path=?, " \
-               "description=? WHERE id=?"
-        self.execute_sql(stmt, (picture.name,
-                                picture.path,
-                                picture.description,
-                                picture.key))
+        stmt = "UPDATE pictures SET identifier=$1, path=$2, " \
+               "description=$3 WHERE id=$4"
+        self.execute_sql(stmt, picture.name,
+                         picture.path,
+                         picture.description,
+                         picture.key)
 
     def delete_picture(self, picture):
         """Delete given picture. Does also remove tag assignments."""
-        self.conn.cursor()
-        stmt_tags = "DELETE FROM picture2tag WHERE picture=?"
-        stmt_pic = "DELETE FROM pictures WHERE id=?"
-        self.execute_sql(stmt_tags, (picture.key,))
-        self.execute_sql(stmt_pic, (picture.key,))
+        stmt_tags = "DELETE FROM picture2tag WHERE picture=$1"
+        stmt_pic = "DELETE FROM pictures WHERE id=$1"
+        self.execute_sql(stmt_tags, picture.key)
+        self.execute_sql(stmt_pic, picture.key)
 
     def add_tag_to_picture(self, picture, tag):
         """Add tag to a picture.
@@ -209,8 +210,8 @@ class Persistence:
         """
         self.logger.debug(
             "Adding tag {} to picture {}.".format(tag, picture))
-        stmt = '''INSERT INTO picture2tag VALUES(?, ?)'''
-        self.execute_sql(stmt, (picture.key, tag.key))
+        stmt = '''INSERT INTO picture2tag VALUES($1, $2)'''
+        self.execute_sql(stmt, picture.key, tag.key)
 
     def remove_tag_from_picture(self, picture, tag):
         """Remove tag from given picture.
@@ -222,8 +223,8 @@ class Persistence:
         """
         self.logger.debug(
             "Removing tag {} from picture {}.".format(tag, picture))
-        stmt = '''DELETE FROM picture2tag WHERE picture=? AND tag=?'''
-        self.execute_sql(stmt, (picture.key, tag.key))
+        stmt = '''DELETE FROM picture2tag WHERE picture=$1 AND tag=$2'''
+        self.execute_sql(stmt, picture.key, tag.key)
 
     def add_picture_to_group(self, picture, group_):
         """Add picture to a group.
@@ -235,8 +236,8 @@ class Persistence:
         """
         self.logger.debug(
             "Adding picture {} to group_ {}.".format(picture, group_))
-        stmt = '''INSERT INTO picture2group VALUES(?, ?)'''
-        self.execute_sql(stmt, (picture.key, group_.key))
+        stmt = '''INSERT INTO picture2group VALUES($1, $2)'''
+        self.execute_sql(stmt, picture.key, group_.key)
 
     def remove_picture_from_series(self, picture, series):
         """Remove picture from a series.
@@ -248,8 +249,8 @@ class Persistence:
         """
         self.logger.debug(
             "Removing picture {} from series {}.".format(picture, series))
-        stmt = '''DELETE FROM picture2group WHERE picture=? AND series=?'''
-        self.execute_sql(stmt, (picture.key, series.key))
+        stmt = '''DELETE FROM picture2group WHERE picture=$1 AND series=$2'''
+        self.execute_sql(stmt, picture.key, series.key)
 
     def retrieve_picture_by_key(self, key):
         """Retrieve picture by key.
@@ -260,12 +261,12 @@ class Persistence:
         :rtype: Picture
         """
         stmt = 'SELECT id, identifier, path, description ' \
-               'FROM pictures WHERE "id"=?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (key,))
-        row = cursor.fetchone()
-        if row is None:
+               'FROM pictures WHERE "id"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(key)
+        if result is None:
             return None
+        row = result[0]
         return DPicture(*(list(row)))
 
     def retrieve_picture_by_path(self, path):
@@ -277,12 +278,12 @@ class Persistence:
         :rtype: Picture
         """
         stmt = 'SELECT id, identifier, path, description ' \
-               'FROM pictures WHERE "path"=?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (path,))
-        row = cursor.fetchone()
-        if row is None:
+               'FROM pictures WHERE "path"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(path)
+        if result is None:
             return None
+        row = result[0]
         return DPicture(*(list(row)))
 
     def retrieve_filtered_pictures(self, path, limit, series, tags):
@@ -303,7 +304,7 @@ class Persistence:
         """
         stmt_p = 'SELECT DISTINCT id, identifier, path, description ' \
                  'FROM pictures WHERE ' \
-                 '"path" LIKE ?'
+                 '"path" LIKE $1'
         stmt_s = 'SELECT DISTINCT id, identifier, path, description ' \
                  'FROM pictures, picture2group WHERE ' \
                  'pictures.id=picture2group.picture AND ' \
@@ -318,10 +319,10 @@ class Persistence:
             stmt += ' INTERSECT ' + stmt_t.format(str(item.key))
         if limit is not None:
             stmt += ' LIMIT {}'.format(limit)
-        self.logger.info(stmt)
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (path,))
-        records = [DPicture(*row) for row in cursor.fetchall()]
+        self.logger.debug(stmt)
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(path)
+        records = [DPicture(*row) for row in result]
         records.sort()
         return list(records)
 
@@ -333,17 +334,13 @@ class Persistence:
         :return: series.
         :rtype: DGroup
         """
-        stmt = 'SELECT id, identifier, description, parent FROM groups WHERE ' \
-               '' \
-               '' \
-               '' \
-               '' \
-               '"id"=?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (key,))
-        row = cursor.fetchone()
-        if row is None:
+        stmt = 'SELECT id, identifier, description, parent  ' \
+               'FROM groups WHERE "id"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(key)
+        if result is None:
             return None
+        row = result[0]
         return DGroup(*(list(row)))
 
     def retrieve_tags_for_picture(self, picture):
@@ -354,12 +351,12 @@ class Persistence:
         :return: tags.
         :rtype: [DTag]
         """
-        cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE id IN (SELECT tag ' \
-               'FROM picture2tag WHERE picture=?)'
-        cursor.execute(stmt, (picture.key,))
-        records = [DTag(*row) for row in cursor.fetchall()]
+               'FROM picture2tag WHERE picture=$1)'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(picture.key)
+        records = [DTag(*row) for row in result]
         return list(records)
 
     def retrieve_pictures_by_tag(self, tag_):
@@ -370,12 +367,12 @@ class Persistence:
         :return: pictures with tag
         :rtype: [DPicture]
         """
-        cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, path, description FROM pictures ' \
                'WHERE id IN (SELECT ' \
-               'picture FROM picture2tag WHERE tag=?)'
-        cursor.execute(stmt, (tag_.key,))
-        records = [DPicture(*row) for row in cursor.fetchall()]
+               'picture FROM picture2tag WHERE tag=$1)'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(tag_.key)
+        records = [DPicture(*row) for row in result]
         return list(records)
 
     def retrieve_pictures_for_group(self, group_):
@@ -386,12 +383,12 @@ class Persistence:
         :return: pictures assigned to group
         :rtype: [DPicture]
         """
-        cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, path, description FROM pictures ' \
                'WHERE id IN (SELECT ' \
-               'picture FROM picture2group WHERE group=?)'
-        cursor.execute(stmt, (group_.key,))
-        records = [DPicture(*row) for row in cursor.fetchall()]
+               'picture FROM picture2group WHERE "group"=$1)'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(group_.key)
+        records = [DPicture(*row) for row in result]
         return list(records)
 
     def retrieve_series_for_picture(self, picture):
@@ -401,12 +398,12 @@ class Persistence:
         :return: series.
         :rtype: [DGroup]
         """
-        cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description, parent FROM groups ' \
                'WHERE id IN (SELECT ' \
-               'group FROM picture2group WHERE picture=?)'
-        cursor.execute(stmt, (picture.key,))
-        records = [DGroup(*row) for row in cursor.fetchall()]
+               '"group" FROM picture2group WHERE picture=$1)'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(picture.key)
+        records = [DGroup(*row) for row in result]
         return list(records)
 
     def retrieve_series_by_name(self, name):
@@ -424,22 +421,20 @@ class Persistence:
         row = list(result[0])
         return DGroup(*row)
 
-    def retrieve_series_by_name_segment(self, name, limit=1000):
+    def retrieve_series_by_name_segment(self, name):
         """Retrieve series by name segment using wildcards.
 
         Example: name: 'a%'
 
         :param name: the name of the series
         :type name: str
-        :param limit: maximum number of records to retrieve
-        :type limit: int
         :return: groups.
         :rtype: [DGroup]
         """
         stmt = 'SELECT id, identifier, description, parent ' \
-               'FROM groups WHERE "identifier"LIKE $1 LIMIT $2'
+               'FROM groups WHERE "identifier"LIKE $1'
         stmt_ = self.conn.prepare(stmt)
-        result = stmt_(name, limit)
+        result = stmt_(name)
         records = [DGroup(*row) for row in result]
         return list(records)
 
@@ -449,10 +444,9 @@ class Persistence:
         :return: tags.
         :rtype: [DTag]
         """
-        cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description, parent FROM tags'
-        cursor.execute(stmt)
-        records = [DTag(*row) for row in cursor.fetchall()]
+        stmt_ = self.conn.prepare(stmt)
+        records = [DTag(*row) for row in stmt_()]
         return list(records)
 
     def retrieve_tag_by_name(self, name):
@@ -464,15 +458,14 @@ class Persistence:
         :rtype: Tag
         """
         stmt = 'SELECT id, identifier, description, parent ' \
-               'FROM tags WHERE "identifier"=?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (name,))
-        row = cursor.fetchone()
-        if not row:
+               'FROM tags WHERE "identifier"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(name)
+        if result is None:
             return None
-        return DTag(*(list(row)))
+        return DTag(*(list(result[0])))
 
-    def retrieve_tags_by_name_segment(self, name, limit=1000):
+    def retrieve_tags_by_name_segment(self, name):
         """Retrieve tags by name segment using wildcards.
 
         Example: name: 'a%'
@@ -485,9 +478,9 @@ class Persistence:
         :rtype: [DTag]
         """
         stmt = 'SELECT id, identifier, description, parent ' \
-               'FROM tags WHERE "identifier"LIKE $1 LIMIT $2'
+               'FROM tags WHERE "identifier"LIKE $1'
         stmt_ = self.conn.prepare(stmt)
-        result = stmt_(name, int(limit))
+        result = stmt_(name)
         records = [DTag(*row) for row in result]
         return list(records)
 
@@ -500,12 +493,12 @@ class Persistence:
         :rtype: DTag
         """
         stmt = 'SELECT id, identifier, description, parent FROM tags WHERE ' \
-               '"id"=?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (key,))
-        row = cursor.fetchone()
-        if row is None:
+               '"id"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(key)
+        if result is None:
             return None
+        row = result[0]
         return DTag(*(list(row)))
 
     def retrieve_all_series(self):
@@ -514,16 +507,14 @@ class Persistence:
         :return: series.
         :rtype: [DGroup]
         """
-        cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, description, parent FROM groups'
-        cursor.execute(stmt)
-        records = [DGroup(*row) for row in cursor.fetchall()]
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_()
+        records = [DGroup(*row) for row in result]
         return list(records)
 
     def execute_sql(self, stmt_, *args):
-        # cursor = self.conn.cursor()
         try:
-            # cursor.execute(stmt, *args)
             stmt = self.conn.prepare(stmt_)
             stmt(*args)
             self.conn.commit()

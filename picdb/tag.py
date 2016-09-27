@@ -119,7 +119,7 @@ def retrieve_tag_by_name(name):
 
 def retrieve_tags_by_name_segment(name, limit):
     db = get_db()
-    d_tags = db.retrieve_tags_by_name_segment(name, limit)
+    d_tags = db.retrieve_tags_by_name_segment(name)
     tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
     return tags
 
