@@ -31,98 +31,87 @@ Persistence.
 
 import logging
 import os
-import sqlite3
 from tkinter import messagebox
+
+import postgresql.driver.dbapi20 as dbapi
 
 from .config import get_configuration
 from .dataobjects import DTag, DPicture, DGroup
 
 # This module global variable will hold the expanded database name
-_db_name = None
+_db = None
 
 
 class UnknownEntityException(Exception):
     pass
 
 
-def set_db(db_name_):
-    """Set the database to use."""
-    global _db_name
-    _db_name = os.path.expanduser(db_name_)
+class DBParameters:
+    """Parameters describing database."""
+
+    def __init__(self, db_name, db_user, db_passwd, db_port):
+        self.name = db_name
+        self.user = db_user
+        self.passwd = db_passwd
+        self.port = db_port
+
+    @classmethod
+    def from_configuration(cls):
+        """Create parameter instance based on configuration."""
+        name = get_configuration('db_name')
+        user = get_configuration('db_user')
+        passwd = get_configuration('db_passwd')
+        port = get_configuration('db_port')
+        return DBParameters(name, user, passwd, port)
+
+
+def create_db(db_):
+    """Set the database to use.
+
+    :param db_: parameters or None to use configuration.
+    :type db_: DBParameters
+    :return: persistence instance.
+    :rtype: Persistence
+    """
+    global _db
+    if db_ is None:
+        db_ = DBParameters.from_configuration()
+    _db = Persistence(db_)
 
 
 def get_db():
     """Get connected persistence instance."""
-    global _db_name
-    if _db_name is None:
-        db = get_configuration('database')
-    else:
-        db = _db_name
-    return Persistence(db)
+    global _db
+    if _db is None:
+        create_db(None)
+    return _db
 
 
 class Persistence:
-    """SQLite implementation of MonitorDB API."""
+    """Implementation of persistence."""
 
     def __init__(self, db):
         """Initialize persistence mechanism.
 
-        :param db: path to database.
-        :type db: str
+        :param db: database parameters.
+        :type db: DBParamaters
         """
         self.logger = logging.getLogger('picdb.db')
-        self.db_name = None
-        self.determine_db_name(db)
-        if not os.path.exists(self.db_name):
-            self.conn = sqlite3.connect(self.db_name)
-            self.setup_db()
-        else:
-            self.conn = sqlite3.connect(self.db_name)
+        self.db_params = db
+        self.conn = None
+        self.connect()
 
-    def determine_db_name(self, db):
-        global _db_name
-        if _db_name is None:
-            self.db_name = os.path.expanduser(db)
-            self.logger.info('DB name: {}'.format(self.db_name))
-            _db_name = self.db_name
-        else:
-            self.db_name = _db_name
+    def connect(self):
+        """Connect to database."""
+        self.logger.debug('connecting to database ...')
+        db = self.db_params
+        self.conn = dbapi.connect(user=db.user, database=db.name, port=db.port,
+                                  password=db.passwd)
 
     def close(self):
         """Close database."""
         self.conn.close()
         self.logger.debug('database connection closed.')
-
-    def setup_db(self):
-        """Setup database schema."""
-        cursor = self.conn.cursor()
-        # Create tables
-        try:
-            cursor.execute('CREATE TABLE series ( '
-                           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                           'identifier TEXT, '
-                           'description TEXT, '
-                           'parent INTEGER REFERENCES "series" ("id"), '
-                           'UNIQUE (identifier, parent))')
-            cursor.execute('CREATE TABLE tags ( '
-                           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                           'identifier TEXT, '
-                           'description TEXT, '
-                           'parent INTEGER REFERENCES "tags" ("id"), '
-                           'UNIQUE(identifier, parent))')
-            cursor.execute('CREATE TABLE pictures ( '
-                           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                           'identifier TEXT, '
-                           'path TEXT UNIQUE, '
-                           'description TEXT)')
-            cursor.execute('CREATE TABLE picture2series ('
-                           'picture INTEGER REFERENCES "pictures" ("id"), '
-                           'series INTEGER REFERENCES "series" ("id"))')
-            cursor.execute('CREATE TABLE picture2tag ('
-                           'picture INTEGER REFERENCES "pictures" ("id"), '
-                           'tag INTEGER REFERENCES "tags" ("id"))')
-        except Exception as e:
-            self.logger.warning(e)
 
     def add_series(self, series):
         """Add a new series.
@@ -131,13 +120,13 @@ class Persistence:
         :type series: Group
         """
         self.logger.debug("Add series to DB: {}".format(series.name))
-        stmt = '''INSERT INTO series VALUES (?, ?, ?, ?)'''
+        stmt = '''INSERT INTO groups VALUES (?, ?, ?, ?)'''
         parent = series.parent.key if series.parent is not None else None
         self.execute_sql(stmt, (None, series.name, series.description, parent))
 
     def update_group(self, series):
         self.logger.debug("Update series: {}".format(series.name))
-        stmt = "UPDATE series SET identifier=?, description=?, " \
+        stmt = "UPDATE groups SET identifier=?, description=?, " \
                "parent=? " \
                "WHERE id=?"
         self.execute_sql(stmt, (series.name,
@@ -148,8 +137,8 @@ class Persistence:
 
     def delete_group(self, group_):
         """Delete group and picture assignments."""
-        stmt_pics = "DELETE FROM picture2series WHERE series=?"
-        stmt_grp = "DELETE FROM series WHERE id=?"
+        stmt_pics = "DELETE FROM picture2group WHERE series=?"
+        stmt_grp = "DELETE FROM groups WHERE id=?"
         self.execute_sql(stmt_pics, (group_.key,))
         self.execute_sql(stmt_grp, (group_.key,))
 
@@ -246,7 +235,7 @@ class Persistence:
         """
         self.logger.debug(
             "Adding picture {} to group_ {}.".format(picture, group_))
-        stmt = '''INSERT INTO picture2series VALUES(?, ?)'''
+        stmt = '''INSERT INTO picture2group VALUES(?, ?)'''
         self.execute_sql(stmt, (picture.key, group_.key))
 
     def remove_picture_from_series(self, picture, series):
@@ -259,7 +248,7 @@ class Persistence:
         """
         self.logger.debug(
             "Removing picture {} from series {}.".format(picture, series))
-        stmt = '''DELETE FROM picture2series WHERE picture=? AND series=?'''
+        stmt = '''DELETE FROM picture2group WHERE picture=? AND series=?'''
         self.execute_sql(stmt, (picture.key, series.key))
 
     def retrieve_picture_by_key(self, key):
@@ -316,9 +305,9 @@ class Persistence:
                  'FROM pictures WHERE ' \
                  '"path" LIKE ?'
         stmt_s = 'SELECT DISTINCT id, identifier, path, description ' \
-                 'FROM pictures, picture2series WHERE ' \
-                 'pictures.id=picture2series.picture AND ' \
-                 'picture2series.series={}'
+                 'FROM pictures, picture2group WHERE ' \
+                 'pictures.id=picture2group.picture AND ' \
+                 'picture2group.group={}'
         stmt_t = 'SELECT DISTINCT id, identifier, path, description ' \
                  'FROM pictures, picture2tag WHERE ' \
                  'pictures.id=picture2tag.picture AND picture2tag.tag={}'
@@ -344,7 +333,8 @@ class Persistence:
         :return: series.
         :rtype: DGroup
         """
-        stmt = 'SELECT id, identifier, description, parent FROM series WHERE ' \
+        stmt = 'SELECT id, identifier, description, parent FROM groups WHERE ' \
+               '' \
                '' \
                '' \
                '' \
@@ -388,7 +378,6 @@ class Persistence:
         records = [DPicture(*row) for row in cursor.fetchall()]
         return list(records)
 
-
     def retrieve_pictures_for_group(self, group_):
         """Retrieve pictures assigned to given group.
 
@@ -400,7 +389,7 @@ class Persistence:
         cursor = self.conn.cursor()
         stmt = 'SELECT id, identifier, path, description FROM pictures ' \
                'WHERE id IN (SELECT ' \
-               'picture FROM picture2series WHERE series=?)'
+               'picture FROM picture2group WHERE group=?)'
         cursor.execute(stmt, (group_.key,))
         records = [DPicture(*row) for row in cursor.fetchall()]
         return list(records)
@@ -413,9 +402,9 @@ class Persistence:
         :rtype: [DGroup]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description, parent FROM series ' \
+        stmt = 'SELECT id, identifier, description, parent FROM groups ' \
                'WHERE id IN (SELECT ' \
-               'series FROM picture2series WHERE picture=?)'
+               'group FROM picture2group WHERE picture=?)'
         cursor.execute(stmt, (picture.key,))
         records = [DGroup(*row) for row in cursor.fetchall()]
         return list(records)
@@ -429,10 +418,10 @@ class Persistence:
         :rtype: DGroup
         """
         stmt = 'SELECT id, identifier, description, parent ' \
-               ' FROM series WHERE "identifier"=?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (name,))
-        row = list(cursor.fetchone())
+               ' FROM groups WHERE "identifier"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(name)
+        row = list(result[0])
         return DGroup(*row)
 
     def retrieve_series_by_name_segment(self, name, limit=1000):
@@ -448,10 +437,10 @@ class Persistence:
         :rtype: [DGroup]
         """
         stmt = 'SELECT id, identifier, description, parent ' \
-               'FROM series WHERE "identifier"LIKE? LIMIT ?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (name, limit))
-        records = [DGroup(*row) for row in cursor.fetchall()]
+               'FROM groups WHERE "identifier"LIKE $1 LIMIT $2'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(name, limit)
+        records = [DGroup(*row) for row in result]
         return list(records)
 
     def retrieve_all_tags(self):
@@ -496,10 +485,10 @@ class Persistence:
         :rtype: [DTag]
         """
         stmt = 'SELECT id, identifier, description, parent ' \
-               'FROM tags WHERE "identifier"LIKE? LIMIT ?'
-        cursor = self.conn.cursor()
-        cursor.execute(stmt, (name, limit))
-        records = [DTag(*row) for row in cursor.fetchall()]
+               'FROM tags WHERE "identifier"LIKE $1 LIMIT $2'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(name, int(limit))
+        records = [DTag(*row) for row in result]
         return list(records)
 
     def retrieve_tag_by_key(self, key):
@@ -526,18 +515,20 @@ class Persistence:
         :rtype: [DGroup]
         """
         cursor = self.conn.cursor()
-        stmt = 'SELECT id, identifier, description, parent FROM series'
+        stmt = 'SELECT id, identifier, description, parent FROM groups'
         cursor.execute(stmt)
         records = [DGroup(*row) for row in cursor.fetchall()]
         return list(records)
 
-    def execute_sql(self, stmt, *args):
-        cursor = self.conn.cursor()
+    def execute_sql(self, stmt_, *args):
+        # cursor = self.conn.cursor()
         try:
-            cursor.execute(stmt, *args)
+            # cursor.execute(stmt, *args)
+            stmt = self.conn.prepare(stmt_)
+            stmt(*args)
             self.conn.commit()
             return True
-        except sqlite3.DatabaseError as e:
+        except Exception as e:
             self.conn.rollback()
             messagebox.showerror(title='Database Error',
                                  message='{}'.format(e))

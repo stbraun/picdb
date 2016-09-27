@@ -39,7 +39,7 @@ from .uistatus import StatusPanel
 from .uipictures import PictureManagement
 from .uigroups import GroupManagement
 from .uitags import TagManagement
-from .persistence import set_db
+from .persistence import create_db, DBParameters
 from .config import get_configuration
 
 
@@ -86,8 +86,20 @@ def _parse_arguments(args):
     parser = argparse.ArgumentParser(
         description='Assign tags to pictures and pictures to groups.')
     parser.add_argument('--db', action='store', dest='db',
-                        default=get_configuration('database'),
-                        help='Path to database to use. Overrides '
+                        default=get_configuration('db_name'),
+                        help='Name to database to use. Overrides '
+                             'configuration file.')
+    parser.add_argument('--user', action='store', dest='user',
+                        default=get_configuration('db_user'),
+                        help='Database user. Overrides '
+                             'configuration file.')
+    parser.add_argument('--passwd', action='store', dest='passwd',
+                        default=get_configuration('db_passwd'),
+                        help='Password of database user. Overrides '
+                             'configuration file.')
+    parser.add_argument('--port', action='store', dest='port',
+                        default=get_configuration('db_port'),
+                        help='Port of database to use. Overrides '
                              'configuration file.')
     parser.add_argument('--title', action='store', dest='title',
                         default='PicDB',
@@ -107,7 +119,7 @@ def start_application(argv):
     # no tear-off menus
     root.option_add('*tearoff', False)
     args = _parse_arguments(argv)
-    set_db(args.db)
+    create_db(DBParameters(args.db, args.user, args.passwd, args.port))
     root.geometry(args.geometry)
     app = Application(root)
     app.master.title(args.title)

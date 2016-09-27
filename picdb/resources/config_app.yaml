@@ -1,7 +1,11 @@
 version: 1
 # database: /Volumes/B3T/data_sets/pixdb.db
 # database: /Volumes/stories/picdb.db
-database: /Users/sb/Development/projects/picdb/test.db
+db_user: sb
+db_passwd: sb
+db_name: mypics
+db_host: 127.0.0.1
+db_port: 5432
 
 # Specify window geometry <width>x<height>+<x-offset>+<y-offset>
 geometry: 2200x1000+100+100
