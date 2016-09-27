@@ -22,7 +22,7 @@ class PyTest(TestCommand):
         sys.exit(pytest.main(self.test_args))
 
 
-version = '0.1.0.3'
+version = '0.1.0.5'
 
 setup(
     name='picdb',
@@ -36,7 +36,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=['Pillow', 'PyYAML'],
-    requires=['Pillow', 'PyYAML', 'py-postgresql'],
+    requires=['Pillow', 'PyYAML'],
     provides=['picdb'],
     scripts=['scripts/assign_pictures.py', 'start_picdb.py'],
     tests_require=['pytest', 'nose'],

@@ -30,7 +30,6 @@ Persistence.
 # THE SOFTWARE.
 
 import logging
-import os
 from tkinter import messagebox
 
 import postgresql.driver.dbapi20 as dbapi
@@ -138,7 +137,7 @@ class Persistence:
 
     def delete_group(self, group_):
         """Delete group and picture assignments."""
-        stmt_pics = "DELETE FROM picture2group WHERE series=$1"
+        stmt_pics = """DELETE FROM picture2group WHERE "group"=$1"""
         stmt_grp = "DELETE FROM groups WHERE id=$1"
         self.execute_sql(stmt_pics, group_.key)
         self.execute_sql(stmt_grp, group_.key)
@@ -249,7 +248,7 @@ class Persistence:
         """
         self.logger.debug(
             "Removing picture {} from series {}.".format(picture, series))
-        stmt = '''DELETE FROM picture2group WHERE picture=$1 AND series=$2'''
+        stmt = '''DELETE FROM picture2group WHERE picture=$1 AND "group"=$2'''
         self.execute_sql(stmt, picture.key, series.key)
 
     def retrieve_picture_by_key(self, key):
