@@ -57,7 +57,7 @@ class Group(Entity):
         """Remove and add pictures according to changes made during editing."""
         if self._pictures is not None:
             saved_pics = set(retrieve_pictures_for_group(self))
-            _pictures = set(self._pictures)
+            _pictures = set(self.pictures)
             pictures_to_add = _pictures.difference(saved_pics)
             pictures_to_remove = saved_pics.difference(_pictures)
             add_pictures_to_group(self, pictures_to_add)
@@ -76,11 +76,11 @@ class Group(Entity):
         return self._pictures
 
     @pictures.setter
-    def pictures(self, picture_):
-        """Replace the complete tag set of this picture.
+    def pictures(self, pictures_):
+        """Replace the complete picture set of this group.
 
-        :param picture_: complete set of tags to assign to the picture.
-        :type picture_: [Tag]
+        :param pictures_: complete set of pictures to assign to the group.
+        :type picture_: [Picture]
         """
         self._pictures = picture_
 
@@ -103,9 +103,8 @@ class Group(Entity):
         :type picture_: Picture
         """
         if self._pictures is None:
-            self._pictures = [picture_]
-        else:
-            self._pictures.append(picture_)
+            self._pictures = self.pictures
+        self._pictures.append(picture_)
 
     def remove_picture(self, picture_):
         """Remove given picture from group.
@@ -116,7 +115,9 @@ class Group(Entity):
         :param picture_: picture to remove
         :type picture_: Picture
         """
-        if self._pictures is not None and picture_ in self._pictures:
+        if self._pictures is None:
+            self._pictures = self.pictures
+        if picture_ in self._pictures:
             self._pictures.remove(picture_)
 
     @property
