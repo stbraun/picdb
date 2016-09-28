@@ -170,12 +170,8 @@ class PictureManagement(ttk.Frame):
             try:
                 img = Image.open(self.current_picture.path)
             except FileNotFoundError as e:
-                messagebox.showwarning(title='Display Picture',
-                                       message='Image file not '
-                                               'found!\nYou might need to '
-                                               'mount a volume.\n\n{}'.format(
-                                           e.filename))
-                return
+                placeholder = get_resource_path('picdb', 'resources/not_found.png')
+                img = Image.open(placeholder)
             except OSError:
                 placeholder = get_resource_path('picdb', 'resources/not_supported.png')
                 img = Image.open(placeholder)
