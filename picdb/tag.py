@@ -147,3 +147,9 @@ def get_tag_from_d_object(d_tag):
         _tag_cache.put(tag.key, tag)
     finally:
         return tag
+
+
+def number_of_tags():
+    """Provide number of tags currently in database."""
+    db = get_db()
+    return db.number_of_tags()

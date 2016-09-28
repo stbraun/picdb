@@ -273,3 +273,9 @@ def get_group_from_d_object(group_):
         _group_cache.put(group.key, group)
     finally:
         return group
+
+
+def number_of_groups():
+    """Provide number of groups currently in database."""
+    db = get_db()
+    return db.number_of_groups()

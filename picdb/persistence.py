@@ -64,6 +64,17 @@ class DBParameters:
         return DBParameters(name, user, passwd, port)
 
 
+def db_params():
+    """Provide database parameters.
+
+    :return: parameters.
+    :rtype: DBParameters
+    """
+    if _db is None:
+        return None
+    return _db.db_params
+
+
 def create_db(db_=None):
     """Set the database to use.
 
@@ -512,6 +523,27 @@ class Persistence:
         result = stmt_()
         records = [DGroup(*row) for row in result]
         return list(records)
+
+    def number_of_pictures(self):
+        """Provide number of pictures currently in database."""
+        stmt = 'SELECT count(*) FROM pictures'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_()
+        return result[0][0]
+
+    def number_of_groups(self):
+        """Provide number of groups currently in database."""
+        stmt = 'SELECT count(*) FROM groups'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_()
+        return result[0][0]
+
+    def number_of_tags(self):
+        """Provide number of tags currently in database."""
+        stmt = 'SELECT count(*) FROM tags'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_()
+        return result[0][0]
 
     def execute_sql(self, stmt_, *args):
         try:

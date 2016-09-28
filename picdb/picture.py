@@ -255,3 +255,10 @@ def get_picture_from_d_object(picture_):
         _picture_cache.put(pic.key, pic)
     finally:
         return pic
+
+
+def number_of_pictures():
+    """Provide number of pictures currently in database."""
+    db = get_db()
+    return db.number_of_pictures()
+
