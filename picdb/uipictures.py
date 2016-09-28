@@ -168,26 +168,26 @@ class PictureManagement(ttk.Frame):
         """Display current picture in canvas."""
         if self.current_picture is not None:
             try:
-                try:
-                    img = Image.open(self.current_picture.path)
-                except OSError:
-                    placeholder = get_resource_path('picdb', 'resources/not_supported.png')
-                    img = Image.open(placeholder)
-                img.thumbnail(
-                    (self._canvas_width - 2, self._canvas_height - 2),
-                    Image.ANTIALIAS)
-                self.image = ImageTk.PhotoImage(img)
-                self.canvas.delete(self.image_tag)  # delete old picture if any
-                self.canvas.create_image(1, 1, anchor=tk.NW,
-                                         state=tk.NORMAL,
-                                         image=self.image,
-                                         tags=self.image_tag)
+                img = Image.open(self.current_picture.path)
             except FileNotFoundError as e:
                 messagebox.showwarning(title='Display Picture',
                                        message='Image file not '
                                                'found!\nYou might need to '
                                                'mount a volume.\n\n{}'.format(
                                            e.filename))
+                return
+            except OSError:
+                placeholder = get_resource_path('picdb', 'resources/not_supported.png')
+                img = Image.open(placeholder)
+            img.thumbnail(
+                (self._canvas_width - 2, self._canvas_height - 2),
+                Image.ANTIALIAS)
+            self.image = ImageTk.PhotoImage(img)
+            self.canvas.delete(self.image_tag)  # delete old picture if any
+            self.canvas.create_image(1, 1, anchor=tk.NW,
+                                     state=tk.NORMAL,
+                                     image=self.image,
+                                     tags=self.image_tag)
 
     def _fit_image(self, event=None, _last=[None] * 2):
         """Fit image inside application window on resize."""
