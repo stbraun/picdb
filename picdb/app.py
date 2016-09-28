@@ -111,6 +111,10 @@ def _parse_arguments(args):
     return arguments
 
 
+def create_db_by_arguments(args):
+    create_db(DBParameters(args.db, args.user, args.passwd, args.port))
+
+
 def start_application(argv):
     initialize_logger()
     root = tk.Tk()
@@ -119,7 +123,7 @@ def start_application(argv):
     # no tear-off menus
     root.option_add('*tearoff', False)
     args = _parse_arguments(argv)
-    create_db(DBParameters(args.db, args.user, args.passwd, args.port))
+    create_db_by_arguments(args)
     root.geometry(args.geometry)
     app = Application(root)
     app.master.title(args.title)

@@ -22,7 +22,7 @@ class PyTest(TestCommand):
         sys.exit(pytest.main(self.test_args))
 
 
-version = '0.1.0.6'
+version = '0.1.0.8'
 
 setup(
     name='picdb',

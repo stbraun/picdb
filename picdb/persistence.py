@@ -37,7 +37,7 @@ import postgresql.driver.dbapi20 as dbapi
 from .config import get_configuration
 from .dataobjects import DTag, DPicture, DGroup
 
-# This module global variable will hold the expanded database name
+# This module global variable will hold the Persistence instance.
 _db = None
 
 
@@ -82,7 +82,8 @@ def get_db():
     """Get connected persistence instance."""
     global _db
     if _db is None:
-        create_db(None)
+        # use configured database.
+        create_db()
     return _db
 
 
@@ -167,7 +168,7 @@ class Persistence:
     def delete_tag(self, tag_):
         """Delete given tag and all its assignments."""
         stmt = "DELETE FROM tags WHERE id=$1"
-        self.execute_sql(stmt, (tag_.key,))
+        self.execute_sql(stmt, tag_.key)
 
     def add_picture(self, picture):
         """Add a new picture.

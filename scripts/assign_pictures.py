@@ -45,12 +45,11 @@ from picdb.group import Group
 from picdb.tag import Tag
 from picdb.persistence import UnknownEntityException
 from picdb.config import get_configuration
-from picdb.persistence import set_db
-
+from picdb.app import create_db_by_arguments
 
 def main(argv):
     args = _parse_arguments(argv)
-    set_db(args.db)
+    create_db_by_arguments(args)
     if args.verbose:
         print('Namespace: {}'.format(args))
     try:
@@ -137,8 +136,20 @@ def _parse_arguments(args):
                         help='Path of pictures as an SQL like expression '
                              'using %% as wildcard.')
     parser.add_argument('--db', action='store', dest='db',
-                        default=get_configuration('database'),
-                        help='Path to database to use. Overrides '
+                        default=get_configuration('db_name'),
+                        help='Name to database to use. Overrides '
+                             'configuration file.')
+    parser.add_argument('--user', action='store', dest='user',
+                        default=get_configuration('db_user'),
+                        help='Database user. Overrides '
+                             'configuration file.')
+    parser.add_argument('--passwd', action='store', dest='passwd',
+                        default=get_configuration('db_passwd'),
+                        help='Password of database user. Overrides '
+                             'configuration file.')
+    parser.add_argument('--port', action='store', dest='port',
+                        default=get_configuration('db_port'),
+                        help='Port of database to use. Overrides '
                              'configuration file.')
     parser.add_argument('-g', '--group', action='append', dest='groups',
                         default=[],
