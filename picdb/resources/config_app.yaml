@@ -8,4 +8,4 @@ db_host: 127.0.0.1
 db_port: 5432
 
 # Specify window geometry <width>x<height>+<x-offset>+<y-offset>
-geometry: 2200x1000+100+100
+geometry: 2200x1000+20+10

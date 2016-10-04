@@ -124,17 +124,17 @@ class Persistence:
         self.conn.close()
         self.logger.debug('database connection closed.')
 
-    def add_series(self, series):
+    def add_group(self, group):
         """Add a new series.
 
-        :param series: the series to add
-        :type series: Group
+        :param group: the series to add
+        :type group: Group
         """
-        self.logger.debug("Add series to DB: {}".format(series.name))
+        self.logger.debug("Add group to DB: {}".format(group.name))
         stmt = '''INSERT INTO groups (identifier, description, parent)
         VALUES ($1, $2, $3)'''
-        parent = series.parent.key if series.parent is not None else None
-        self.execute_sql(stmt, series.name, series.description, parent)
+        parent = group.parent.key if group.parent is not None else None
+        self.execute_sql(stmt, group.name, group.description, parent)
 
     def update_group(self, series):
         self.logger.debug("Update series: {}".format(series.name))

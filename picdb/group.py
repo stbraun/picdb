@@ -131,7 +131,7 @@ class Group(Entity):
 
 def add_group(group):
     db = get_db()
-    db.add_series(group)
+    db.add_group(group)
 
 
 def delete_group(group_):

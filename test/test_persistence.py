@@ -79,14 +79,14 @@ class TestPersistence(unittest.TestCase):
         series1 = DGroup(None, 'Series 1', "My first series.", None)
         series = self.db.retrieve_all_series()
         self.assertEqual(0, len(series))
-        self.db.add_series(series1)
+        self.db.add_group(series1)
         series = self.db.retrieve_all_series()
         self.assertEqual(1, len(series))
         series_retrieved = series[0]
         self.assertEqual(series1.name, series_retrieved.name)
         self.assertEqual(series1.description, series_retrieved.description)
         series2 = DTag(None, 'Series 2', "My second series.", None)
-        self.db.add_series(series2)
+        self.db.add_group(series2)
         series = self.db.retrieve_all_series()
         self.assertEqual(2, len(series))
 
@@ -138,7 +138,7 @@ class TestPersistence(unittest.TestCase):
 
     def test_update_series(self):
         series1 = DGroup(None, 'eyes', "My series.", None)
-        self.db.add_series(series1)
+        self.db.add_group(series1)
         series2 = self.db.retrieve_series_by_name(series1.name)
         new_description = 'new description'
         series2 = series2._replace(description=new_description)
@@ -168,7 +168,7 @@ class TestPersistence(unittest.TestCase):
         picture1 = self.db.retrieve_picture_by_path(picture1.path)
         picture2 = self.db.retrieve_picture_by_path(picture2.path)
         group = DGroup(None, 'grp', 'group', None)
-        self.db.add_series(group)
+        self.db.add_group(group)
         group = self.db.retrieve_series_by_name(group.name)
         pics = self.db.retrieve_pictures_for_group(group)
         self.assertEqual(0, len(pics))
