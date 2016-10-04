@@ -35,6 +35,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+import webbrowser
 
 from PIL import Image, ImageTk
 
@@ -172,7 +173,7 @@ class PictureManagement(ttk.Frame):
             except FileNotFoundError as e:
                 placeholder = get_resource_path('picdb', 'resources/not_found.png')
                 img = Image.open(placeholder)
-            except OSError:
+            except (OSError, ValueError):
                 placeholder = get_resource_path('picdb', 'resources/not_supported.png')
                 img = Image.open(placeholder)
             img.thumbnail(
@@ -376,8 +377,7 @@ class PictureReferenceTree(PicTreeView):
         """Show selected pictures in external viewer."""
         pics = self.selected_items()
         for pic in pics:
-            image = Image.open(pic.path)
-            image.show()
+            webbrowser.open('file://' + pic.path)
 
 
 class PictureReferenceEditor(ttk.LabelFrame):
