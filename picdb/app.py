@@ -43,6 +43,9 @@ from .persistence import create_db, DBParameters
 from .config import get_configuration
 
 
+version = '0.1.0.13'
+
+
 class Application(ttk.Frame):
     """Mind Monitor Frontend"""
 
@@ -63,7 +66,7 @@ class Application(ttk.Frame):
         notebook.add(series_frame, text='manage series')
         notebook.add(tags_frame, text='manage tags')
 
-        status_panel = StatusPanel(self)
+        status_panel = StatusPanel(self, version=version)
         status_panel.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
         ttk.Button(self, text='Quit',

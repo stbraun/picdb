@@ -2,6 +2,8 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+from picdb import app
+
 
 class PyTest(TestCommand):
     """This is a plug-in for setuptools.
@@ -22,11 +24,9 @@ class PyTest(TestCommand):
         sys.exit(pytest.main(self.test_args))
 
 
-version = '0.1.0.11'
-
 setup(
     name='picdb',
-    version=version,
+    version=app.version,
     packages=['picdb'],
     url='',
     license='MIT',

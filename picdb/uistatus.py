@@ -47,9 +47,10 @@ from .tag import number_of_tags
 class StatusPanel(ttk.Frame):
     """Present a status."""
 
-    def __init__(self, master):
+    def __init__(self, master, version):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger('picdb.ui')
+        self.version = version
         self.num_pics_var = tk.StringVar()
         self.num_groups_var = tk.StringVar()
         self.num_tags_var = tk.StringVar()
@@ -82,14 +83,20 @@ class StatusPanel(ttk.Frame):
         ttk.Label(self, textvariable=self.num_tags_var).grid(row=2, column=1,
                                                              sticky=(
                                                                  tk.W, tk.N))
+        ttk.Label(self, textvariable=self.database_var).grid(row=0, column=2,
+                                                             sticky=(
+                                                                 tk.W, tk.N))
+
+        ttk.Label(self, text='version: {}'.format(self.version)).grid(row=1,
+                                                                      column=2,
+                                                                      sticky=(
+                                                                      tk.W,
+                                                                      tk.N))
         ttk.Label(self, textvariable=self.memory_usage_var).grid(row=0,
-                                                                 column=2,
+                                                                 column=3,
                                                                  sticky=(
                                                                      tk.W,
                                                                      tk.N))
-        ttk.Label(self, textvariable=self.database_var).grid(row=0, column=3,
-                                                             sticky=(
-                                                                 tk.W, tk.N))
 
     def _report_usage(self, prev_mem_info=None):
         """report memory usage."""
