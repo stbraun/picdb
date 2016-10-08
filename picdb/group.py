@@ -82,7 +82,7 @@ class Group(Entity):
         :param pictures_: complete set of pictures to assign to the group.
         :type picture_: [Picture]
         """
-        self._pictures = picture_
+        self._pictures = pictures_
 
     @property
     def parent(self):

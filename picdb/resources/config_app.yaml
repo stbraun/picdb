@@ -3,7 +3,8 @@ version: 1
 # database: /Volumes/stories/picdb.db
 db_user: sb
 db_passwd: sb
-db_name: mypics
+# db_name: mypics
+db_name: pictest
 db_host: 127.0.0.1
 db_port: 5432
 

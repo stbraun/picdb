@@ -124,7 +124,7 @@ class PictureManagement(ttk.Frame):
         add_button = ttk.Button(self.control_frame, text='import pictures',
                                 command=self.import_pictures)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        clear_button = ttk.Button(self.control_frame, text='reset selection',
+        clear_button = ttk.Button(self.control_frame, text='reset selection [CMD-R]',
                                   command=self._reset)
         clear_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
 
@@ -155,6 +155,8 @@ class PictureManagement(ttk.Frame):
             self._display_picture()
         else:
             self.clear()
+            self.current_picture = None
+            self.editor.load_picture_set(pics)
 
     def _item_deleted(self, _):
         """An item in the tree view was deleted."""
@@ -451,11 +453,20 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         self.editor = None
         self.save_button = None
         self.picture = None
+        self.picture_set = None
         self._create_widgets()
         # add key bindings: use self as (tk-)tag to bind a listener also to all
         # children widgets
         tag_all_children(self, self)
         self.bind('<Meta_L>s', self._save_picture)
+
+    def is_mass_assignment(self):
+        """Determine if multiple pictures shall be processed.
+
+        :return: True if multiple pictures shall be processed.
+        :rtype: bool
+        """
+        return self.picture is None and self.picture_set is not None
 
     def _create_widgets(self):
         self.rowconfigure(0, weight=1)
@@ -501,13 +512,25 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         return "break"
 
     def _save(self):
-        """Save current picture."""
-        self.picture = self.editor.picture
-        self._update_series()
-        tags = self.tag_selector.selected_items()
-        self.picture.tags = tags
-        self.picture.save()
-        self._call_listeners(self.EVT_ITEM_SAVED, None)
+        """Save current picture or picture set."""
+        if self.is_mass_assignment():
+            tags = self.tag_selector.selected_items()
+            groups = self.group_selector.selected_items()
+            for pic in self.picture_set:
+                for tag in tags:
+                    pic.assign_tag(tag)
+                for group_ in groups:
+                    group_.assign_picture(pic)
+                pic.save()
+            for group_ in groups:
+                group_.save()
+        else:
+            self.picture = self.editor.picture
+            self._update_series()
+            tags = self.tag_selector.selected_items()
+            self.picture.tags = tags
+            self.picture.save()
+            self._call_listeners(self.EVT_ITEM_SAVED, None)
 
     def _update_series(self):
         """Remove or add picture from groups according to changes made
@@ -524,13 +547,29 @@ class PictureMetadataEditor(ttk.Frame, Observable):
             grp.save()
 
     def load_picture(self, picture_):
-        """Load picture into editor."""
+        """Load picture into editor.
+
+        :param picture_: the picture to process.
+        :type picture_: Picture
+        """
         self.picture = picture_
+        self.picture_set = None
         self.editor.picture = picture_
         self.tag_selector.load_items(picture_.tags)
         # Retrieve groups the picture is currently assigned to.
         self.group_selector.load_items(
             group.retrieve_groups_for_picture(picture_))
+
+    def load_picture_set(self, pictures):
+        """Load picture set into editor.
+
+        :param pictures: picture set to process
+        :type pictures: [Picture]
+        """
+        self.picture_set = pictures
+        self.picture = None
+        self.tag_selector.load_items([])
+        self.group_selector.load_items([])
 
     def clear(self):
         """Clear the editor."""
