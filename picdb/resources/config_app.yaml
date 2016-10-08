@@ -1,6 +1,4 @@
 version: 1
-# database: /Volumes/B3T/data_sets/pixdb.db
-# database: /Volumes/stories/picdb.db
 db_user: sb
 db_passwd: sb
 # db_name: mypics
