@@ -31,22 +31,44 @@ Configure the application for your needs.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
+import os
 import logging
 import pkgutil
 import yaml
 
 logger = logging.getLogger('picdb.config')
 
+# The configuration dictionary.
+__config = None
+
+# Search path for config file. Will default to packaged file.
+config_path = ['./picdb_app.yaml', '~/.picdb_app.yaml']
+
+
+def _lookup_configuration():
+    """Lookup the configuration file.
+
+    :return: opened configuration file
+    :rtype: stream
+    """
+    global config_path
+    for pth in config_path:
+        path = os.path.abspath(os.path.expanduser(pth))
+        logger.debug('Checking for {}'.format(path))
+        if os.path.exists(path):
+            logger.info('Config file: {}'.format(path))
+            return open(path)
+    return pkgutil.get_data('picdb', 'resources/config_app.yaml')
+
 
 def __initialize_configuration():
-    """Initalize application configuration.
+    """Initialize application configuration.
 
     :return: configuration dictionary
     :rtype: dict
     """
     logger.info('Initializing application configuration ...')
-    cfg = pkgutil.get_data('picdb', 'resources/config_app.yaml')
+    cfg = _lookup_configuration()
     conf_dict = yaml.load(cfg)
     logger.info('Application configuration initialized.')
     return conf_dict
@@ -55,9 +77,11 @@ def __initialize_configuration():
 def get_configuration(key):
     """Retrieve configuration for given key."""
     logger.info('Retrieving application configuration key: <{}>'.format(key))
-    config = __initialize_configuration()
-    value = config[key]
-    logger.info('Retrieved application configuration key: <{}> -> <{}>'.format(key, value))
+    global __config
+    if __config is None:
+        __config = __initialize_configuration()
+    value = __config[key]
+    logger.info(
+        'Retrieved application configuration key: <{}> -> <{}>'.format(key,
+                                                                       value))
     return value
-
-

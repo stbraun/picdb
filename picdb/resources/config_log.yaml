@@ -5,7 +5,7 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: INFO
+    level: DEBUG
     formatter: simple
     stream: ext://sys.stdout
 loggers:
@@ -14,7 +14,7 @@ loggers:
     handlers: [console]
     propagate: no
   picdb.db:
-    level: DEBUG
+    level: INFO
     handlers: [console]
     propagate: no
   picdb.ui:
@@ -22,7 +22,11 @@ loggers:
     handlers: [console]
     propagate: no
   picdb.config:
-    level: WARNING
+    level: INFO
+    handlers: [console]
+    propagate: no
+  picdb.logging:
+    level: INFO
     handlers: [console]
     propagate: no
 root:
