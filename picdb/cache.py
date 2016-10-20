@@ -43,6 +43,7 @@ class LRUCache:
         """Put item into __cache."""
         self.__cache[key] = item
         self.__update_usage(key)
+        self.__keep_max_size()
 
     def get(self, key):
         """Try to retrieve item """
@@ -78,7 +79,6 @@ class LRUCache:
         if key in self.__usage_list:
             self.__usage_list.remove(key)
         self.__usage_list.insert(0, key)
-        self.__keep_max_size()
 
     def __keep_max_size(self):
         while len(self.__usage_list) > self.max_size:
