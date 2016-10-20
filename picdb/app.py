@@ -47,7 +47,7 @@ version = '1.0.1.1'
 
 
 class Application(ttk.Frame):
-    """Mind Monitor Frontend"""
+    """PicDB Frontend"""
 
     def __init__(self, master):
         super().__init__(master, padding="3 5 3 5", width=400, height=300)
