@@ -30,6 +30,9 @@ Test LRUCache
 # THE SOFTWARE.
 
 import unittest
+from hypothesis import given, example, settings
+import hypothesis.strategies as st
+
 from picdb.cache import LRUCache
 
 
@@ -84,7 +87,7 @@ class LRUCacheTest(unittest.TestCase):
         self.assertEqual(0, cache.size)
 
     def test_statistics(self):
-        """Test hits and misses."""
+        """Test hits and _misses."""
         max_size = 3
         cache = LRUCache(max_size)
         for i in range(max_size):
@@ -97,3 +100,55 @@ class LRUCacheTest(unittest.TestCase):
         self.assertRaises(KeyError, cache.get, (42,))
         self.assertEqual(1, cache.hits)
         self.assertEqual(1, cache.misses)
+
+
+# Some additional property based testing
+
+@given(key=st.one_of(st.integers(), st.text(), st.booleans()),
+       value=st.one_of(st.integers(), st.text(), st.binary(), st.booleans(),
+                       st.floats(allow_nan=False, allow_infinity=False)))
+@settings(max_examples=500)
+def test_adding_i_s(key, value):
+    cache = LRUCache(3)
+    assert cache.size == 0
+    assert cache.hits == 0
+    cache.put(key, value)
+    assert cache.size == 1
+    assert cache.get(key) == value
+    assert cache.misses == 0
+    assert cache.hits == 1
+
+
+def test_multiple():
+    max_size = 5
+    cache = LRUCache(max_size)
+
+    @given(key=st.integers(min_value=-3, max_value=3), value=st.text())
+    @settings(max_examples=500)
+    @example(key=-42, value=5)
+    @example(key=(-42, 13), value=5)
+    def test_add_one(key, value):
+        initial_size = cache.size
+        initial_misses = cache.misses
+        initial_hits = cache.hits
+        try:
+            cache.get(key)
+        except KeyError:
+            expected_size = initial_size + 1 if initial_size < max_size else \
+                max_size
+            assert cache.misses == initial_misses + 1
+            assert cache.hits == initial_hits
+        else:
+            expected_size = initial_size
+            assert cache.hits == initial_hits + 1
+            assert cache.misses == initial_misses
+        cache.put(key, value)
+        assert cache.size == expected_size
+        assert cache.size >= initial_size
+
+    test_add_one()
+    assert cache.size > 0
+    cache.clear()
+    assert cache.size == 0
+    assert cache.misses == 0
+    assert cache.hits == 0

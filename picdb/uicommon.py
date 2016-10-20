@@ -87,9 +87,6 @@ class Observable:
 
         :param event_identifier: event identifier.
         :type event_identifier: str
-
-
-
         """
         if event_identifier in self.listeners.keys():
             del(self.listeners[event_identifier])

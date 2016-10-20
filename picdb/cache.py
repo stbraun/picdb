@@ -36,8 +36,8 @@ class LRUCache:
         self.max_size = max_size
         self.__cache = {}
         self.__usage_list = []
-        self.misses = 0
-        self.hits = 0
+        self._misses = 0
+        self._hits = 0
 
     def put(self, key, item):
         """Put item into __cache."""
@@ -48,21 +48,31 @@ class LRUCache:
         """Try to retrieve item """
         try:
             item = self.__cache[key]
-            self.hits += 1
+            self._hits += 1
             self.__update_usage(key)
             return item
         except KeyError:
-            self.misses += 1
+            self._misses += 1
             raise
 
     @property
     def size(self):
         return len(self.__usage_list)
 
+    @property
+    def misses(self):
+        return self._misses
+
+    @property
+    def hits(self):
+        return self._hits
+
     def clear(self):
         """Clear cache."""
         self.__cache = {}
         self.__usage_list = []
+        self._misses = 0
+        self._hits = 0
 
     def __update_usage(self, key):
         if key in self.__usage_list:
