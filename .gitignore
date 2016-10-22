@@ -6,3 +6,7 @@ model/
 /.eggs/
 /venv-org/
 /venv/
+/.hypothesis/
+/build/
+/dist/
+/test/.hypothesis/
