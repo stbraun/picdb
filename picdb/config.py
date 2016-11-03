@@ -69,7 +69,7 @@ def __initialize_configuration():
     """
     logger.info('Initializing application configuration ...')
     cfg = _lookup_configuration()
-    conf_dict = yaml.load(cfg)
+    conf_dict = yaml.safe_load(cfg)
     logger.info('Application configuration initialized.')
     return conf_dict
 

@@ -49,5 +49,5 @@ def __read_configuration():
     :rtype: dict
     """
     cfg = _lookup_configuration()
-    conf_dict = yaml.load(cfg)
+    conf_dict = yaml.safe_load(cfg)
     return conf_dict

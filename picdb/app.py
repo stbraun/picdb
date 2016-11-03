@@ -43,7 +43,7 @@ from .persistence import create_db, DBParameters
 from .config import get_configuration
 
 
-version = '1.0.1.1'
+version = '1.0.2.1'
 
 
 class Application(ttk.Frame):
