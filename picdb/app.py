@@ -84,7 +84,7 @@ def _parse_arguments(args):
     :param args: given arguments, e.g. sys.argc[1:]
     :type args: [str]
     :return: configuration namespace
-    :rtype: {<key>:<value>}
+    :rtype: argparse.Namespace
     """
     parser = argparse.ArgumentParser(
         description='Assign tags to pictures and pictures to groups.')

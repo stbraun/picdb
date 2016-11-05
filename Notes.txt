@@ -15,24 +15,33 @@ First cd into project folder
 
 
 
-py2app
+pyinstaller: create_app.sh
 
-* Probably a virtual environment with complete Python installation is required.
+See also pyinstaller-hooks for patches required for tcl and tk
 
-$ py2applet --make-setup start_picdb.py
-$ rm -rf build dist
+Does not work yet. When running the app an exception is raised:
 
-# To build the application in alias mode during development,
-# execute setup.py with the py2app command
-# and specify the -A option (or --alias):
-$ python3 setup.py py2app -A
+  File "<frozen importlib._bootstrap>", line 634, in _load_backward_compatible
+  File "/Volumes/B3T/Development/projects/picdb/venv/lib/python3.5/site-packages/PyInstaller/loader/pyimod03_importers.py", line 389, in load_module
+    exec(bytecode, module.__dict__)
+  File "postgresql/driver/__init__.py", line 9, in <module>
+  File "<frozen importlib._bootstrap>", line 969, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 958, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 664, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 634, in _load_backward_compatible
+  File "/Volumes/B3T/Development/projects/picdb/venv/lib/python3.5/site-packages/PyInstaller/loader/pyimod03_importers.py", line 389, in load_module
+    exec(bytecode, module.__dict__)
+  File "postgresql/driver/pq3.py", line 20, in <module>
+  File "<frozen importlib._bootstrap>", line 969, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 958, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 664, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 634, in _load_backward_compatible
+  File "/Volumes/B3T/Development/projects/picdb/venv/lib/python3.5/site-packages/PyInstaller/loader/pyimod03_importers.py", line 389, in load_module
+    exec(bytecode, module.__dict__)
+  File "postgresql/lib/__init__.py", line 481, in <module>
+  File "postgresql/lib/__init__.py", line 470, in load
+postgresql.exceptions.LoadError: library 'sys' not in postgresql.sys.libpath
 
-# run from terminal
-$ ./dist/MyApplication.app/Contents/MacOS/MyApplication
 
-# or start with launch service
-$ open -a dist/start_picdb.app
-
-
-# build for deployment
-$ python3 setup_py2app.py py2app
+When looking into site-packages/postgresql/driver/pq3.py line 20 a package
+called lib shall be imported.

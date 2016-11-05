@@ -1,6 +1,10 @@
 hypothesis
-yaml
+PyYAML
 psutil
 pillow
 Sphinx
+pyinstaller
+py-postgresql >= 1.1.0
+nose
+
 
