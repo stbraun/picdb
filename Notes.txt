@@ -19,29 +19,7 @@ pyinstaller: create_app.sh
 
 See also pyinstaller-hooks for patches required for tcl and tk
 
-Does not work yet. When running the app an exception is raised:
-
-  File "<frozen importlib._bootstrap>", line 634, in _load_backward_compatible
-  File "/Volumes/B3T/Development/projects/picdb/venv/lib/python3.5/site-packages/PyInstaller/loader/pyimod03_importers.py", line 389, in load_module
-    exec(bytecode, module.__dict__)
-  File "postgresql/driver/__init__.py", line 9, in <module>
-  File "<frozen importlib._bootstrap>", line 969, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 958, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 664, in _load_unlocked
-  File "<frozen importlib._bootstrap>", line 634, in _load_backward_compatible
-  File "/Volumes/B3T/Development/projects/picdb/venv/lib/python3.5/site-packages/PyInstaller/loader/pyimod03_importers.py", line 389, in load_module
-    exec(bytecode, module.__dict__)
-  File "postgresql/driver/pq3.py", line 20, in <module>
-  File "<frozen importlib._bootstrap>", line 969, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 958, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 664, in _load_unlocked
-  File "<frozen importlib._bootstrap>", line 634, in _load_backward_compatible
-  File "/Volumes/B3T/Development/projects/picdb/venv/lib/python3.5/site-packages/PyInstaller/loader/pyimod03_importers.py", line 389, in load_module
-    exec(bytecode, module.__dict__)
-  File "postgresql/lib/__init__.py", line 481, in <module>
-  File "postgresql/lib/__init__.py", line 470, in load
-postgresql.exceptions.LoadError: library 'sys' not in postgresql.sys.libpath
-
-
-When looking into site-packages/postgresql/driver/pq3.py line 20 a package
-called lib shall be imported.
+--> PicDB.spec:
+- data files added
+- hidden imports added
+- hooks added

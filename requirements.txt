@@ -1,10 +1,9 @@
-hypothesis
-PyYAML
-psutil
 pillow
+py-postgresql >= 1.1.0
+PyYAML
+hypothesis
+nose
+psutil
 Sphinx
 pyinstaller
-py-postgresql >= 1.1.0
-nose
-
-
+Paver

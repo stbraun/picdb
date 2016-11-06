@@ -4,3 +4,6 @@ include picdb/resources/*
 include docs/source/*
 include docs/Makefile
 include docs/make.bat
+include setup.py
+include pavement.py
+include paver-minilib.zip
