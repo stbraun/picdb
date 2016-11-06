@@ -13,3 +13,5 @@ model/
 /paver-minilib.zip
 /docs/source/api/picdb.rst
 /docs/source/api/modules.rst
+picdb.egg-info
+.cache/v/cache
