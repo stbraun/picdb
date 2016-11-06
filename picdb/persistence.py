@@ -310,8 +310,8 @@ class Persistence:
         :type series: [Group]
         :param tags: limit result set based on given list of tags
         :type tags: [Tag]
-        :return: picture.
-        :rtype:[Picture]
+        :return: pictures matching given path.
+        :rtype: [Picture]
         """
         stmt_p = 'SELECT DISTINCT id, identifier, path, description ' \
                  'FROM pictures WHERE ' \
@@ -371,9 +371,9 @@ class Persistence:
         return list(records)
 
     def retrieve_pictures_by_tag(self, tag_):
-        """Retrieve pictures which have tag_ assigned.
+        """Retrieve pictures which have tag assigned.
 
-        :param tag_: pictures shall have assignes this tag
+        :param tag_: pictures shall have assigned this tag
         :type tag_: Tag
         :return: pictures with tag
         :rtype: [DPicture]
