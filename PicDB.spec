@@ -34,5 +34,5 @@ exe = EXE(pyz,
           console=False )
 app = BUNDLE(exe,
              name='PicDB.app',
-             icon=None,
+             icon='Icon.icns',
              bundle_identifier=None)
