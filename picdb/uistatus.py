@@ -86,12 +86,9 @@ class StatusPanel(ttk.Frame):
         ttk.Label(self, textvariable=self.database_var).grid(row=0, column=2,
                                                              sticky=(
                                                                  tk.W, tk.N))
-
-        ttk.Label(self, text='version: {}'.format(self.version)).grid(row=1,
-                                                                      column=2,
-                                                                      sticky=(
-                                                                      tk.W,
-                                                                      tk.N))
+        version_text = 'version: {}'.format(self.version)
+        ttk.Label(self, text=version_text).grid(row=1, column=2,
+                                                sticky=(tk.W, tk.N))
         ttk.Label(self, textvariable=self.memory_usage_var).grid(row=0,
                                                                  column=3,
                                                                  sticky=(

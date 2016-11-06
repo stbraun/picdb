@@ -261,4 +261,3 @@ def number_of_pictures():
     """Provide number of pictures currently in database."""
     db = get_db()
     return db.number_of_pictures()
-

@@ -2,7 +2,6 @@ from paver.easy import *
 from paver.doctools import html, doc_clean
 from paver.setuputils import setup
 
-
 setup(
     name='picdb',
     version='0.1.1',
@@ -27,6 +26,13 @@ options(
         sourcedir="source",
     )
 )
+
+
+@task
+def analyze():
+    sh("rm reports/flake8.txt")
+    sh(
+        "flake8 --output-file reports/flake8.txt --max-line-length=100  picdb")
 
 
 @task

@@ -143,8 +143,10 @@ class GroupManagement(ttk.Frame):
             # This loads the pictures for this group. Just to be sure that save
             # will work.
             # As soon as we can edit the pictures of a group here we will need
-            # this cll anyway.
-            _ = group_.pictures
+            # this call anyway.
+            pics = group_.pictures
+            self.logger.debug('Pictures of group {}: {}.'.
+                              format(group_.name, pics))
             self.editor.group = group_
 
     def _item_deleted(self, _):

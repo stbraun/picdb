@@ -144,7 +144,7 @@ class Persistence:
         self.execute_sql(stmt, series.name,
                          series.description,
                          series.parent.key if series.parent is not
-                                              None else None,
+                         None else None,
                          series.key)
 
     def delete_group(self, group_):

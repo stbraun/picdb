@@ -10,3 +10,6 @@ model/
 /build/
 /dist/
 /test/.hypothesis/
+/paver-minilib.zip
+/docs/source/api/picdb.rst
+/docs/source/api/modules.rst
