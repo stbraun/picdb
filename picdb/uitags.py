@@ -254,9 +254,9 @@ class TagTree(HierarchicalTreeView):
             start_item_ = tag.retrieve_tag_by_key(int(start_item))
             target_item_ = tag.retrieve_tag_by_key(int(target_item))
         except UnknownEntityException:
+            msg_tmpl = "Invalid items for drag 'n' drop: {} --> {}"
             messagebox.showwarning(
-                "Invalid items for drag 'n' drop: {} --> {}".format(start_item,
-                                                                    target_item))
+                msg_tmpl.format(start_item, target_item))
         except ValueError:
             # This will be raised if an item was dropped outside the tree view.
             # We tolerate this as cancel dragging.

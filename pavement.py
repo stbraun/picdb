@@ -32,7 +32,8 @@ options(
 def analyze():
     sh("rm reports/flake8.txt")
     sh(
-        "flake8 --output-file reports/flake8.txt --max-line-length=100  picdb")
+        "flake8 --output-file reports/flake8.txt "
+        "--statistics picdb")
 
 
 @task

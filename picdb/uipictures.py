@@ -124,7 +124,8 @@ class PictureManagement(ttk.Frame):
         add_button = ttk.Button(self.control_frame, text='import pictures',
                                 command=self.import_pictures)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        clear_button = ttk.Button(self.control_frame, text='reset selection [CMD-R]',
+        rst_text = 'reset selection [CMD-R]'
+        clear_button = ttk.Button(self.control_frame, text=rst_text,
                                   command=self._reset)
         clear_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
 
@@ -173,10 +174,12 @@ class PictureManagement(ttk.Frame):
             try:
                 img = Image.open(self.current_picture.path)
             except FileNotFoundError as e:
-                placeholder = get_resource_path('picdb', 'resources/not_found.png')
+                placeholder = get_resource_path('picdb',
+                                                'resources/not_found.png')
                 img = Image.open(placeholder)
             except (OSError, ValueError):
-                placeholder = get_resource_path('picdb', 'resources/not_supported.png')
+                placeholder = get_resource_path('picdb',
+                                                'resources/not_supported.png')
                 img = Image.open(placeholder)
             img.thumbnail(
                 (self._canvas_width - 2, self._canvas_height - 2),
@@ -332,8 +335,9 @@ class PictureReferenceTree(PicTreeView):
             self.heading('path', text='Path')
             self.heading('description', text='Description')
         self.column('#0', stretch=False)  # tree column shall not resize
+        external_viewer_cmd = self._show_selected_pic_in_external_viewer
         self.menu.add_command(label='Show in external viewer',
-                              command=self._show_selected_pic_in_external_viewer)
+                              command=external_viewer_cmd)
 
     @classmethod
     def create_instance(cls, master, tree_only=False):

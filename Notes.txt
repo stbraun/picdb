@@ -23,3 +23,18 @@ See also pyinstaller-hooks for patches required for tcl and tk
 - data files added
 - hidden imports added
 - hooks added
+
+
+paver analyze
+
+paver sdist
+
+paver docs_rebuild
+
+paver build_app
+
+paver clean_app
+
+paver build
+
+paver install_app
