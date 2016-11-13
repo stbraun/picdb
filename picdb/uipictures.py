@@ -453,7 +453,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         self.content_frame = None
         self.control_frame = None
         self.tag_selector = None
-        self.group_selector = None
+        self.grp_selector = None
         self.editor = None
         self.save_button = None
         self.picture = None
@@ -490,11 +490,11 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         self.editor = PictureReferenceEditor(self.content_frame)
         self.editor.grid(row=0, column=0, sticky=(tk.N, tk.E, tk.W))
         left_tree_options = {'open_items': True}
-        self.group_selector = GroupSelector(self.content_frame,
-                                            left_tree_options=left_tree_options,
-                                            text='Assign series')
-        self.group_selector.grid(row=1, column=0,
-                                 sticky=(tk.W, tk.N, tk.E, tk.S))
+        self.grp_selector = GroupSelector(self.content_frame,
+                                          left_tree_options=left_tree_options,
+                                          text='Assign series')
+        self.grp_selector.grid(row=1, column=0,
+                               sticky=(tk.W, tk.N, tk.E, tk.S))
         self.tag_selector = TagSelector(self.content_frame,
                                         left_tree_options=left_tree_options,
                                         text='Assign tags')
@@ -519,7 +519,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         """Save current picture or picture set."""
         if self.is_mass_assignment():
             tags = self.tag_selector.selected_items()
-            groups = self.group_selector.selected_items()
+            groups = self.grp_selector.selected_items()
             for pic in self.picture_set:
                 for tag in tags:
                     pic.assign_tag(tag)
@@ -540,7 +540,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         """Remove or add picture from groups according to changes made
         during editing."""
         saved_groups = set(group.retrieve_groups_for_picture(self.picture))
-        edt_groups = set(self.group_selector.selected_items())
+        edt_groups = set(self.grp_selector.selected_items())
         groups_to_add = edt_groups.difference(saved_groups)
         groups_to_remove = saved_groups.difference(edt_groups)
         for grp in groups_to_add:
@@ -561,7 +561,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         self.editor.picture = picture_
         self.tag_selector.load_items(picture_.tags)
         # Retrieve groups the picture is currently assigned to.
-        self.group_selector.load_items(
+        self.grp_selector.load_items(
             group.retrieve_groups_for_picture(picture_))
 
     def load_picture_set(self, pictures):
@@ -573,11 +573,11 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         self.picture_set = pictures
         self.picture = None
         self.tag_selector.load_items([])
-        self.group_selector.load_items([])
+        self.grp_selector.load_items([])
 
     def clear(self):
         """Clear the editor."""
         self.editor.clear()
         self.picture = None
-        self.group_selector.clear()
+        self.grp_selector.clear()
         self.tag_selector.clear()
