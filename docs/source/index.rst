@@ -9,9 +9,10 @@ Welcome to PicDB's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
 
    release-notes
+   project_setup
    api/modules
 
 
