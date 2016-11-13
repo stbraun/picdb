@@ -29,11 +29,16 @@ options(
 
 
 @task
+def testcov():
+    sh('nosetests --with-coverage test/')
+
+
+@task
 def analyze():
-    sh("rm reports/flake8.txt")
+    sh("rm -f reports/flake8.txt")
     sh(
-        "flake8 --output-file reports/flake8.txt "
-        "--statistics picdb")
+        "flake8 --output-file reports/flake8.txt --benchmark --count "
+        "--statistics picdb start_picdb.py")
 
 
 @task
@@ -56,6 +61,14 @@ def uninstall():
 
 
 @task
+def regenerate_spec():
+    sh(
+        "pyinstaller --onefile --windowed -n PicDB --additional-hooks-dir "
+        "pyinstaller-hooks --runtime-hook "
+        "pyinstaller-hooks/pyi_rth__tkinter.py start_picdb.py")
+
+
+@task
 def build_app():
     sh("echo "'building the system ...'"")
     sh("pyinstaller PicDB.spec")
@@ -67,11 +80,12 @@ def clean_app():
 
 
 @task
-def install_app():
-    sh("mv dist/PicDB.app /Applications")
+@needs('clean', 'testcov', 'analyze', 'sdist', 'install', 'docs_rebuild',
+       'build_app')
+def build():
+    pass
 
 
 @task
-@needs('clean', 'sdist', 'install', 'docs_rebuild', 'build_app')
-def build():
-    pass
+def deploy():
+    sh("mv dist/PicDB.app /Applications")
