@@ -43,7 +43,7 @@ from .persistence import create_db, DBParameters
 from .config import get_configuration
 
 
-version = '1.0.1.2'
+version = '1.0.2.2'
 
 
 class Application(ttk.Frame):
@@ -54,6 +54,14 @@ class Application(ttk.Frame):
         self.logger = logging.getLogger('picdb.ui')
         self.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
         self.create_widgets()
+
+    def set_title(self, title):
+        """ Set application title.
+
+        :param title: title to set
+        :type title: str
+        """
+        self.master.title = title
 
     def create_widgets(self):
         """Build UI."""
@@ -115,10 +123,20 @@ def _parse_arguments(args):
 
 
 def create_db_by_arguments(args):
+    """ Create a database instance based on the given arguments.
+
+    :param args: args.db, args.user, args.passwd, args.port
+    :type args: argParse.Namespace
+    """
     create_db(DBParameters(args.db, args.user, args.passwd, args.port))
 
 
 def start_application(argv):
+    """ Entry point of the application.
+
+    :param argv: command line arguments
+    :type argv: [str]
+    """
     initialize_logger()
     root = tk.Tk()
     root.rowconfigure(0, weight=1)
@@ -129,5 +147,5 @@ def start_application(argv):
     create_db_by_arguments(args)
     root.geometry(args.geometry)
     app = Application(root)
-    app.master.title(args.title)
+    app.set_title(args.title)
     app.mainloop()

@@ -58,14 +58,29 @@ class LRUCache:
 
     @property
     def size(self):
+        """ Get current size of cache.
+
+        :return: current cace entries.
+        :rtype: int
+        """
         return len(self.__usage_list)
 
     @property
     def misses(self):
+        """ Get number of cache misses.
+
+        :return: number of misses.
+         :rtype: int
+        """
         return self._misses
 
     @property
     def hits(self):
+        """ Get number of cache hits.
+
+        :return: number of hits.
+         :rtype: int
+        """
         return self._hits
 
     def clear(self):
@@ -76,11 +91,17 @@ class LRUCache:
         self._hits = 0
 
     def __update_usage(self, key):
+        """ Push key to top of cache.
+
+        :param key: key of cache item.
+        :type key: any hashable type
+        """
         if key in self.__usage_list:
             self.__usage_list.remove(key)
         self.__usage_list.insert(0, key)
 
     def __keep_max_size(self):
+        """ Keep cache size in required range. """
         while len(self.__usage_list) > self.max_size:
             key = self.__usage_list.pop()
             self.__cache.pop(key)

@@ -10,7 +10,7 @@
     <ConfirmationsSetting value="0" id="Add" />
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.5.0 (~/Development/projects/picdb/venv/bin/python3)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.5.0 virtualenv at ~/Development/projects/picdb/venv" project-jdk-type="Python SDK" />
   <component name="TaskProjectConfiguration">
     <server type="Redmine" url="http://localhost:9999/redmine" />
   </component>
