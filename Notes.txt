@@ -25,16 +25,26 @@ See also pyinstaller-hooks for patches required for tcl and tk
 - hooks added
 
 
+# run tests and coverage
+paver testcov
+
+# static analysis
 paver analyze
 
+# prepare distribution
 paver sdist
 
+# re-build documentaion
 paver docs_rebuild
 
+# build the app bundle
 paver build_app
 
+# remove app from dist folder
 paver clean_app
 
+# build pipeline, orchestrates tasks above
 paver build
 
-paver install_app
+# deploy app bundle to Applications
+paver deploy

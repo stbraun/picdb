@@ -1,7 +1,15 @@
 <component name="ProjectDictionaryState">
   <dictionary name="sb">
     <words>
+      <w>argparse</w>
+      <w>minilib</w>
+      <w>passwd</w>
+      <w>paver</w>
       <w>picdb</w>
+      <w>postgresql</w>
+      <w>pyinstaller</w>
+      <w>pytest</w>
+      <w>tearoff</w>
     </words>
   </dictionary>
 </component>
