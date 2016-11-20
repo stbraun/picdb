@@ -43,7 +43,7 @@ See *pavement.py* for implementation of commands.
 Available commands are:
 
 * ``paver dependencies`` - create a dependency graph.
-* ``paver testcov`` - run tests and coverage using nose.
+* ``paver test_coverage`` - run tests and coverage using nose.
 * ``paver analyze`` - run static analysis using flake8.
 * ``paver sdist`` - generates setup. Used internally: see paver build.
 * ``paver docs_rebuild`` - clean docs folder and create HTML documentation.
