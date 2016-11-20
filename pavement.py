@@ -30,16 +30,24 @@ options(
 
 @task
 def dependencies():
-    """Create a dependency graph."""
-    sh('sfood picdb | tee reports/picdb.deps | sfood-graph | tee reports/picdb.gv | dot -Tpdf -o reports/picdb.pdf')
+    """Create a dependency graph.
+
+    Find results in folder reports.
+    """
+    sh(
+        'sfood picdb | tee reports/dependencies.txt | sfood-graph | tee '
+        'reports/picdb.gv | dot -Tpdf -o reports/picdb.pdf')
+
 
 @task
 def testcov():
+    """Run nosetests with coverage."""
     sh('nosetests --with-coverage test/')
 
 
 @task
 def analyze():
+    """Analyze project using flake8."""
     sh("rm -f reports/flake8.txt")
     sh(
         "flake8 --output-file reports/flake8.txt --benchmark --count "

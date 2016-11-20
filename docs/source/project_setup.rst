@@ -14,6 +14,12 @@ Tools and Frameworks
 
 The project is developed in *Python 3.5+*. *PyCharm* is used as IDE but not required.
 
+*flake8* is used for static analysis of the source code.
+
+Documentation is created with *Sphinx*.
+
+More tools are mentioned in the following sections.
+
 
 User interface
 ==============
@@ -31,7 +37,8 @@ The database is accessed using *py-postgresql*.
 Build
 *****
 
-*Paver* is used to build the system. See *pavement.py* for implementation of commands.
+*Paver* is used to build the system.
+See *pavement.py* for implementation of commands.
 
 Available commands are:
 
@@ -48,23 +55,40 @@ Available commands are:
 * ``paver deploy`` - mv application bundle to /Applications.
 
 
+
+Dependency Graph
+================
+
+The dependencies of picdb modules are determined using *snakefood* [#snakefood]_.
+*snakefood* is a set of tools which can be combined, e.g. via shell pipes.
+
+*sfood* creates a file with the dependencies which is then processed by
+*sfood-graph* to generate a graph representation and creating a dot-file
+for processing with *graphviz*.
+
+``paver dependencies`` uses these tools
+to create *reports/picdb.pdf*, a graphical representation of the dependencies.
+
+
 Application Bundle Creation
 ===========================
 
 The resulting application bundle for macOS is created with *pyinstaller*.
 
-*pyinstaller* evaluates the project and creates a .spec file for further processing.
-It tries to detect all dependencies to other packages. In some cases this is
-not possible. Then those packages need to be specified manually. The same is
-true for other file types like images and other resources.
+*pyinstaller* evaluates the project and creates a *.spec* file for further
+processing. It tries to detect all dependencies to other packages.
+In some cases this is not possible. Then those packages need to be
+specified manually.
+The same is true for other file types like images and other resources.
 
-Therefore the .spec file has to be manually extended after generation.
+Therefore the *.spec* file has to be manually extended after generation.
 
 *PicDB.spec* is a specification file which contains all extensions to allow
 building the app bundle.
 
 If a new *PicDB.spec* needs to be generated make sure to take over the required
-extensions from the archived version.
+extensions from the archived version. The nect section described the required
+extensions.
 
 Required Extensions
 -------------------
@@ -119,5 +143,6 @@ This should be possible after providing some database setup code.
 
 .. rubric:: Footnotes
 
+.. [#snakefood] http://furius.ca/snakefood/doc/snakefood-doc.html
 .. [#puninst] may be deprecated. Not required anymore.
 .. [#ut1] But a couple more tests would be helpful anyway.
