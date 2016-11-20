@@ -15,3 +15,4 @@ model/
 /docs/source/api/modules.rst
 picdb.egg-info
 .cache/v/cache
+.coverage
