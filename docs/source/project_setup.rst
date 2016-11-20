@@ -35,6 +35,7 @@ Build
 
 Available commands are:
 
+* ``paver dependencies`` - create a dependency graph.
 * ``paver testcov`` - run tests and coverage using nose.
 * ``paver analyze`` - run static analysis using flake8.
 * ``paver sdist`` - generates setup. Used internally: see paver build.
