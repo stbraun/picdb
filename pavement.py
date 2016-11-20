@@ -29,6 +29,11 @@ options(
 
 
 @task
+def dependencies():
+    """Create a dependency graph."""
+    sh('sfood picdb | tee reports/picdb.deps | sfood-graph | tee reports/picdb.gv | dot -Tpdf -o reports/picdb.pdf')
+
+@task
 def testcov():
     sh('nosetests --with-coverage test/')
 
