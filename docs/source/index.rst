@@ -6,6 +6,8 @@
 Welcome to PicDB's documentation!
 =================================
 
+Version: |release|
+
 Contents:
 
 .. toctree::
