@@ -68,7 +68,7 @@ def sdist():
 
 @task
 @needs('install', 'doc_clean', 'html')
-def docs_rebuild():
+def docs():
     """Rebuild documentation."""
     pass
 

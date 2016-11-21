@@ -46,7 +46,7 @@ Available commands are:
 * ``paver test_coverage`` - run tests and coverage using nose.
 * ``paver analyze`` - run static analysis using flake8.
 * ``paver sdist`` - generates setup. Used internally: see paver build.
-* ``paver docs_rebuild`` - clean docs folder and create HTML documentation.
+* ``paver docs`` - clean docs folder and create HTML documentation.
 * ``paver uninstall`` - pip uninstall picdb package [#puninst]_.
 * ``paver regenerate_spec`` - generate a new pyinstaller spec.
 * ``paver build_app`` - run pyinstaller on existing spec file.

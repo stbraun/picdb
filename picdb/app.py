@@ -41,9 +41,7 @@ from .uigroups import GroupManagement
 from .uitags import TagManagement
 from .persistence import create_db, DBParameters
 from .config import get_configuration
-
-
-version = '1.0.2.2'
+from . import version
 
 
 class Application(ttk.Frame):
@@ -74,7 +72,7 @@ class Application(ttk.Frame):
         notebook.add(series_frame, text='manage series')
         notebook.add(tags_frame, text='manage tags')
 
-        status_panel = StatusPanel(self, version=version)
+        status_panel = StatusPanel(self, version=version.long_version)
         status_panel.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
         ttk.Button(self, text='Quit',
