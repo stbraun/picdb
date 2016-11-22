@@ -128,13 +128,17 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+# html_theme = 'haiku'
+html_theme = 'sphinxdoc'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+# html_theme_options = {
+#     'show_powered_by': True,
+#     'show_related': True
+# }
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -142,7 +146,7 @@ html_theme = 'alabaster'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = 'PicDB v0.1.0dev'
+html_title = 'PicDB {}'.format(version_.release)
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -151,7 +155,7 @@ html_theme = 'alabaster'
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 #
-# html_logo = None
+html_logo = '../../picdb/resources/eye.gif'
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
