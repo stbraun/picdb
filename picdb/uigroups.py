@@ -73,6 +73,7 @@ class GroupManagement(ttk.Frame):
         return "break"
 
     def create_widgets(self):
+        """Create the widgets for the view."""
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         self.create_content_frame()
@@ -320,6 +321,7 @@ class GroupEditor(ttk.LabelFrame):
         self.create_widgets()
 
     def create_widgets(self):
+        """Create the widgets for the view."""
         self.rowconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
         ttk.Label(self, text='id').grid(row=0, column=0, sticky=tk.E)
@@ -339,6 +341,7 @@ class GroupEditor(ttk.LabelFrame):
 
     @property
     def group(self):
+        """Update group with values from editor and return it."""
         if self.group_ is not None:
             self.group_.name = self.name_var.get()
             self.group_.description = self.description_var.get()
@@ -346,6 +349,8 @@ class GroupEditor(ttk.LabelFrame):
 
     @group.setter
     def group(self, group_):
+        """Put group attributes into editor or create a new group object if
+        group_ is None."""
         self.group_ = group_
         if group_ is None:
             self.id_var.set(0)
@@ -364,6 +369,7 @@ class GroupEditor(ttk.LabelFrame):
             self.group.save()
 
     def clear(self):
+        """Remove group from editor."""
         self.group = None
 
 
