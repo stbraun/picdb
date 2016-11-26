@@ -198,7 +198,7 @@ class HierarchicalTreeView(PicTreeView):
             self.config(cursor='exchange')
         item = self.identify_row(event.y)
         if item == self._dnd_last_hovered_item:
-            # open item only if we waited long enough
+            # open item only if we waited long enough: #61
             if time.time() - self._dnd_last_hovered_time > 0.5:
                 self.item(item, open=True)
         else:
