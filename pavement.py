@@ -13,7 +13,7 @@ setup(
     name='picdb',
     version=long_version,
     packages=['picdb'],
-    url='',
+    url='https://github.com/stbraun/picdb',
     license='MIT',
     author='Stefan Braun',
     author_email='sb@action.ms',
@@ -39,6 +39,7 @@ options(
 def clean():
     """Remove build artifacts."""
     sh('rm -rf build dist')
+
 
 @task
 def dependencies():

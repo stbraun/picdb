@@ -3,13 +3,17 @@
     <words>
       <w>argparse</w>
       <w>minilib</w>
+      <w>nosetests</w>
+      <w>onefile</w>
       <w>passwd</w>
       <w>paver</w>
       <w>picdb</w>
       <w>postgresql</w>
       <w>pyinstaller</w>
       <w>pytest</w>
+      <w>sfood</w>
       <w>tearoff</w>
+      <w>tpdf</w>
     </words>
   </dictionary>
 </component>
