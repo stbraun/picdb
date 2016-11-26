@@ -106,7 +106,7 @@ def clean_app():
 
 
 @task
-@needs('clean', 'testcov', 'analyze', 'sdist', 'install', 'docs_rebuild',
+@needs('clean', 'test_coverage', 'analyze', 'sdist', 'install', 'docs',
        'build_app')
 def build():
     """Perform a complete build."""

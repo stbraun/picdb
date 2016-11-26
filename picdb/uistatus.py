@@ -42,15 +42,16 @@ from .persistence import db_params
 from .picture import number_of_pictures
 from .group import number_of_groups
 from .tag import number_of_tags
+from .version import long_version
 
 
 class StatusPanel(ttk.Frame):
     """Present a status."""
 
-    def __init__(self, master, version):
+    def __init__(self, master):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger('picdb.ui')
-        self.version = version
+        self.version = long_version
         self.num_pics_var = tk.StringVar()
         self.num_groups_var = tk.StringVar()
         self.num_tags_var = tk.StringVar()
@@ -62,6 +63,7 @@ class StatusPanel(ttk.Frame):
         self.data_statistics()
 
     def create_widgets(self):
+        """Create widgets for view."""
         img = get_data('picdb', 'resources/eye.gif')
         self.logger.info('image {} loaded'.format('resources/eye.gif'))
         self.rowconfigure(0, weight=0)
@@ -103,6 +105,7 @@ class StatusPanel(ttk.Frame):
 
     def report_usage(self, prev_mem_info=None,
                      p=psutil.Process(os.getpid())):
+        """Report memory usage."""
         # find max memory
         if p.is_running():
             mem_info = p.memory_info()
