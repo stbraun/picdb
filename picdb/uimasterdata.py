@@ -30,6 +30,7 @@ The UI for master data management of groups and tags.
 # IN THE SOFTWARE.
 
 import logging
+import time
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -150,6 +151,8 @@ class HierarchicalTreeView(PicTreeView):
         self._allow_change_parent = allow_change_parent
         self._dnd_active = False
         self._dnd_start_item = None
+        self._dnd_last_hovered_item = None
+        self._dnd_last_hovered_time = None
         if self._allow_change_parent:
             self.bind('<Button-1>', self._dnd_start)
             self.bind('<ButtonRelease-1>', self._dnd_finish)
@@ -194,7 +197,14 @@ class HierarchicalTreeView(PicTreeView):
             self._dnd_active = True
             self.config(cursor='exchange')
         item = self.identify_row(event.y)
-        self.item(item, open=True)
+        if item == self._dnd_last_hovered_item:
+            # open item only if we waited long enough
+            if time.time() - self._dnd_last_hovered_time > 0.5:
+                self.item(item, open=True)
+        else:
+            # remember item and time
+            self._dnd_last_hovered_item = item
+            self._dnd_last_hovered_time = time.time()
 
     def add_item(self, item):
         """Add given item to tree.
