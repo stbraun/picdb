@@ -35,4 +35,4 @@ exe = EXE(pyz,
 app = BUNDLE(exe,
              name='PicDB.app',
              icon='Icon.icns',
-             bundle_identifier=None)
+             bundle_identifier='com.stbraun.picdb')

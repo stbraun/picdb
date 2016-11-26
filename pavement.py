@@ -6,10 +6,12 @@ This file provides tasks for paver.
 from paver.easy import *
 from paver.doctools import html, doc_clean
 from paver.setuputils import setup
+from picdb.version import long_version
+
 
 setup(
     name='picdb',
-    version='0.1.1',
+    version=long_version,
     packages=['picdb'],
     url='',
     license='MIT',
@@ -32,6 +34,11 @@ options(
     )
 )
 
+
+@task
+def clean():
+    """Remove build artifacts."""
+    sh('rm -rf build dist')
 
 @task
 def dependencies():
@@ -106,8 +113,8 @@ def clean_app():
 
 
 @task
-@needs('clean', 'test_coverage', 'analyze', 'sdist', 'install', 'docs',
-       'build_app')
+@needs('clean', 'test_coverage', 'analyze', 'sdist', 'install', 'build_app',
+       'docs')
 def build():
     """Perform a complete build."""
     pass
@@ -116,4 +123,4 @@ def build():
 @task
 def deploy():
     """Deploy the app bundle on the local machine."""
-    sh("mv dist/PicDB.app /Applications")
+    sh("cp -Rf dist/PicDB.app /Applications")
