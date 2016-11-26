@@ -47,9 +47,11 @@ Available commands are:
 * ``paver analyze`` - run static analysis using flake8.
 * ``paver sdist`` - generates setup. Used internally: see paver build.
 * ``paver docs`` - clean docs folder and create HTML documentation.
+* ``paver install`` - pip install picdb package [#puninst]_.
 * ``paver uninstall`` - pip uninstall picdb package [#puninst]_.
 * ``paver regenerate_spec`` - generate a new pyinstaller spec.
 * ``paver build_app`` - run pyinstaller on existing spec file.
+* ``paver clean`` - remove dist/ and build/ folders.
 * ``paver clean_app`` - remove pyinstaller output from dist folder.
 * ``paver build`` - orchestrate previous commands to create application bundle.
 * ``paver deploy`` - mv application bundle to /Applications.

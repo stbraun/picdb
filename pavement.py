@@ -82,6 +82,12 @@ def docs():
 
 
 @task
+def install():
+    """Install package into local environment."""
+    sh("pip install .")
+
+
+@task
 def uninstall():
     """Uninstall picdb package."""
     sh("pip uninstall picdb")
