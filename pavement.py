@@ -109,7 +109,7 @@ def regenerate_spec():
 @task
 def build_app():
     """Build the app bundle based on an existing spec."""
-    sh("echo "'building the system ...'"")
+    sh("echo "'building the application bundle ...'"")
     sh("pyinstaller PicDB.spec")
 
 

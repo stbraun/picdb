@@ -1,5 +1,7 @@
 # -*- mode: python -*-
 
+from picdb import version
+
 block_cipher = None
 
 added_files = [('venv/lib/python3.5/site-packages/postgresql/lib/libsys.sql', 'postgresql/lib'),
@@ -35,4 +37,8 @@ exe = EXE(pyz,
 app = BUNDLE(exe,
              name='PicDB.app',
              icon='Icon.icns',
-             bundle_identifier='com.stbraun.picdb')
+             bundle_identifier='com.stbraun.picdb',
+             info_plist={
+                         'CFBundleShortVersionString': version.release
+                        },
+             )

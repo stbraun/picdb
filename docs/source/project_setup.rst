@@ -104,6 +104,8 @@ the file system is case insensitive. The patched code is in the
 
 So add following lines to Analysis::
 
+  from picdb import version
+
   added_files = [('venv/lib/python3.5/site-packages/postgresql/lib/libsys.sql', 'postgresql/lib'),
                  ('picdb/resources/config_app.yaml', 'picdb/resources'),
                  ('picdb/resources/config_log.yaml', 'picdb/resources'),
@@ -121,7 +123,11 @@ For the app bundle a name and an icon set are specified in PicDB.spec::
   app = BUNDLE(exe,
              name='PicDB.app',
              icon='Icon.icns',
-             bundle_identifier=None)
+             bundle_identifier='com.stbraun.picdb',
+             info_plist={
+                         'CFBundleShortVersionString': version.release
+                        },
+             )
 
 Those are currently all extensions required after generation of a new
 PicDB.spec file.
