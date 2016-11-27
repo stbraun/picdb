@@ -31,7 +31,10 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
-from picdb import version as version_
+import sys
+sys.path.insert(0, '../../')
+import version as version_
+
 
 extensions = [
     'sphinx.ext.autodoc',

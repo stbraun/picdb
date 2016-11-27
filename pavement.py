@@ -78,22 +78,10 @@ def sdist():
 
 
 @task
-@needs('install', 'doc_clean', 'html')
+@needs('doc_clean', 'html')
 def docs():
     """Rebuild documentation."""
     pass
-
-
-@task
-def install():
-    """Install package into local environment."""
-    sh("pip install .")
-
-
-@task
-def uninstall():
-    """Uninstall picdb package."""
-    sh("pip uninstall picdb")
 
 
 @task
