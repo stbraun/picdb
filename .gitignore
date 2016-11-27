@@ -16,3 +16,4 @@ model/
 picdb.egg-info
 .cache/v/cache
 .coverage
+version.py
