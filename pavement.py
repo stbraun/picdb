@@ -6,8 +6,11 @@ This file provides tasks for paver.
 from paver.easy import *
 from paver.doctools import html, doc_clean
 from paver.setuputils import setup
-from picdb.version import long_version
 
+import sys
+sys.path.insert(0, './')
+
+from version import long_version
 
 setup(
     name='picdb',
@@ -120,8 +123,7 @@ def clean_app():
 
 
 @task
-@needs('clean', 'test_coverage', 'analyze', 'sdist', 'install', 'build_app',
-       'docs')
+@needs('clean', 'test_coverage', 'analyze', 'sdist', 'build_app', 'docs')
 def build():
     """Perform a complete build."""
     pass

@@ -1,6 +1,9 @@
 # -*- mode: python -*-
 
-from picdb import version
+import sys
+sys.path.insert(0, './')
+
+from version import release
 
 block_cipher = None
 
@@ -39,6 +42,6 @@ app = BUNDLE(exe,
              icon='Icon.icns',
              bundle_identifier='com.stbraun.picdb',
              info_plist={
-                         'CFBundleShortVersionString': version.release
+                         'CFBundleShortVersionString': release
                         },
              )
