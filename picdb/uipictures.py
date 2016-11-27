@@ -321,6 +321,7 @@ class PictureFilteredTreeView(FilteredTreeView):
         self.tree.clear()
 
     def refresh_item_in_tree(self, pic):
+        """Refresh representation of given picture in tree view."""
         self.tree.refresh_item(pic)
 
 
@@ -399,6 +400,7 @@ class PictureReferenceEditor(ttk.LabelFrame):
         self.create_widgets()
 
     def create_widgets(self):
+        """Create widgets for view."""
         self.rowconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
         ttk.Label(self, text='id').grid(row=0, column=0, sticky=tk.E)
@@ -418,6 +420,7 @@ class PictureReferenceEditor(ttk.LabelFrame):
 
     @property
     def picture(self):
+        """Update picture from editor fields and return it."""
         if self.picture_ is not None:
             self.picture_.id = self.id_var.get()
             self.picture_.name = self.name_var.get()
@@ -427,6 +430,8 @@ class PictureReferenceEditor(ttk.LabelFrame):
 
     @picture.setter
     def picture(self, pic):
+        """Put picture into editor. Fill attribute values into editor
+        fields."""
         self.picture_ = pic
         self.id_var.set(pic.key)
         self.name_var.set(pic.name)
@@ -463,6 +468,15 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         # children widgets
         tag_all_children(self, self)
         self.bind('<Meta_L>s', self._save_picture)
+        # bind to assignment events to auto-save
+        self.tag_selector.bind(self.tag_selector.EVT_ITEM_ASSIGNED,
+                               self._save_picture)
+        self.tag_selector.bind(self.tag_selector.EVT_ITEM_UNASSIGNED,
+                               self._save_picture)
+        self.grp_selector.bind(self.grp_selector.EVT_ITEM_ASSIGNED,
+                               self._save_picture)
+        self.grp_selector.bind(self.grp_selector.EVT_ITEM_UNASSIGNED,
+                               self._save_picture)
 
     def is_mass_assignment(self):
         """Determine if multiple pictures shall be processed.
@@ -502,6 +516,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
                                sticky=(tk.W, tk.N, tk.E, tk.S))
 
     def bind(self, sequence=None, func=None, add=None):
+        """Bind event handlers."""
         Observable.bind(self, sequence, func, add)
 
     def _create_control_frame(self, master):

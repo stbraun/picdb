@@ -31,9 +31,9 @@ Version number.
 
 
 major = 1
-minor = 0
-maintenance = 2
-build = 6
+minor = 1
+maintenance = 0
+build = 1
 
 version = '{}.{}'.format(major, minor)
 release = '{}.{}'.format(version, maintenance)

@@ -33,14 +33,21 @@ import tkinter as tk
 from tkinter import ttk
 import logging
 
+from .uicommon import Observable
 
-class Selector(ttk.LabelFrame):
+
+class Selector(ttk.LabelFrame, Observable):
     """A component for moving items between two tree views."""
 
     def __init__(self, master, tree_factory_left, tree_factory_right,
                  left_tree_options=None, right_tree_options=None, **kwargs):
         super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
+        # Register observable events
+        self.EVT_ITEM_ASSIGNED = '<<ItemAssigned>>'
+        self.EVT_ITEM_UNASSIGNED = '<<ItemUnassigned>>'
+        Observable.__init__(self, super().bind,
+                            {self.EVT_ITEM_ASSIGNED, self.EVT_ITEM_UNASSIGNED})
         self.tree_factory_left = tree_factory_left
         self.tree_factory_right = tree_factory_right
         self._default_left_tree_options = {
@@ -84,17 +91,23 @@ class Selector(ttk.LabelFrame):
         self.remove_button.grid(row=1, column=0)
         return frame
 
+    def bind(self, sequence=None, func=None, add=None):
+        """Bind event handlers."""
+        Observable.bind(self, sequence, func, add)
+
     def _add_item(self):
         items = self.left.selected_items()
         self.logger.info('add item: {}'.format(items))
         for item in items:
             self.right.add_item(item)
+        self._call_listeners(self.EVT_ITEM_ASSIGNED, items)
 
     def _remove_item(self):
         items = self.right.selected_items()
         self.logger.info('remove item: {}'.format(items))
         for item in items:
             self.right.delete(item.key)
+        self._call_listeners(self.EVT_ITEM_UNASSIGNED, items)
 
     def init_trees(self, all_entities, right_entities):
         """Write given entities into left tree."""
