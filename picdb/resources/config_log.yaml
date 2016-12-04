@@ -1,4 +1,5 @@
 version: 1
+# DEBUG - INFO - WARNING - ERROR
 formatters:
   simple:
     format: '%(asctime)s %(name)s %(levelname)s %(filename)s %(funcName)s():%(lineno)d - %(message)s'
@@ -14,19 +15,19 @@ loggers:
     handlers: [console]
     propagate: no
   picdb.db:
-    level: INFO
+    level: WARNING
     handlers: [console]
     propagate: no
   picdb.ui:
-    level: INFO
+    level: WARNING
     handlers: [console]
     propagate: no
   picdb.config:
-    level: INFO
+    level: WARNING
     handlers: [console]
     propagate: no
   picdb.logging:
-    level: INFO
+    level: WARNING
     handlers: [console]
     propagate: no
 root:

@@ -47,6 +47,7 @@ from .uitags import TagSelector
 from .uigroups import GroupSelector
 from .uicommon import tag_all_children, Observable
 from .commons import get_resource_path
+from .persistence import DuplicateException
 
 
 class PictureManagement(ttk.Frame):
@@ -140,12 +141,25 @@ class PictureManagement(ttk.Frame):
         self.logger.info('Files selected for import: {}'.format(files))
         pictures = [Picture(None, os.path.basename(pth), pth, None)
                     for pth in files]
+        import_counter = 0
+        duplicate_counter = 0
         for pic in pictures:
-            picture.add_picture(pic)
-            pic = picture.retrieve_picture_by_path(pic.path)
-            self.filter_tree.add_item_to_tree(pic)
+            try:
+                picture.add_picture(pic)
+            except DuplicateException:
+                duplicate_counter += 1
+                self.logger.warning(
+                    'Duplicate picture not imported: {}'.format(pic))
+            else:
+                pic_ = picture.retrieve_picture_by_path(pic.path)
+                self.filter_tree.add_item_to_tree(pic_)
+                import_counter += 1
+        msg_tmpl = '{} pictures added.\n{} duplicates.'
         messagebox.showinfo(title='Picture Import',
-                            message='{} pictures added.'.format(len(pictures)))
+                            message=msg_tmpl.format(
+                                import_counter if import_counter > 0 else 'No',
+                                duplicate_counter if duplicate_counter > 0
+                                else 'No'))
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
@@ -173,7 +187,7 @@ class PictureManagement(ttk.Frame):
         if self.current_picture is not None:
             try:
                 img = Image.open(self.current_picture.path)
-            except FileNotFoundError as e:
+            except FileNotFoundError:
                 placeholder = get_resource_path('picdb',
                                                 'resources/not_found.png')
                 img = Image.open(placeholder)

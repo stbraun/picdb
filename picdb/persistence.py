@@ -32,6 +32,7 @@ Persistence.
 import logging
 from tkinter import messagebox
 
+from postgresql.exceptions import UniqueError
 import postgresql.driver.dbapi20 as dbapi
 
 from .config import get_configuration
@@ -43,6 +44,17 @@ _db = None
 
 class UnknownEntityException(Exception):
     pass
+
+
+class DuplicateException(Exception):
+    def __init__(self, duplicate, caused_by=None):
+        """Initialize exception.
+
+        :param duplicate: duplicate item.
+        :param caused_by: the exception causing this one.
+        """
+        self.duplicate = duplicate
+        self.caused_by = caused_by
 
 
 class DBParameters:
@@ -134,9 +146,13 @@ class Persistence:
         stmt = '''INSERT INTO groups (identifier, description, parent)
         VALUES ($1, $2, $3)'''
         parent = group.parent.key if group.parent is not None else None
-        self.execute_sql(stmt, group.name, group.description, parent)
+        try:
+            self.execute_sql(stmt, group.name, group.description, parent)
+        except UniqueError as u:
+            raise DuplicateException(group, u)
 
     def update_group(self, series):
+        """Update group record."""
         self.logger.debug("Update series: {}".format(series.name))
         stmt = "UPDATE groups SET identifier=$1, description=$2, " \
                "parent=$3 " \
@@ -164,9 +180,13 @@ class Persistence:
         stmt = "INSERT INTO tags(identifier, description, parent) VALUES (" \
                "$1, $2, $3)"
         parent = tag.parent.key if tag.parent is not None else None
-        self.execute_sql(stmt, tag.name, tag.description, parent)
+        try:
+            self.execute_sql(stmt, tag.name, tag.description, parent)
+        except UniqueError as u:
+            raise DuplicateException(tag, u)
 
     def update_tag(self, tag):
+        """Update tag record."""
         self.logger.debug("Update tag: {}".format(tag.name))
         stmt = "UPDATE tags SET identifier=$1, description=$2, parent=$3 " \
                "WHERE id=$4"
@@ -191,10 +211,14 @@ class Persistence:
                                                               picture.path))
         stmt = "INSERT INTO pictures (identifier, path, description) VALUES " \
                "($1, $2, $3)"
-        self.execute_sql(stmt, picture.name,
-                         picture.path, picture.description)
+        try:
+            self.execute_sql(stmt, picture.name,
+                             picture.path, picture.description)
+        except UniqueError as u:
+            raise DuplicateException(picture, u)
 
     def update_picture(self, picture):
+        """Update picture record."""
         self.logger.debug("Update picture: {} ({})".format(picture.name,
                                                            picture.path))
         stmt = "UPDATE pictures SET identifier=$1, path=$2, " \
@@ -551,6 +575,10 @@ class Persistence:
             stmt(*args)
             self.conn.commit()
             return True
+        except UniqueError as u:
+            self.conn.rollback()
+            self.logger.debug('duplicate: {}'.format(stmt))
+            raise u
         except Exception as e:
             self.conn.rollback()
             messagebox.showerror(title='Database Error',
