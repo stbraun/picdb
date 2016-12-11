@@ -29,25 +29,25 @@ Manage pictures via UI.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import os
 import logging
+import os
 import tkinter as tk
-from tkinter import ttk
+import webbrowser
 from tkinter import filedialog
 from tkinter import messagebox
-import webbrowser
+from tkinter import ttk
 
 from PIL import Image, ImageTk
 
-from . import group
-from . import picture
-from .picture import Picture
+from .commons import get_resource_path
+from .group import retrieve_groups_for_picture
+from .persistence import DuplicateException
+from .picture import Picture, add_picture, retrieve_picture_by_path, \
+    retrieve_filtered_pictures, retrieve_picture_by_key
+from .uicommon import tag_all_children, Observable
+from .uigroups import GroupSelector
 from .uimasterdata import PicTreeView, FilteredTreeView
 from .uitags import TagSelector
-from .uigroups import GroupSelector
-from .uicommon import tag_all_children, Observable
-from .commons import get_resource_path
-from .persistence import DuplicateException
 
 
 class PictureManagement(ttk.Frame):
@@ -145,13 +145,13 @@ class PictureManagement(ttk.Frame):
         duplicate_counter = 0
         for pic in pictures:
             try:
-                picture.add_picture(pic)
+                add_picture(pic)
             except DuplicateException:
                 duplicate_counter += 1
                 self.logger.warning(
                     'Duplicate picture not imported: {}'.format(pic))
             else:
-                pic_ = picture.retrieve_picture_by_path(pic.path)
+                pic_ = retrieve_picture_by_path(pic.path)
                 self.filter_tree.add_item_to_tree(pic_)
                 import_counter += 1
         msg_tmpl = '{} pictures added.\n{} duplicates.'
@@ -313,9 +313,7 @@ class PictureFilteredTreeView(FilteredTreeView):
         limit = self.limit_var.get()
         series = self.series_selector.selected_items()
         tags = self.tag_selector.selected_items()
-        pics = picture.retrieve_filtered_pictures(name_filter,
-                                                  limit,
-                                                  series, tags)
+        pics = retrieve_filtered_pictures(name_filter, limit, series, tags)
         return pics
 
     def _visibility_changed(self, event):
@@ -369,12 +367,12 @@ class PictureReferenceTree(PicTreeView):
         :rtype: list(Picture)
         """
         item_ids = self.selection()
-        pics = [picture.retrieve_picture_by_key(int(pic_id))
+        pics = [retrieve_picture_by_key(int(pic_id))
                 for pic_id in item_ids]
         return pics
 
     def _is_less(self, item, key):
-        return item < picture.retrieve_picture_by_key(int(key))
+        return item < retrieve_picture_by_key(int(key))
 
     def refresh_item(self, pic):
         """Refresh item in tree view with data from pic."""
@@ -388,7 +386,7 @@ class PictureReferenceTree(PicTreeView):
         :type items: [Picture]
         """
         for pic in items:
-            groups = group.retrieve_groups_for_picture(pic)
+            groups = retrieve_groups_for_picture(pic)
             for group_ in groups:
                 group_.remove_picture(pic)
                 group_.save()
@@ -568,7 +566,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
     def _update_series(self):
         """Remove or add picture from groups according to changes made
         during editing."""
-        saved_groups = set(group.retrieve_groups_for_picture(self.picture))
+        saved_groups = set(retrieve_groups_for_picture(self.picture))
         edt_groups = set(self.grp_selector.selected_items())
         groups_to_add = edt_groups.difference(saved_groups)
         groups_to_remove = saved_groups.difference(edt_groups)
@@ -591,7 +589,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         self.tag_selector.load_items(picture_.tags)
         # Retrieve groups the picture is currently assigned to.
         self.grp_selector.load_items(
-            group.retrieve_groups_for_picture(picture_))
+            retrieve_groups_for_picture(picture_))
 
     def load_picture_set(self, pictures):
         """Load picture set into editor.
