@@ -34,8 +34,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
-from . import group
-from .group import Group
+from .group import Group, retrieve_series_by_name, \
+    retrieve_series_by_name_segment, retrieve_series_by_key, get_all_series
 from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
@@ -134,7 +134,7 @@ class GroupManagement(ttk.Frame):
         if group_ is not None:
             group_.save()
         self.load_groups()
-        self.editor.group = group.retrieve_series_by_name(group_.name)
+        self.editor.group = retrieve_series_by_name(group_.name)
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
@@ -214,8 +214,8 @@ class GroupFilteredTreeView(FilteredTreeView):
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        groups = group.retrieve_series_by_name_segment(name_filter,
-                                                       limit)
+        groups = retrieve_series_by_name_segment(name_filter,
+                                                 limit)
         return groups
 
 
@@ -257,12 +257,12 @@ class GroupTree(HierarchicalTreeView):
         :rtype: [Group]
         """
         item_ids = self.selection()
-        series = [group.retrieve_series_by_key(int(item_id))
+        series = [retrieve_series_by_key(int(item_id))
                   for item_id in item_ids]
         return series
 
     def _is_less(self, item, key):
-        return item.name < group.retrieve_series_by_key(int(key)).name
+        return item.name < retrieve_series_by_key(int(key)).name
 
     def _dnd_action(self, start_item, target_item):
         """Set target_item as parent of start_item.
@@ -273,8 +273,8 @@ class GroupTree(HierarchicalTreeView):
         :type target_item: str
         """
         try:
-            start_item_ = group.retrieve_series_by_key(int(start_item))
-            target_item_ = group.retrieve_series_by_key(int(target_item))
+            start_item_ = retrieve_series_by_key(int(start_item))
+            target_item_ = retrieve_series_by_key(int(target_item))
         except UnknownEntityException:
             msg_tmpl = "Invalid items for drag 'n' drop: {} --> {}"
             messagebox.showwarning(
@@ -388,7 +388,7 @@ class GroupSelector(Selector):
         :rtype: [Group]
         """
         items = self.right.get_all_items()
-        groups = [group.retrieve_series_by_key(int(item))
+        groups = [retrieve_series_by_key(int(item))
                   for item in items]
         return groups
 
@@ -398,5 +398,5 @@ class GroupSelector(Selector):
         :param picture_groups: list of groups already assigned to picture.
         :type picture_groups: [Group]
         """
-        groups = group.get_all_series()
+        groups = get_all_series()
         self.init_trees(groups, picture_groups)
