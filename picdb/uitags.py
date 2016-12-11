@@ -34,8 +34,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
-from . import tag
-from .tag import Tag
+from .tag import Tag, retrieve_tag_by_name, retrieve_tags_by_name_segment, \
+    retrieve_tag_by_key, get_all_tags
 from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
@@ -72,6 +72,7 @@ class TagManagement(ttk.Frame):
         return "break"
 
     def create_widgets(self):
+        """Create widgets for view."""
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         self.create_content_frame()
@@ -126,7 +127,7 @@ class TagManagement(ttk.Frame):
         if tag_ is not None:
             tag_.save()
         self.load_tags()
-        self.editor.tag = tag.retrieve_tag_by_name(tag_.name)
+        self.editor.tag = retrieve_tag_by_name(tag_.name)
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
@@ -193,7 +194,7 @@ class TagFilteredTreeView(FilteredTreeView):
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        tags = tag.retrieve_tags_by_name_segment(name_filter, limit)
+        tags = retrieve_tags_by_name_segment(name_filter, limit)
         return tags
 
 
@@ -235,12 +236,12 @@ class TagTree(HierarchicalTreeView):
         :rtype: list(Tag)
         """
         item_ids = self.selection()
-        tags = [tag.retrieve_tag_by_key(int(item_id))
+        tags = [retrieve_tag_by_key(int(item_id))
                 for item_id in item_ids]
         return tags
 
     def _is_less(self, item, key):
-        return item.name < tag.retrieve_tag_by_key(int(key)).name
+        return item.name < retrieve_tag_by_key(int(key)).name
 
     def _dnd_action(self, start_item, target_item):
         """Set target_item as parent of start_item.
@@ -251,8 +252,8 @@ class TagTree(HierarchicalTreeView):
         :type target_item: str
         """
         try:
-            start_item_ = tag.retrieve_tag_by_key(int(start_item))
-            target_item_ = tag.retrieve_tag_by_key(int(target_item))
+            start_item_ = retrieve_tag_by_key(int(start_item))
+            target_item_ = retrieve_tag_by_key(int(target_item))
         except UnknownEntityException:
             msg_tmpl = "Invalid items for drag 'n' drop: {} --> {}"
             messagebox.showwarning(
@@ -303,6 +304,7 @@ class TagEditor(ttk.LabelFrame):
         self.create_widgets()
 
     def create_widgets(self):
+        """Create widgets for view."""
         self.rowconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
         ttk.Label(self, text='id').grid(row=0, column=0, sticky=tk.E)
@@ -322,6 +324,7 @@ class TagEditor(ttk.LabelFrame):
 
     @property
     def tag(self):
+        """Get tag from editor."""
         if self.tag_ is not None:
             self.tag_.name = self.name_var.get()
             self.tag_.description = self.description_var.get()
@@ -329,6 +332,7 @@ class TagEditor(ttk.LabelFrame):
 
     @tag.setter
     def tag(self, tag_):
+        """Set tag into editor."""
         self.tag_ = tag_
         if tag_ is None:
             self.id_var.set(0)
@@ -347,6 +351,7 @@ class TagEditor(ttk.LabelFrame):
             self.tag.save()
 
     def clear(self):
+        """Clear tag."""
         self.tag = None
 
 
@@ -364,7 +369,7 @@ class TagSelector(Selector):
         :rtype: [Tag]
         """
         items = self.right.get_all_items()
-        tags = [tag.retrieve_tag_by_key(int(item)) for item in items]
+        tags = [retrieve_tag_by_key(int(item)) for item in items]
         return tags
 
     def load_items(self, picture_tags):
@@ -373,5 +378,5 @@ class TagSelector(Selector):
         :param picture_tags: list of tags already assigned to picture.
         :type picture_tags: [Tag]
         """
-        all_tags = tag.get_all_tags()
+        all_tags = get_all_tags()
         self.init_trees(all_tags, picture_tags)
