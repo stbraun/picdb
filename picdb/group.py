@@ -29,7 +29,7 @@ An entity for a group of pictures.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 from .cache import LRUCache
-from .persistence import get_db, UnknownEntityException
+from .persistence import get_db
 from .entity import Entity
 from .pictureservices import get_picture_from_d_object
 
@@ -112,21 +112,6 @@ class Group(Entity):
         """Set children. Note that the given list overwrites all children of
         this group. So always add all children when using this method."""
         self._children = children_
-
-
-def retrieve_series_by_key(key):
-    """Retrieve group by its key."""
-    global _group_cache
-    try:
-        group = _group_cache.get(key)
-    except KeyError:
-        db = get_db()
-        d_group = db.retrieve_series_by_key(key)
-        if d_group is None:
-            raise UnknownEntityException(
-                'Series with key {} is unknown.'.format(key))
-        group = get_group_from_d_object(d_group)
-    return group
 
 
 def retrieve_pictures_for_group(group):
