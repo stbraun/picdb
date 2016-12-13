@@ -40,9 +40,10 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 from .commons import get_resource_path
-from .group import retrieve_groups_for_picture
+from .groupservices import retrieve_groups_for_picture
 from .persistence import DuplicateException
-from .picture import Picture, add_picture, retrieve_picture_by_path, \
+from .picture import Picture
+from.pictureservices import add_picture, retrieve_picture_by_path, \
     retrieve_filtered_pictures, retrieve_picture_by_key
 from .uicommon import tag_all_children, Observable
 from .uigroups import GroupSelector

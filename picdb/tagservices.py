@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Tag entity.
+Service functions for tags.
 """
 # Copyright (c) 2016 Stefan Braun
 #
@@ -29,46 +29,40 @@ Tag entity.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
 from .persistence import get_db, UnknownEntityException
-from .entity import Entity
-from .cache import LRUCache
+from .tag import Tag
+from .tag import _tag_cache as cache
 
-_tag_cache = LRUCache(2000)
+# _tag_cache = LRUCache(2000)
+_tag_cache = cache
 
 
-class Tag(Entity):
-    """A tag."""
+def save_tag(tag_):
+    if tag_.key is None:
+        add_tag(tag_)
+    else:
+        update_tag(tag_)
 
-    def __init__(self, key, name, description, parent=None):
-        super().__init__(key, name, description)
-        self.parent_ = parent
-        self._children = []
 
-    @property
-    def children(self):
-        """Return list of children."""
-        return self._children
+def add_tag(tag_):
+    """Add given tag to database."""
+    db = get_db()
+    db.add_tag(tag_)
 
-    @children.setter
-    def children(self, children_):
-        """Set a list of children. This replaces the current list,
-        so be careful to set a complete list."""
-        self._children = children_
 
-    @property
-    def parent(self):
-        """Get the tags parent."""
-        if self.parent_ is None:
-            return None
-        return retrieve_tag_by_key(self.parent_)
+def delete_tag(tag_):
+    """Delete given tag from database."""
+    db = get_db()
+    db.delete_tag(tag_)
 
-    @parent.setter
-    def parent(self, parent_):
-        """Set the tags parent."""
-        if parent_ is None:
-            self.parent_ = None
-        else:
-            self.parent_ = parent_.key
+
+def get_all_tags():
+    """Get all tags from database."""
+    db = get_db()
+    d_tags = db.retrieve_all_tags()
+    tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
+    return tags
 
 
 def retrieve_tag_by_key(key):
@@ -84,6 +78,34 @@ def retrieve_tag_by_key(key):
                 'Tag with key {} is unknown.'.format(key))
         tag = get_tag_from_d_object(d_tag)
     return tag
+
+
+def retrieve_tag_by_name(name):
+    """Retrieve tag by given name."""
+    global _tag_cache
+    db = get_db()
+    d_tag = db.retrieve_tag_by_name(name)
+    if d_tag is None:
+        raise UnknownEntityException(
+            'Tag with name {} is unknown.'.format(name))
+    tag = get_tag_from_d_object(d_tag)
+    return tag
+
+
+def retrieve_tags_by_name_segment(name, limit):
+    """Retrieve tag by given name segment."""
+    db = get_db()
+    d_tags = db.retrieve_tags_by_name_segment(name)
+    tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
+    return tags
+
+
+def update_tag(tag_):
+    """Update given tag in database."""
+    global _tag_cache
+    db = get_db()
+    db.update_tag(tag_)
+    _tag_cache.put(tag_.key, tag_)
 
 
 def get_tag_from_d_object(d_tag):
@@ -102,3 +124,9 @@ def get_tag_from_d_object(d_tag):
         _tag_cache.put(tag.key, tag)
     finally:
         return tag
+
+
+def number_of_tags():
+    """Provide number of tags currently in database."""
+    db = get_db()
+    return db.number_of_tags()

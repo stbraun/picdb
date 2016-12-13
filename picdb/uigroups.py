@@ -34,8 +34,10 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
-from .group import Group, retrieve_series_by_name, \
-    retrieve_series_by_name_segment, retrieve_series_by_key, get_all_series
+from .group import Group
+from .groupservices import retrieve_series_by_name, delete_group, \
+    retrieve_series_by_name_segment, retrieve_series_by_key, get_all_series, \
+    save_group as save_group_
 from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
@@ -132,7 +134,7 @@ class GroupManagement(ttk.Frame):
         """Save the group currently in editor."""
         group_ = self.editor.group
         if group_ is not None:
-            group_.save()
+            save_group_(group_)
         self.load_groups()
         self.editor.group = retrieve_series_by_name(group_.name)
 
@@ -287,7 +289,7 @@ class GroupTree(HierarchicalTreeView):
             start_item_.parent = target_item_
             index = self._determine_index_for_insert(start_item_)
             self.move(start_item, target_item, index)
-            start_item_.save()
+            save_group_(start_item_)
 
     def _delete_items(self, items):
         """Delete given groups.
@@ -296,7 +298,7 @@ class GroupTree(HierarchicalTreeView):
         :type items: [Group]
         """
         for group_ in items:
-            group_.delete()
+            delete_group(group_)
 
     def _unlink_from_parent(self):
         """Unlink selected groups from parent group."""

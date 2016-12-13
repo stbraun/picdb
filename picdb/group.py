@@ -46,14 +46,7 @@ class Group(Entity):
         # Currently assigned pictures. May not be saved yet.
         self._pictures = None
 
-    def save(self):
-        if self.key is None:
-            add_group(self)
-        else:
-            update_group(self)
-        self._update_pictures()
-
-    def _update_pictures(self):
+    def update_pictures(self):
         """Remove and add pictures according to changes made during editing."""
         if self._pictures is not None:
             saved_pics = set(retrieve_pictures_for_group(self))
@@ -62,12 +55,6 @@ class Group(Entity):
             pictures_to_remove = saved_pics.difference(_pictures)
             add_pictures_to_group(self, pictures_to_add)
             remove_pictures_from_group(self, pictures_to_remove)
-
-    def delete(self):
-        """Delete group from database.
-        Also deletes picture assignments.
-        """
-        delete_group(self)
 
     @property
     def pictures(self):
@@ -92,7 +79,10 @@ class Group(Entity):
 
     @parent.setter
     def parent(self, parent_):
-        self._parent = parent_.key
+        if parent_ is None:
+            self._parent = None
+        else:
+            self._parent = parent_.key
 
     def assign_picture(self, picture_):
         """Assign a single picture to the group.
@@ -129,89 +119,6 @@ class Group(Entity):
         self._children = children_
 
 
-def add_group(group):
-    db = get_db()
-    db.add_group(group)
-
-
-def delete_group(group_):
-    db = get_db()
-    db.delete_group(group_)
-
-
-def get_all_series():
-    db = get_db()
-    d_groups = db.retrieve_all_series()
-    groups = [get_group_from_d_object(d_grp) for d_grp in d_groups]
-    return groups
-
-
-def retrieve_series_by_key(key):
-    global _group_cache
-    try:
-        group = _group_cache.get(key)
-    except KeyError:
-        db = get_db()
-        d_group = db.retrieve_series_by_key(key)
-        if d_group is None:
-            raise UnknownEntityException(
-                'Series with key {} is unknown.'.format(key))
-        group = get_group_from_d_object(d_group)
-    return group
-
-
-def retrieve_series_by_name(name):
-    global _group_cache
-    db = get_db()
-    d_group = db.retrieve_series_by_name(name)
-    if d_group is None:
-        raise UnknownEntityException(
-            'Series with name {} is unknown.'.format(name))
-    group = get_group_from_d_object(d_group)
-    return group
-
-
-def retrieve_series_by_name_segment(name, limit):
-    db = get_db()
-    d_groups = db.retrieve_series_by_name_segment(name)
-    groups = [get_group_from_d_object(d_grp) for d_grp in d_groups]
-    return groups
-
-
-def retrieve_pictures_for_group(group):
-    """Retrieve pictures for given group.
-
-    :param group: given group.
-    :type group: DGroup
-    :return: assigned pictures
-    :rtype: [Picture]
-    """
-    db = get_db()
-    d_pictures = db.retrieve_pictures_for_group(group)
-    pics = [get_picture_from_d_object(d_pic) for d_pic in d_pictures]
-    return pics
-
-
-def retrieve_groups_for_picture(picture):
-    """Retrieve groups for given picture.
-
-    :param picture: given group.
-    :type picture: Picture
-    :return: groups the picture is assigned to
-    :rtype: [Group]
-    """
-    db = get_db()
-    d_groups = db.retrieve_series_for_picture(picture)
-    groups = [get_group_from_d_object(d_grp) for d_grp in d_groups]
-    return groups
-
-
-def update_group(group):
-    global _group_cache
-    db = get_db()
-    db.update_group(group)
-    _group_cache.put(group.key, group)
-
 
 def add_picture_to_group(group_, picture):
     db = get_db()
@@ -228,11 +135,6 @@ def add_pictures_to_group(group_, pictures_):
     """
     for pic in pictures_:
         add_picture_to_group(group_, pic)
-
-
-def add_picture_to_set_of_series(picture, series):
-    for item in series:
-        add_picture_to_group(item, picture)
 
 
 def remove_picture_from_group(group_, picture):
@@ -252,9 +154,32 @@ def remove_pictures_from_group(group_, pictures_):
         remove_picture_from_group(group_, pic)
 
 
-def remove_picture_from_set_of_series(picture, series):
-    for item in series:
-        remove_picture_from_group(item, picture)
+def retrieve_series_by_key(key):
+    global _group_cache
+    try:
+        group = _group_cache.get(key)
+    except KeyError:
+        db = get_db()
+        d_group = db.retrieve_series_by_key(key)
+        if d_group is None:
+            raise UnknownEntityException(
+                'Series with key {} is unknown.'.format(key))
+        group = get_group_from_d_object(d_group)
+    return group
+
+
+def retrieve_pictures_for_group(group):
+    """Retrieve pictures for given group.
+
+    :param group: given group.
+    :type group: DGroup
+    :return: assigned pictures
+    :rtype: [Picture]
+    """
+    db = get_db()
+    d_pictures = db.retrieve_pictures_for_group(group)
+    pics = [get_picture_from_d_object(d_pic) for d_pic in d_pictures]
+    return pics
 
 
 def get_group_from_d_object(group_):
@@ -273,9 +198,3 @@ def get_group_from_d_object(group_):
         _group_cache.put(group.key, group)
     finally:
         return group
-
-
-def number_of_groups():
-    """Provide number of groups currently in database."""
-    db = get_db()
-    return db.number_of_groups()

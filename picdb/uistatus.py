@@ -39,9 +39,9 @@ from pkgutil import get_data
 import psutil
 
 from .persistence import db_params
-from .picture import number_of_pictures
-from .group import number_of_groups
-from .tag import number_of_tags
+from .pictureservices import number_of_pictures
+from .groupservices import number_of_groups
+from .tagservices import number_of_tags
 from .version import long_version
 
 

@@ -34,13 +34,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
-from .tag import Tag, retrieve_tag_by_name, retrieve_tags_by_name_segment, \
-    retrieve_tag_by_key, get_all_tags
+from .tag import Tag
+from .tagservices import retrieve_tag_by_name, retrieve_tags_by_name_segment, \
+    retrieve_tag_by_key, get_all_tags, delete_tag, save_tag as save_tag_
 from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
 from .persistence import UnknownEntityException
-from . import picture
+from .picture import retrieve_pictures_by_tag
 
 
 class TagManagement(ttk.Frame):
@@ -125,7 +126,7 @@ class TagManagement(ttk.Frame):
         """Save the tag currently in editor."""
         tag_ = self.editor.tag
         if tag_ is not None:
-            tag_.save()
+            save_tag_(tag_)
         self.load_tags()
         self.editor.tag = retrieve_tag_by_name(tag_.name)
 
@@ -266,7 +267,7 @@ class TagTree(HierarchicalTreeView):
             start_item_.parent = target_item_
             index = self._determine_index_for_insert(start_item_)
             self.move(start_item, target_item, index)
-            start_item_.save()
+            save_tag_(start_item_)
 
     def _delete_items(self, items):
         """Delete given tags.
@@ -275,18 +276,18 @@ class TagTree(HierarchicalTreeView):
         :type items: [Tag]
         """
         for tag_ in items:
-            pics = picture.retrieve_pictures_by_tag(tag_)
+            pics = retrieve_pictures_by_tag(tag_)
             for pic in pics:
                 pic.remove_tag(tag_)
                 pic.save()
-            tag_.delete()
+            delete_tag(tag_)
 
     def _unlink_from_parent(self):
         """Unlink selected tag from parent tag."""
         tags = self.selected_items()
         for tag_ in tags:
             tag_.parent = None
-            tag_.save()
+            save_tag_(tag_)
             index = self._determine_index_for_insert(tag_)
             self.move(tag_.key, '', index)
 
@@ -348,7 +349,7 @@ class TagEditor(ttk.LabelFrame):
         """Unlink tag from parent tag."""
         if self.tag is not None:
             self.tag.parent = None
-            self.tag.save()
+            save_tag_(self.tag)
 
     def clear(self):
         """Clear tag."""
