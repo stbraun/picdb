@@ -319,9 +319,6 @@ class TagEditor(ttk.LabelFrame):
                   textvariable=self.description_var).grid(row=2,
                                                           column=1,
                                                           sticky=(tk.E, tk.W))
-        ttk.Button(self, text='Unlink from parent',
-                   command=self._unlink_from_parent).grid(row=3, column=1,
-                                                          sticky=tk.W)
 
     @property
     def tag(self):
@@ -344,12 +341,6 @@ class TagEditor(ttk.LabelFrame):
             self.name_var.set(tag_.name)
             self.description_var.set(tag_.description)
         self.name_entry.focus()
-
-    def _unlink_from_parent(self):
-        """Unlink tag from parent tag."""
-        if self.tag is not None:
-            self.tag.parent = None
-            save_tag_(self.tag)
 
     def clear(self):
         """Clear tag."""

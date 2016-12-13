@@ -305,7 +305,7 @@ class GroupTree(HierarchicalTreeView):
         groups = self.selected_items()
         for group_ in groups:
             group_.parent = None
-            group_.save()
+            save_group_(group_)
             index = self._determine_index_for_insert(group_)
             self.move(group_.key, '', index)
 
@@ -337,9 +337,6 @@ class GroupEditor(ttk.LabelFrame):
                   textvariable=self.description_var).grid(row=2,
                                                           column=1,
                                                           sticky=(tk.E, tk.W))
-        ttk.Button(self, text='Unlink from parent',
-                   command=self._unlink_from_parent).grid(row=3, column=1,
-                                                          sticky=tk.W)
 
     @property
     def group(self):
@@ -363,12 +360,6 @@ class GroupEditor(ttk.LabelFrame):
             self.name_var.set(group_.name)
             self.description_var.set(group_.description)
         self.name_entry.focus()
-
-    def _unlink_from_parent(self):
-        """Unlink group from parent group."""
-        if self.group is not None:
-            self.group.parent = None
-            self.group.save()
 
     def clear(self):
         """Remove group from editor."""
