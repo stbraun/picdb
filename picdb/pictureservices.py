@@ -31,7 +31,7 @@ Service functions for pictures.
 
 from .cache import LRUCache
 from .persistence import get_db
-from .tag import get_tag_from_d_object
+from .tagservices import get_tag_from_d_object
 from .picture import Picture
 
 

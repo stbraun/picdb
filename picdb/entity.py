@@ -40,10 +40,6 @@ class Entity:
         self.name = name
         self.description = description
 
-    def save(self):
-        """Save entity."""
-        raise NotImplementedError
-
     def __str__(self):
         return '<{} ({})>'.format(self.name, self.key)
 

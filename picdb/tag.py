@@ -29,11 +29,7 @@ Tag entity.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from .persistence import get_db, UnknownEntityException
 from .entity import Entity
-from .cache import LRUCache
-
-_tag_cache = LRUCache(2000)
 
 
 class Tag(Entity):
@@ -58,47 +54,9 @@ class Tag(Entity):
     @property
     def parent(self):
         """Get the tags parent."""
-        if self.parent_ is None:
-            return None
-        return retrieve_tag_by_key(self.parent_)
+        return self.parent_
 
     @parent.setter
     def parent(self, parent_):
         """Set the tags parent."""
-        if parent_ is None:
-            self.parent_ = None
-        else:
-            self.parent_ = parent_.key
-
-
-def retrieve_tag_by_key(key):
-    """Retrieve tag by given key."""
-    global _tag_cache
-    try:
-        tag = _tag_cache.get(key)
-    except KeyError:
-        db = get_db()
-        d_tag = db.retrieve_tag_by_key(key)
-        if d_tag is None:
-            raise UnknownEntityException(
-                'Tag with key {} is unknown.'.format(key))
-        tag = get_tag_from_d_object(d_tag)
-    return tag
-
-
-def get_tag_from_d_object(d_tag):
-    """Create tag or retrieve from tag cache.
-
-    :param d_tag: data object of tag
-    :type d_tag: DTag
-    :return: tag object
-    :rtype: Tag
-    """
-    tag = None
-    try:
-        tag = _tag_cache.get(d_tag.key)
-    except KeyError:
-        tag = Tag(*d_tag)
-        _tag_cache.put(tag.key, tag)
-    finally:
-        return tag
+        self.parent_ = parent_

@@ -28,14 +28,12 @@ Service functions for tags.
 # OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
+from cache import LRUCache
 
 from .persistence import get_db, UnknownEntityException
 from .tag import Tag
-from .tag import _tag_cache as cache
 
-# _tag_cache = LRUCache(2000)
-_tag_cache = cache
+_tag_cache = LRUCache(2000)
 
 
 def save_tag(tag_):
@@ -116,11 +114,16 @@ def get_tag_from_d_object(d_tag):
     :return: tag object
     :rtype: Tag
     """
+    global _tag_cache
     tag = None
     try:
         tag = _tag_cache.get(d_tag.key)
     except KeyError:
         tag = Tag(*d_tag)
+        if d_tag.parent is not None:
+            # replace key with Tag instance
+            parent = retrieve_tag_by_key(d_tag.parent)
+            tag.parent = parent
         _tag_cache.put(tag.key, tag)
     finally:
         return tag
