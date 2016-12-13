@@ -343,7 +343,7 @@ class TagEditor(ttk.LabelFrame):
         self.name_entry.focus()
 
     def clear(self):
-        """Clear tag."""
+        """Clear editor."""
         self.tag = None
 
 

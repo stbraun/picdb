@@ -65,17 +65,16 @@ class Group(Entity):
     @property
     def parent(self):
         """Get parent."""
-        if self._parent is None:
-            return None
-        return retrieve_series_by_key(self._parent)
+        return self._parent
 
     @parent.setter
     def parent(self, parent_):
-        """Set parent."""
-        if parent_ is None:
-            self._parent = None
-        else:
-            self._parent = parent_.key
+        """Set parent.
+
+        :param parent_: the parent group
+        :type parent_: Group
+        """
+        self._parent = parent_
 
     def assign_picture(self, picture_):
         """Assign a single picture to the group.

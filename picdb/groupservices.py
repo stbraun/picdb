@@ -160,8 +160,8 @@ def add_pictures_to_group(group_, pictures_):
         add_picture_to_group(group_, pic)
 
 
-def add_picture_to_set_of_series(picture, series):
-    for item in series:
+def add_picture_to_set_of_groups(picture, groups):
+    for item in groups:
         add_picture_to_group(item, picture)
 
 
@@ -182,24 +182,28 @@ def remove_pictures_from_group(group_, pictures_):
         remove_picture_from_group(group_, pic)
 
 
-def remove_picture_from_set_of_series(picture, series):
-    for item in series:
+def remove_picture_from_set_of_groups(picture, groups):
+    for item in groups:
         remove_picture_from_group(item, picture)
 
 
-def get_group_from_d_object(group_):
+def get_group_from_d_object(d_group):
     """Create group or retrieve from group cache.
 
-    :param group_: data object of group
-    :type group_: DGroup
+    :param d_group: data object of group
+    :type d_group_: DGroup
     :return: group object
     :rtype: Group
     """
     group = None
     try:
-        group = _group_cache.get(group_.key)
+        group = _group_cache.get(d_group.key)
     except KeyError:
-        group = Group(*group_)
+        group = Group(*d_group)
+        if d_group.parent is not None:
+            # replace key with Group instance
+            parent = retrieve_series_by_key(d_group.parent)
+            group.parent = parent
         _group_cache.put(group.key, group)
     finally:
         return group
