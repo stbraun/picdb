@@ -41,7 +41,7 @@ from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
 from .persistence import UnknownEntityException
-from .picture import retrieve_pictures_by_tag
+from .pictureservices import retrieve_pictures_by_tag
 
 
 class TagManagement(ttk.Frame):

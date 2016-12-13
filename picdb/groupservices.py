@@ -31,7 +31,7 @@ Service functions for groups.
 
 from .cache import LRUCache
 from .persistence import get_db, UnknownEntityException
-from .picture import get_picture_from_d_object
+from .pictureservices import get_picture_from_d_object
 from .group import Group
 
 from .group import _group_cache as cache
@@ -42,15 +42,26 @@ _group_cache = cache
 
 def save_group(group_):
     if group_.key is None:
-        add_group(group_)
+        __add_group(group_)
     else:
         update_group(group_)
-        group_.update_pictures()
+        __update_pictures(group_)
 
 
-def add_group(group_):
+def __add_group(group_):
     db = get_db()
     db.add_group(group_)
+
+
+def __update_pictures(group_):
+    """Remove and add pictures according to changes made during editing."""
+    if group_.pictures is not None:
+        saved_pics = set(retrieve_pictures_for_group(group_))
+        _pictures = set(group_.pictures)
+        pictures_to_add = _pictures.difference(saved_pics)
+        pictures_to_remove = saved_pics.difference(_pictures)
+        add_pictures_to_group(group_, pictures_to_add)
+        remove_pictures_from_group(group_, pictures_to_remove)
 
 
 def delete_group(group_):

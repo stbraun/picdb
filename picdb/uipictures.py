@@ -40,10 +40,10 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 from .commons import get_resource_path
-from .groupservices import retrieve_groups_for_picture
+from .groupservices import retrieve_groups_for_picture, save_group
 from .persistence import DuplicateException
 from .picture import Picture
-from.pictureservices import add_picture, retrieve_picture_by_path, \
+from .pictureservices import add_picture, retrieve_picture_by_path, \
     retrieve_filtered_pictures, retrieve_picture_by_key
 from .uicommon import tag_all_children, Observable
 from .uigroups import GroupSelector
@@ -390,7 +390,7 @@ class PictureReferenceTree(PicTreeView):
             groups = retrieve_groups_for_picture(pic)
             for group_ in groups:
                 group_.remove_picture(pic)
-                group_.save()
+                save_group(group_)
             pic.delete()
 
     def _show_selected_pic_in_external_viewer(self):
@@ -555,7 +555,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
                     group_.assign_picture(pic)
                 pic.save()
             for group_ in groups:
-                group_.save()
+                save_group(group_)
         else:
             self.picture = self.editor.picture
             self._update_series()
@@ -573,10 +573,10 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         groups_to_remove = saved_groups.difference(edt_groups)
         for grp in groups_to_add:
             grp.assign_picture(self.picture)
-            grp.save()
+            save_group(grp)
         for grp in groups_to_remove:
             grp.remove_picture(self.picture)
-            grp.save()
+            save_group(grp)
 
     def load_picture(self, picture_):
         """Load picture into editor.
