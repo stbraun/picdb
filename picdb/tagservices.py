@@ -37,6 +37,7 @@ _tag_cache = LRUCache(2000)
 
 
 def save_tag(tag_):
+    """Save given tag to database."""
     if tag_.key is None:
         add_tag(tag_)
     else:
@@ -47,6 +48,14 @@ def add_tag(tag_):
     """Add given tag to database."""
     db = get_db()
     db.add_tag(tag_)
+
+
+def update_tag(tag_):
+    """Update given tag in database."""
+    global _tag_cache
+    db = get_db()
+    db.update_tag(tag_)
+    _tag_cache.put(tag_.key, tag_)
 
 
 def delete_tag(tag_):
@@ -96,14 +105,6 @@ def retrieve_tags_by_name_segment(name, limit):
     d_tags = db.retrieve_tags_by_name_segment(name)
     tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
     return tags
-
-
-def update_tag(tag_):
-    """Update given tag in database."""
-    global _tag_cache
-    db = get_db()
-    db.update_tag(tag_)
-    _tag_cache.put(tag_.key, tag_)
 
 
 def get_tag_from_d_object(d_tag):
