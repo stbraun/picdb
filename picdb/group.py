@@ -62,6 +62,14 @@ class Group(Entity):
         """
         self._pictures = pictures_
 
+    def __iter__(self):
+        """Make Group iterable."""
+        return self._pictures.__iter__()
+
+    def __len__(self):
+        """Determine number of pictures assigned to group."""
+        return len(self._pictures)
+
     @property
     def parent(self):
         """Get parent."""
@@ -84,7 +92,8 @@ class Group(Entity):
         :param picture_: picture to remove
         :type picture_: Picture
         """
-        self._pictures.append(picture_)
+        if picture_ not in self._pictures:
+            self._pictures.append(picture_)
 
     def remove_picture(self, picture_):
         """Remove given picture from group.
