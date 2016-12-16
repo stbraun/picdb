@@ -37,7 +37,7 @@ from tkinter import messagebox
 from .group import Group
 from .groupservices import retrieve_series_by_name, delete_group, \
     retrieve_series_by_name_segment, retrieve_series_by_key, get_all_series, \
-    save_group as save_group_
+    save_group as save_group_, create_group
 from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
 from .uicommon import tag_all_children
@@ -127,7 +127,7 @@ class GroupManagement(ttk.Frame):
 
     def add_group(self):
         """Push an empty group to editor."""
-        group_ = Group(None, '', '', None)
+        group_ = create_group(None, '', '')
         self.editor.group = group_
 
     def save_group(self):

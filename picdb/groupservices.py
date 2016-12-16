@@ -34,10 +34,7 @@ from .persistence import get_db, UnknownEntityException
 from .pictureservices import get_picture_from_d_object
 from .group import Group
 
-from .group import _group_cache as cache
-
-# _group_cache = LRUCache(2000)
-_group_cache = cache
+_group_cache = LRUCache(2000)
 
 
 def save_group(group_):
@@ -72,7 +69,7 @@ def delete_group(group_):
 def get_all_series():
     db = get_db()
     d_groups = db.retrieve_all_series()
-    groups = [get_group_from_d_object(d_grp) for d_grp in d_groups]
+    groups = [create_group_from_d_object(d_grp) for d_grp in d_groups]
     return groups
 
 
@@ -86,7 +83,7 @@ def retrieve_series_by_key(key):
         if d_group is None:
             raise UnknownEntityException(
                 'Series with key {} is unknown.'.format(key))
-        group = get_group_from_d_object(d_group)
+        group = create_group_from_d_object(d_group)
     return group
 
 
@@ -97,14 +94,14 @@ def retrieve_series_by_name(name):
     if d_group is None:
         raise UnknownEntityException(
             'Series with name {} is unknown.'.format(name))
-    group = get_group_from_d_object(d_group)
+    group = create_group_from_d_object(d_group)
     return group
 
 
 def retrieve_series_by_name_segment(name, limit):
     db = get_db()
     d_groups = db.retrieve_series_by_name_segment(name)
-    groups = [get_group_from_d_object(d_grp) for d_grp in d_groups]
+    groups = [create_group_from_d_object(d_grp) for d_grp in d_groups]
     return groups
 
 
@@ -132,7 +129,7 @@ def retrieve_groups_for_picture(picture):
     """
     db = get_db()
     d_groups = db.retrieve_series_for_picture(picture)
-    groups = [get_group_from_d_object(d_grp) for d_grp in d_groups]
+    groups = [create_group_from_d_object(d_grp) for d_grp in d_groups]
     return groups
 
 
@@ -187,7 +184,7 @@ def remove_picture_from_set_of_groups(picture, groups):
         remove_picture_from_group(item, picture)
 
 
-def get_group_from_d_object(d_group):
+def create_group_from_d_object(d_group):
     """Create group or retrieve from group cache.
 
     :param d_group: data object of group
@@ -199,14 +196,31 @@ def get_group_from_d_object(d_group):
     try:
         group = _group_cache.get(d_group.key)
     except KeyError:
-        group = Group(*d_group)
+        # group = Group(*d_group)
+        group = create_group(d_group.key, d_group.name, d_group.description)
         if d_group.parent is not None:
             # replace key with Group instance
             parent = retrieve_series_by_key(d_group.parent)
             group.parent = parent
+        pictures = retrieve_pictures_for_group(group)
+        group.pictures = pictures
         _group_cache.put(group.key, group)
     finally:
         return group
+
+
+def create_group(key=None, name='', description=''):
+    """Create a new group instance.
+
+    You may want to add pictures and parent to the new group.
+
+    :param key: database key. May be None for transient group.
+    :type key: int
+    :param name: group name
+    :param description: description of group.
+    """
+    grp_ = Group(key, name, description)
+    return grp_
 
 
 def number_of_groups():

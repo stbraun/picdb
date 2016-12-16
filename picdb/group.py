@@ -28,29 +28,29 @@ An entity for a group of pictures.
 # OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from .cache import LRUCache
-from .persistence import get_db
 from .entity import Entity
-from .pictureservices import get_picture_from_d_object
-
-_group_cache = LRUCache(2000)
 
 
 class Group(Entity):
     """A series of pictures."""
 
-    def __init__(self, key, name, description, parent=None):
+    def __init__(self, key, name, description, pictures=None, parent=None):
         super().__init__(key, name, description)
         self._parent = parent
         self._children = []
         # Currently assigned pictures. May not be saved yet.
-        self._pictures = None
+        if pictures is None:
+            self._pictures = []
+        else:
+            self._pictures = pictures
 
     @property
     def pictures(self):
-        """Get pictures assigned to this group."""
-        if self._pictures is None:
-            self._pictures = retrieve_pictures_for_group(self)
+        """Get pictures assigned to this group.
+
+        :return: pictures assigned to group.
+        :rtype: [Picture]
+        """
         return self._pictures
 
     @pictures.setter
@@ -84,8 +84,6 @@ class Group(Entity):
         :param picture_: picture to remove
         :type picture_: Picture
         """
-        if self._pictures is None:
-            self._pictures = self.pictures
         self._pictures.append(picture_)
 
     def remove_picture(self, picture_):
@@ -97,8 +95,6 @@ class Group(Entity):
         :param picture_: picture to remove
         :type picture_: Picture
         """
-        if self._pictures is None:
-            self._pictures = self.pictures
         if picture_ in self._pictures:
             self._pictures.remove(picture_)
 
@@ -112,35 +108,3 @@ class Group(Entity):
         """Set children. Note that the given list overwrites all children of
         this group. So always add all children when using this method."""
         self._children = children_
-
-
-def retrieve_pictures_for_group(group):
-    """Retrieve pictures for given group.
-
-    :param group: given group.
-    :type group: DGroup
-    :return: assigned pictures
-    :rtype: [Picture]
-    """
-    db = get_db()
-    d_pictures = db.retrieve_pictures_for_group(group)
-    pics = [get_picture_from_d_object(d_pic) for d_pic in d_pictures]
-    return pics
-
-
-def get_group_from_d_object(group_):
-    """Create group or retrieve from group cache.
-
-    :param group_: data object of group
-    :type group_: DGroup
-    :return: group object
-    :rtype: Group
-    """
-    group = None
-    try:
-        group = _group_cache.get(group_.key)
-    except KeyError:
-        group = Group(*group_)
-        _group_cache.put(group.key, group)
-    finally:
-        return group
