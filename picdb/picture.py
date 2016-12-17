@@ -46,29 +46,6 @@ class Picture(Entity):
         # Currently assigned tags. May not be saved yet.
         self._tags = None
 
-    def save(self):
-        if self.key is None:
-            add_picture(self)
-        else:
-            update_picture(self)
-        self._update_tags()
-
-    def _update_tags(self):
-        """Remove and add tags according to changes made during editing."""
-        saved_tags = set(retrieve_tags_for_picture(self))
-        _tags = set(self.tags)
-        tags_to_add = _tags.difference(saved_tags)
-        tags_to_remove = saved_tags.difference(_tags)
-        add_tags_to_picture(self, tags_to_add)
-        remove_tags_from_picture(self, tags_to_remove)
-
-    def delete(self):
-        """Delete picture from database.
-
-        Does also remove group and tag assignments.
-        """
-        delete_picture(self)
-
     @property
     def tags(self):
         if self._tags is None:
@@ -124,119 +101,11 @@ class Picture(Entity):
         return hash(self.path)
 
 
-def add_picture(picture):
-    db = get_db()
-    db.add_picture(picture)
-
-
-def delete_picture(picture):
-    """Delete picture and tag assignments.
-
-    :param picture: picture to delete
-    :type picture: Picture
-    """
-    db = get_db()
-    db.delete_picture(picture)
-
-
-def retrieve_picture_by_key(key):
-    """Retrieve picture.
-
-    :param key: key of picture
-    :type key: int
-    :return: picture object
-    :rtype: Picture
-    """
-    global _picture_cache
-    try:
-        picture = _picture_cache.get(key)
-    except KeyError:
-        db = get_db()
-        d_pic = db.retrieve_picture_by_key(key)
-        picture = Picture(*d_pic)
-        _picture_cache.put(key, picture)
-    return picture
-
-
-def retrieve_picture_by_path(path):
-    """Retrieve picture.
-
-    :param path: path to picture
-    :type path: str
-    :return: picture object
-    :rtype: Picture
-    """
-    global _picture_cache
-    db = get_db()
-    d_pic = db.retrieve_picture_by_path(path)
-    picture = Picture(*d_pic)
-    _picture_cache.put(picture.key, picture)
-    return picture
-
-
-# TODO move to service layer above entities because of dependency to Group.
-def retrieve_filtered_pictures(path, limit, groups, tags):
-    """Retrieve pictures applying filter.
-
-    :param path: path to picture, may include SQL wildcards
-    :type path: str
-    :param limit: maximum number of records.
-    :type limit: int
-    :param groups: groups the pictures shall be assigned to.
-    :type groups: [Group]
-    :param tags: tags which shall be assigned to the pictures.
-    :type tags: [Tag]
-    :return: pictures matching given criteria.
-    :rtype: [Picture]
-    """
-    global _picture_cache
-    db = get_db()
-    d_pictures = db.retrieve_filtered_pictures(path, limit, groups, tags)
-    pictures = [get_picture_from_d_object(d_pic) for d_pic in d_pictures]
-    for picture in pictures:
-        _picture_cache.put(picture.key, picture)
-    return pictures
-
-
-def update_picture(picture):
-    global _picture_cache
-    db = get_db()
-    db.update_picture(picture)
-    _picture_cache.put(picture.key, picture)
-
-
-def add_tag_to_picture(picture, tag):
-    db = get_db()
-    db.add_tag_to_picture(picture, tag)
-
-
-def add_tags_to_picture(picture, tags):
-    for tag in tags:
-        add_tag_to_picture(picture, tag)
-
-
-def remove_tag_from_picture(picture, tag):
-    db = get_db()
-    db.remove_tag_from_picture(picture, tag)
-
-
-def remove_tags_from_picture(picture, tags):
-    for tag in tags:
-        remove_tag_from_picture(picture, tag)
-
-
 def retrieve_tags_for_picture(picture):
     db = get_db()
     d_tags = db.retrieve_tags_for_picture(picture)
     tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
     return tags
-
-
-def retrieve_pictures_by_tag(tag_):
-    db = get_db()
-    d_pics = db.retrieve_pictures_by_tag(tag_)
-    pics = [get_picture_from_d_object(d_pic) for d_pic in d_pics]
-    return pics
 
 
 def get_picture_from_d_object(picture_):
@@ -255,9 +124,3 @@ def get_picture_from_d_object(picture_):
         _picture_cache.put(pic.key, pic)
     finally:
         return pic
-
-
-def number_of_pictures():
-    """Provide number of pictures currently in database."""
-    db = get_db()
-    return db.number_of_pictures()

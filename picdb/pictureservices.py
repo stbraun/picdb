@@ -29,18 +29,48 @@ Service functions for pictures.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from .cache import LRUCache
 from .persistence import get_db
 from .tagservices import get_tag_from_d_object
 from .picture import Picture
 
+from .picture import _picture_cache as picture_cache
 
-_picture_cache = LRUCache(20000)
+
+_picture_cache = picture_cache
 
 
-def add_picture(picture):
+def save_picture(picture):
+    """Save given picture to database.
+
+    Takes care for assigned tags.
+    """
+    if picture.key is None:
+        _add_picture(picture)
+    else:
+        _update_picture(picture)
+        _update_tags(picture)
+
+
+def _update_tags(picture):
+    """Remove and add tags according to changes made during editing."""
+    saved_tags = set(retrieve_tags_for_picture(picture))
+    _tags = set(picture.tags)
+    tags_to_add = _tags.difference(saved_tags)
+    tags_to_remove = saved_tags.difference(_tags)
+    add_tags_to_picture(picture, tags_to_add)
+    remove_tags_from_picture(picture, tags_to_remove)
+
+
+def _add_picture(picture):
     db = get_db()
     db.add_picture(picture)
+
+
+def _update_picture(picture):
+    global _picture_cache
+    db = get_db()
+    db.update_picture(picture)
+    _picture_cache.put(picture.key, picture)
 
 
 def delete_picture(picture):
@@ -109,13 +139,6 @@ def retrieve_filtered_pictures(path, limit, groups, tags):
     for picture in pictures:
         _picture_cache.put(picture.key, picture)
     return pictures
-
-
-def update_picture(picture):
-    global _picture_cache
-    db = get_db()
-    db.update_picture(picture)
-    _picture_cache.put(picture.key, picture)
 
 
 def add_tag_to_picture(picture, tag):

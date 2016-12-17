@@ -43,7 +43,7 @@ from .commons import get_resource_path
 from .groupservices import retrieve_groups_for_picture, save_group
 from .persistence import DuplicateException
 from .picture import Picture
-from .pictureservices import add_picture, retrieve_picture_by_path, \
+from .pictureservices import save_picture, retrieve_picture_by_path, \
     retrieve_filtered_pictures, retrieve_picture_by_key
 from .uicommon import tag_all_children, Observable
 from .uigroups import GroupSelector
@@ -146,7 +146,7 @@ class PictureManagement(ttk.Frame):
         duplicate_counter = 0
         for pic in pictures:
             try:
-                add_picture(pic)
+                save_picture(pic)
             except DuplicateException:
                 duplicate_counter += 1
                 self.logger.warning(
@@ -553,7 +553,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
                     pic.assign_tag(tag)
                 for group_ in groups:
                     group_.assign_picture(pic)
-                pic.save()
+                save_picture(pic)
             for group_ in groups:
                 save_group(group_)
         else:
@@ -561,7 +561,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
             self._update_series()
             tags = self.tag_selector.selected_items()
             self.picture.tags = tags
-            self.picture.save()
+            save_picture(self.picture)
             self._call_listeners(self.EVT_ITEM_SAVED, None)
 
     def _update_series(self):
