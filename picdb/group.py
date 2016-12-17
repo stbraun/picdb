@@ -64,7 +64,7 @@ class Group(Entity):
 
     def __iter__(self):
         """Make Group iterable."""
-        return self._pictures.__iter__()
+        return iter(self._pictures)
 
     def __len__(self):
         """Determine number of pictures assigned to group."""
