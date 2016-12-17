@@ -47,7 +47,7 @@ class GroupTest(unittest.TestCase):
 
     def test_iterate_over_pictures(self):
         """Test iteration without pictures assigned."""
-        for p in self.g:
+        for _ in self.g:
             self.fail('No pictures expected.')
         self.assertEqual(0, len([p for p in self.g]))
         self.g.assign_picture(self.p1)

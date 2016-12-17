@@ -29,12 +29,7 @@ An entity for pictures.
 # OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from .cache import LRUCache
-from .persistence import get_db
 from .entity import Entity
-from .tagservices import get_tag_from_d_object
-
-_picture_cache = LRUCache(20000)
 
 
 class Picture(Entity):
@@ -44,12 +39,10 @@ class Picture(Entity):
         super().__init__(key, name, description)
         self.path = path
         # Currently assigned tags. May not be saved yet.
-        self._tags = None
+        self._tags = []
 
     @property
     def tags(self):
-        if self._tags is None:
-            self._tags = retrieve_tags_for_picture(self)
         return self._tags
 
     @tags.setter
@@ -69,9 +62,7 @@ class Picture(Entity):
         :param tag_: a tag to assign.
         :type tag_: Tag
         """
-        if self._tags is None:
-            self._tags = [tag_]
-        else:
+        if tag_ not in self._tags:
             self._tags.append(tag_)
 
     def remove_tag(self, tag_):
@@ -82,7 +73,7 @@ class Picture(Entity):
         :param tag_: tag to remove
         :type tag_: Tag
         """
-        if self._tags is not None and tag_ in self._tags:
+        if tag_ in self._tags:
             self._tags.remove(tag_)
 
     def __str__(self):
@@ -100,27 +91,8 @@ class Picture(Entity):
     def __hash__(self):
         return hash(self.path)
 
+    def __iter__(self):
+        return iter(self._tags)
 
-def retrieve_tags_for_picture(picture):
-    db = get_db()
-    d_tags = db.retrieve_tags_for_picture(picture)
-    tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
-    return tags
-
-
-def get_picture_from_d_object(picture_):
-    """Create picture or retrieve from picture cache.
-
-    :param picture_: data object of picture
-    :type picture_: DPicture
-    :return: picture object
-    :rtype: Picture
-    """
-    pic = None
-    try:
-        pic = _picture_cache.get(picture_.key)
-    except KeyError:
-        pic = Picture(*picture_)
-        _picture_cache.put(pic.key, pic)
-    finally:
-        return pic
+    def __len__(self):
+        return len(self._tags)

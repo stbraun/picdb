@@ -29,14 +29,13 @@ Service functions for pictures.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from .cache import LRUCache
 from .persistence import get_db
 from .tagservices import get_tag_from_d_object
 from .picture import Picture
 
-from .picture import _picture_cache as picture_cache
 
-
-_picture_cache = picture_cache
+_picture_cache = LRUCache(20000)
 
 
 def save_picture(picture):
@@ -175,19 +174,20 @@ def retrieve_pictures_by_tag(tag_):
     return pics
 
 
-def get_picture_from_d_object(picture_):
+def get_picture_from_d_object(d_picture):
     """Create picture or retrieve from picture cache.
 
-    :param picture_: data object of picture
-    :type picture_: DPicture
+    :param d_picture: data object of picture
+    :type d_picture: DPicture
     :return: picture object
     :rtype: Picture
     """
     pic = None
     try:
-        pic = _picture_cache.get(picture_.key)
+        pic = _picture_cache.get(d_picture.key)
     except KeyError:
-        pic = Picture(*picture_)
+        pic = Picture(*d_picture)
+        pic.tags = retrieve_tags_for_picture(pic)
         _picture_cache.put(pic.key, pic)
     finally:
         return pic
