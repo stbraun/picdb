@@ -67,31 +67,27 @@ def delete_group(group_):
     db.delete_group(group_)
 
 
-def get_all_series():
+def get_all_groups():
     db = get_db()
     groups = db.retrieve_all_groups()
     return groups
 
 
-def retrieve_series_by_key(key):
+def retrieve_group_by_key(key):
     db = get_db()
     group = db.retrieve_group_by_key(key)
     if group is None:
         raise UnknownEntityException(
-            'Series with key {} is unknown.'.format(key))
+            'Group with key {} is unknown.'.format(key))
     return group
 
 
-def retrieve_series_by_name(name):
-    db = get_db()
-    group = db.retrieve_group_by_name(name)
-    if group is None:
-        raise UnknownEntityException(
-            'Series with name {} is unknown.'.format(name))
-    return group
+def retrieve_groups_by_name(name):
+    """Retrieve groups with given name"""
+    return retrieve_groups_by_name_segment(name, None)
 
 
-def retrieve_series_by_name_segment(name, limit):
+def retrieve_groups_by_name_segment(name, limit):
     db = get_db()
     return db.retrieve_groups_by_name_segment(name)
 

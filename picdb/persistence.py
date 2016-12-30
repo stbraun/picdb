@@ -245,22 +245,21 @@ class Persistence:
         row = result[0]
         return self._create_group(*(list(row)))
 
-    def retrieve_group_by_name(self, name):
-        """Retrieve group by name.
+    def retrieve_groups_by_name(self, name):
+        """Retrieve groups by name.
 
-        :param name: the name of the tag to retrieve
+        :param name: the name of the group
         :type name: str
-        :return: group or None if name is unknown.
-        :rtype: Group
+        :return: groups.
+        :rtype: [Group]
         """
-        self.logger.debug("retrieve_group_by_name({})".format(name))
+        self.logger.debug("retrieve_groups_by_name({})".format(name))
         stmt = 'SELECT id, identifier, description, parent ' \
-               ' FROM groups WHERE "identifier"=$1'
+               'FROM groups WHERE "identifier"=$1'
         stmt_ = self.conn.prepare(stmt)
         result = stmt_(name)
-        # TODO should return a list of grpups.
-        row = list(result[0])
-        return self._create_group(*row)
+        records = [self._create_group(*row) for row in result]
+        return list(records)
 
     def retrieve_groups_by_name_segment(self, name):
         """Retrieve groups by name segment using wildcards.
@@ -330,9 +329,7 @@ class Persistence:
         """Provide number of groups currently in database."""
         self.logger.debug("number_of_groups()")
         stmt = 'SELECT count(*) FROM groups'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_()
-        return result[0][0]
+        return self.conn.query.first(stmt)
 
     def _create_group(self, key, identifier, description, parent_id):
         """Create a Group instance from raw database record info.
@@ -529,9 +526,7 @@ class Persistence:
         """Provide number of pictures currently in database."""
         self.logger.debug('number_of_pictures()')
         stmt = 'SELECT count(*) FROM pictures'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_()
-        return result[0][0]
+        return self.conn.query.first(stmt)
 
     def _create_picture(self, key, identifier, path, description):
         """Create a Picture instance from raw database record info.
@@ -586,9 +581,7 @@ class Persistence:
         """Provide number of tags currently in database."""
         self.logger.debug("number_of_tags()")
         stmt = 'SELECT count(*) FROM tags'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_()
-        return result[0][0]
+        return self.conn.query.first(stmt)
 
     def retrieve_all_tags(self):
         """Get all tags from database.

@@ -64,7 +64,7 @@ class PictureManagement(ttk.Frame):
         self.editor = None
         self.edit_button = None
         self.tag_selector = None
-        self.series_selector = None
+        self.group_selector = None
         # canvas will hold the preview image.
         self.canvas = None
         # width and height will change when resizing the window.
@@ -239,14 +239,14 @@ class PictureFilteredTreeView(FilteredTreeView):
         self.path_filter_var = tk.StringVar()
         self.limit_var = tk.IntVar()
         self.tag_selector = None
-        self.series_selector = None
+        self.group_selector = None
         super().__init__(master, PictureReferenceTree.create_instance)
         self._set_default_path_filter()
         self.path_filter_entry = None
         self.limit_var.set(self.limit_default)
         # initialize selectors
         self.tag_selector.load_items([])
-        self.series_selector.load_items([])
+        self.group_selector.load_items([])
         # Bind listener for visibility change of frame
         self.bind("<Visibility>", self._visibility_changed)
 
@@ -257,10 +257,10 @@ class PictureFilteredTreeView(FilteredTreeView):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self._create_filter_frame()
-        self.series_selector = GroupSelector(self,
-                                             text='Select series')
-        self.series_selector.grid(row=1, column=0,
-                                  sticky=(tk.N, tk.S, tk.W, tk.E))
+        self.group_selector = GroupSelector(self,
+                                            text='Select group')
+        self.group_selector.grid(row=1, column=0,
+                                 sticky=(tk.N, tk.S, tk.W, tk.E))
         self.tag_selector = TagSelector(self, text='Select tags')
         self.tag_selector.grid(row=2, column=0,
                                sticky=(tk.N, tk.S, tk.W, tk.E))
@@ -312,9 +312,9 @@ class PictureFilteredTreeView(FilteredTreeView):
         """
         name_filter = self.path_filter_var.get()
         limit = self.limit_var.get()
-        series = self.series_selector.selected_items()
+        groups = self.group_selector.selected_items()
         tags = self.tag_selector.selected_items()
-        pics = retrieve_filtered_pictures(name_filter, limit, series, tags)
+        pics = retrieve_filtered_pictures(name_filter, limit, groups, tags)
         return pics
 
     def _visibility_changed(self, event):
@@ -323,14 +323,14 @@ class PictureFilteredTreeView(FilteredTreeView):
             'Visibility of PictureFilteredTreeView frame changed: {}'.format(
                 event.state))
         self.tag_selector.load_items(self.tag_selector.selected_items())
-        self.series_selector.load_items(self.series_selector.selected_items())
+        self.group_selector.load_items(self.group_selector.selected_items())
 
     def clear_selection(self):
         """Clear current selection and reset filters to default."""
         self._set_default_path_filter()
         self.limit_var.set(self.limit_default)
         self.tag_selector.load_items([])
-        self.series_selector.load_items([])
+        self.group_selector.load_items([])
         self.tree.clear()
 
     def refresh_item_in_tree(self, pic):
@@ -519,7 +519,7 @@ class PictureMetadataEditor(ttk.Frame, Observable):
         left_tree_options = {'open_items': True}
         self.grp_selector = GroupSelector(self.content_frame,
                                           left_tree_options=left_tree_options,
-                                          text='Assign series')
+                                          text='Assign group')
         self.grp_selector.grid(row=1, column=0,
                                sticky=(tk.W, tk.N, tk.E, tk.S))
         self.tag_selector = TagSelector(self.content_frame,

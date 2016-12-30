@@ -35,8 +35,8 @@ from tkinter import ttk
 from tkinter import messagebox
 
 from .group import Group
-from .groupservices import retrieve_series_by_name, delete_group, \
-    retrieve_series_by_name_segment, retrieve_series_by_key, get_all_series, \
+from .groupservices import retrieve_groups_by_name, delete_group, \
+    retrieve_groups_by_name_segment, retrieve_group_by_key, get_all_groups, \
     save_group as save_group_, create_group
 from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 from .selector import Selector
@@ -45,7 +45,7 @@ from .persistence import UnknownEntityException
 
 
 class GroupManagement(ttk.Frame):
-    """Manage picture series master data."""
+    """Manage picture groups master data."""
 
     def __init__(self, master):
         super().__init__(master)
@@ -111,13 +111,13 @@ class GroupManagement(ttk.Frame):
         self.control_frame.grid(row=1, column=0,
                                 sticky=(tk.W, tk.N, tk.E, tk.S))
         self.columnconfigure(0, weight=1)
-        load_button = ttk.Button(self.control_frame, text='load series',
+        load_button = ttk.Button(self.control_frame, text='load groups',
                                  command=self.load_groups)
         load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        add_button = ttk.Button(self.control_frame, text='add series',
+        add_button = ttk.Button(self.control_frame, text='add group',
                                 command=self.add_group)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
-        save_button = ttk.Button(self.control_frame, text='save series',
+        save_button = ttk.Button(self.control_frame, text='save group',
                                  command=self.save_group)
         save_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
 
@@ -135,8 +135,12 @@ class GroupManagement(ttk.Frame):
         group_ = self.editor.group
         if group_ is not None:
             save_group_(group_)
-        self.load_groups()
-        self.editor.group = retrieve_series_by_name(group_.name)
+        self.load_groups()  # refresh tree
+        groups = retrieve_groups_by_name(group_.name)
+        for grp in groups:
+            if self.editor.group.parent == grp.parent:
+                self.editor.group = grp
+                break
 
     def item_selected(self, _):
         """An item in the tree view was selected."""
@@ -216,7 +220,7 @@ class GroupFilteredTreeView(FilteredTreeView):
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        groups = retrieve_series_by_name_segment(name_filter,
+        groups = retrieve_groups_by_name_segment(name_filter,
                                                  limit)
         return groups
 
@@ -259,12 +263,12 @@ class GroupTree(HierarchicalTreeView):
         :rtype: [Group]
         """
         item_ids = self.selection()
-        series = [retrieve_series_by_key(int(item_id))
+        groups = [retrieve_group_by_key(int(item_id))
                   for item_id in item_ids]
-        return series
+        return groups
 
     def _is_less(self, item, key):
-        return item.name < retrieve_series_by_key(int(key)).name
+        return item.name < retrieve_group_by_key(int(key)).name
 
     def _dnd_action(self, start_item, target_item):
         """Set target_item as parent of start_item.
@@ -275,8 +279,8 @@ class GroupTree(HierarchicalTreeView):
         :type target_item: str
         """
         try:
-            start_item_ = retrieve_series_by_key(int(start_item))
-            target_item_ = retrieve_series_by_key(int(target_item))
+            start_item_ = retrieve_group_by_key(int(start_item))
+            target_item_ = retrieve_group_by_key(int(target_item))
         except UnknownEntityException:
             msg_tmpl = "Invalid items for drag 'n' drop: {} --> {}"
             messagebox.showwarning(
@@ -313,7 +317,7 @@ class GroupTree(HierarchicalTreeView):
 class GroupEditor(ttk.LabelFrame):
     """Editor for Group objects."""
 
-    def __init__(self, master, text='Edit series'):
+    def __init__(self, master, text='Edit group'):
         super().__init__(master, text=text)
         self.group_ = None
         self.id_var = tk.IntVar()
@@ -381,7 +385,7 @@ class GroupSelector(Selector):
         :rtype: [Group]
         """
         items = self.right.get_all_items()
-        groups = [retrieve_series_by_key(int(item))
+        groups = [retrieve_group_by_key(int(item))
                   for item in items]
         return groups
 
@@ -391,5 +395,5 @@ class GroupSelector(Selector):
         :param picture_groups: list of groups already assigned to picture.
         :type picture_groups: [Group]
         """
-        groups = get_all_series()
+        groups = get_all_groups()
         self.init_trees(groups, picture_groups)
