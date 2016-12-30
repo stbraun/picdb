@@ -36,17 +36,28 @@ from postgresql.exceptions import UniqueError
 import postgresql.driver.dbapi20 as dbapi
 
 from .config import get_configuration
-from .dataobjects import DTag, DPicture, DGroup
+from .cache import LRUCache
+from .group import Group
+from .picture import Picture
+from .tag import Tag
+
+_tag_cache = LRUCache(2000)
+_picture_cache = LRUCache(20000)
+_group_cache = LRUCache(2000)
+
 
 # This module global variable will hold the Persistence instance.
 _db = None
 
 
 class UnknownEntityException(Exception):
+    """Raised if requested entity does not exist."""
     pass
 
 
 class DuplicateException(Exception):
+    """Raised if duplicate objects shall be persisted."""
+
     def __init__(self, duplicate, caused_by=None):
         """Initialize exception.
 
@@ -136,10 +147,29 @@ class Persistence:
         self.conn.close()
         self.logger.debug('database connection closed.')
 
-    def add_group(self, group):
-        """Add a new series.
+    def execute_sql(self, stmt_, *args):
+        """Execute the given SQL statement with arguments."""
+        try:
+            stmt = self.conn.prepare(stmt_)
+            stmt(*args)
+            self.conn.commit()
+            return True
+        except UniqueError as u:
+            self.conn.rollback()
+            self.logger.debug('duplicate: {}'.format(stmt))
+            raise u
+        except Exception as e:
+            self.conn.rollback()
+            messagebox.showerror(title='Database Error',
+                                 message='{}'.format(e))
+            return False
 
-        :param group: the series to add
+    # -------- group related
+
+    def add_group(self, group):
+        """Add a new group.
+
+        :param group: the group to add
         :type group: Group
         """
         self.logger.debug("Add group to DB: {}".format(group.name))
@@ -160,7 +190,7 @@ class Persistence:
         self.execute_sql(stmt, series.name,
                          series.description,
                          series.parent.key if series.parent is not
-                         None else None,
+                                              None else None,
                          series.key)
 
     def delete_group(self, group_):
@@ -170,36 +200,147 @@ class Persistence:
         self.execute_sql(stmt_pics, group_.key)
         self.execute_sql(stmt_grp, group_.key)
 
-    def add_tag(self, tag):
-        """Add a new tag.
+    def add_picture_to_group(self, picture, group_):
+        """Add picture to a group.
 
-        :param tag: tag to add
-        :type tag: Tag
+        :param picture: the picture
+        :type picture: Picture
+        :param group_: the group
+        :type group_: Group
         """
-        self.logger.debug("Add tag to DB: {}".format(tag))
-        stmt = "INSERT INTO tags(identifier, description, parent) VALUES (" \
-               "$1, $2, $3)"
-        parent = tag.parent.key if tag.parent is not None else None
-        try:
-            self.execute_sql(stmt, tag.name, tag.description, parent)
-        except UniqueError as u:
-            raise DuplicateException(tag, u)
+        self.logger.debug(
+            "Adding picture {} to group_ {}.".format(picture, group_))
+        stmt = '''INSERT INTO picture2group VALUES($1, $2)'''
+        self.execute_sql(stmt, picture.key, group_.key)
 
-    def update_tag(self, tag):
-        """Update tag record."""
-        self.logger.debug("Update tag: {}".format(tag.name))
-        stmt = "UPDATE tags SET identifier=$1, description=$2, parent=$3 " \
-               "WHERE id=$4"
-        self.execute_sql(stmt, tag.name,
-                         tag.description,
-                         tag.parent.key if tag.parent is not None
-                         else None,
-                         tag.key)
+    def remove_picture_from_group(self, picture, group):
+        """Remove picture from a series.
 
-    def delete_tag(self, tag_):
-        """Delete given tag and all its assignments."""
-        stmt = "DELETE FROM tags WHERE id=$1"
-        self.execute_sql(stmt, tag_.key)
+        :param picture: the picture
+        :type picture: Picture
+        :param group: the group
+        :type group: Group
+        """
+        self.logger.debug(
+            "Removing picture {} from series {}.".format(picture, group))
+        stmt = '''DELETE FROM picture2group WHERE picture=$1 AND "group"=$2'''
+        self.execute_sql(stmt, picture.key, group.key)
+
+    def retrieve_group_by_key(self, key):
+        """Retrieve series by key.
+
+        :param key: the id of the series
+        :type key: int
+        :return: group.
+        :rtype: Group
+        """
+        stmt = 'SELECT id, identifier, description, parent  ' \
+               'FROM groups WHERE "id"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(key)
+        if result is None:
+            return None
+        row = result[0]
+        return self._create_group(*(list(row)))
+
+    def retrieve_group_by_name(self, name):
+        """Retrieve group by name.
+
+        :param name: the name of the tag to retrieve
+        :type name: str
+        :return: group or None if name is unknown.
+        :rtype: Group
+        """
+        stmt = 'SELECT id, identifier, description, parent ' \
+               ' FROM groups WHERE "identifier"=$1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(name)
+        # TODO should return a list of grpups.
+        row = list(result[0])
+        return self._create_group(*row)
+
+    def retrieve_groups_by_name_segment(self, name):
+        """Retrieve groups by name segment using wildcards.
+
+        Example: name: 'a%'
+
+        :param name: the name of the series
+        :type name: str
+        :return: groups.
+        :rtype: [Group]
+        """
+        stmt = 'SELECT id, identifier, description, parent ' \
+               'FROM groups WHERE "identifier"LIKE $1'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(name)
+        records = [self._create_group(*row) for row in result]
+        return list(records)
+
+    def retrieve_all_groups(self):
+        """Get all groups from database.
+
+        :return: groups.
+        :rtype: [Group]
+        """
+        stmt = 'SELECT id, identifier, description, parent FROM groups'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_()
+        records = [self._create_group(*row) for row in result]
+        return list(records)
+
+    def retrieve_pictures_for_group(self, group_):
+        """Retrieve pictures assigned to given group.
+
+        :param group_: given group.
+        :type group_: Group
+        :return: pictures assigned to group
+        :rtype: [Picture]
+        """
+        stmt = 'SELECT id, identifier, path, description FROM pictures ' \
+               'WHERE id IN (SELECT ' \
+               'picture FROM picture2group WHERE "group"=$1)'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(group_.key)
+        records = [self._create_picture(*row) for row in result]
+        return list(records)
+
+    def retrieve_groups_for_picture(self, picture):
+        """Retrieve all groups for given picture.
+
+        :param picture: the id of the picture
+        :return: groups.
+        :rtype: [Group]
+        """
+        stmt = 'SELECT id, identifier, description, parent FROM groups ' \
+               'WHERE id IN (SELECT ' \
+               '"group" FROM picture2group WHERE picture=$1)'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_(picture.key)
+        records = [self._create_group(*row) for row in result]
+        return list(records)
+
+    def number_of_groups(self):
+        """Provide number of groups currently in database."""
+        stmt = 'SELECT count(*) FROM groups'
+        stmt_ = self.conn.prepare(stmt)
+        result = stmt_()
+        return result[0][0]
+
+    def _create_group(self, id, identifier, description, parent_id):
+        """Create a Group instance from raw database record info.
+
+        Creates parent object if required.
+        """
+        if parent_id is not None:
+            parent = self.retrieve_group_by_key(parent_id)
+        else:
+            parent = None
+        group = Group(id, identifier, description, parent)
+        pictures = self.retrieve_pictures_for_group(group)
+        group.pictures = pictures
+        return group
+
+    # ------ picture related
 
     def add_picture(self, picture):
         """Add a new picture.
@@ -261,32 +402,6 @@ class Persistence:
         stmt = '''DELETE FROM picture2tag WHERE picture=$1 AND tag=$2'''
         self.execute_sql(stmt, picture.key, tag.key)
 
-    def add_picture_to_group(self, picture, group_):
-        """Add picture to a group.
-
-        :param picture: the picture
-        :type picture: Picture
-        :param group_: the series
-        :type group_: Group
-        """
-        self.logger.debug(
-            "Adding picture {} to group_ {}.".format(picture, group_))
-        stmt = '''INSERT INTO picture2group VALUES($1, $2)'''
-        self.execute_sql(stmt, picture.key, group_.key)
-
-    def remove_picture_from_series(self, picture, series):
-        """Remove picture from a series.
-
-        :param picture: the picture
-        :type picture: Picture
-        :param series: the series
-        :type series: Group
-        """
-        self.logger.debug(
-            "Removing picture {} from series {}.".format(picture, series))
-        stmt = '''DELETE FROM picture2group WHERE picture=$1 AND "group"=$2'''
-        self.execute_sql(stmt, picture.key, series.key)
-
     def retrieve_picture_by_key(self, key):
         """Retrieve picture by key.
 
@@ -302,7 +417,7 @@ class Persistence:
         if result is None:
             return None
         row = result[0]
-        return DPicture(*(list(row)))
+        return self._create_picture(*(list(row)))
 
     def retrieve_picture_by_path(self, path):
         """Retrieve picture by path.
@@ -319,7 +434,7 @@ class Persistence:
         if result is None:
             return None
         row = result[0]
-        return DPicture(*(list(row)))
+        return self._create_picture(*(list(row)))
 
     def retrieve_filtered_pictures(self, path, limit, series, tags):
         """Retrieve picture by path segment using wildcards.
@@ -357,26 +472,9 @@ class Persistence:
         self.logger.debug(stmt)
         stmt_ = self.conn.prepare(stmt)
         result = stmt_(path)
-        records = [DPicture(*row) for row in result]
+        records = [self._create_picture(*row) for row in result]
         records.sort()
         return list(records)
-
-    def retrieve_series_by_key(self, key):
-        """Retrieve series by key.
-
-        :param key: the id of the series
-        :type key: int
-        :return: series.
-        :rtype: DGroup
-        """
-        stmt = 'SELECT id, identifier, description, parent  ' \
-               'FROM groups WHERE "id"=$1'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_(key)
-        if result is None:
-            return None
-        row = result[0]
-        return DGroup(*(list(row)))
 
     def retrieve_tags_for_picture(self, picture):
         """Retrieve all tags for given picture.
@@ -384,14 +482,14 @@ class Persistence:
         :param picture: the picture to get the tags for
         :type picture: Picture
         :return: tags.
-        :rtype: [DTag]
+        :rtype: [Tag]
         """
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE id IN (SELECT tag ' \
                'FROM picture2tag WHERE picture=$1)'
         stmt_ = self.conn.prepare(stmt)
         result = stmt_(picture.key)
-        records = [DTag(*row) for row in result]
+        records = [self._create_tag(*row) for row in result]
         return list(records)
 
     def retrieve_pictures_by_tag(self, tag_):
@@ -400,88 +498,82 @@ class Persistence:
         :param tag_: pictures shall have assigned this tag
         :type tag_: Tag
         :return: pictures with tag
-        :rtype: [DPicture]
+        :rtype: [Picture]
         """
         stmt = 'SELECT id, identifier, path, description FROM pictures ' \
                'WHERE id IN (SELECT ' \
                'picture FROM picture2tag WHERE tag=$1)'
         stmt_ = self.conn.prepare(stmt)
         result = stmt_(tag_.key)
-        records = [DPicture(*row) for row in result]
+        records = [self._create_picture(*row) for row in result]
         return list(records)
 
-    def retrieve_pictures_for_group(self, group_):
-        """Retrieve pictures assigned to given group.
-
-        :param group_: given group.
-        :type group_: DGroup
-        :return: pictures assigned to group
-        :rtype: [DPicture]
-        """
-        stmt = 'SELECT id, identifier, path, description FROM pictures ' \
-               'WHERE id IN (SELECT ' \
-               'picture FROM picture2group WHERE "group"=$1)'
+    def number_of_pictures(self):
+        """Provide number of pictures currently in database."""
+        stmt = 'SELECT count(*) FROM pictures'
         stmt_ = self.conn.prepare(stmt)
-        result = stmt_(group_.key)
-        records = [DPicture(*row) for row in result]
-        return list(records)
+        result = stmt_()
+        return result[0][0]
 
-    def retrieve_series_for_picture(self, picture):
-        """Retrieve all series for given picture.
+    def _create_picture(self, id, identifier, path, description):
+        """Create a Picture instance from raw database record info.
 
-        :param picture: the id of the picture
-        :return: series.
-        :rtype: [DGroup]
+        Creates parent object if required.
         """
-        stmt = 'SELECT id, identifier, description, parent FROM groups ' \
-               'WHERE id IN (SELECT ' \
-               '"group" FROM picture2group WHERE picture=$1)'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_(picture.key)
-        records = [DGroup(*row) for row in result]
-        return list(records)
+        picture = Picture(id, identifier, path, description)
+        tags = self.retrieve_tags_for_picture(picture)
+        picture.tags = tags
+        return picture
 
-    def retrieve_series_by_name(self, name):
-        """Retrieve series by name.
+    # ------ tag related
 
-        :param name: the name of the tag to retrieve
-        :type name: str
-        :return: series or None if name is unknown.
-        :rtype: DGroup
+    def add_tag(self, tag):
+        """Add a new tag.
+
+        :param tag: tag to add
+        :type tag: Tag
         """
-        stmt = 'SELECT id, identifier, description, parent ' \
-               ' FROM groups WHERE "identifier"=$1'
+        self.logger.debug("Add tag to DB: {}".format(tag))
+        stmt = "INSERT INTO tags(identifier, description, parent) VALUES (" \
+               "$1, $2, $3)"
+        parent = tag.parent.key if tag.parent is not None else None
+        try:
+            self.execute_sql(stmt, tag.name, tag.description, parent)
+        except UniqueError as u:
+            raise DuplicateException(tag, u)
+
+    def update_tag(self, tag):
+        """Update tag record."""
+        self.logger.debug("Update tag: {}".format(tag.name))
+        stmt = "UPDATE tags SET identifier=$1, description=$2, parent=$3 " \
+               "WHERE id=$4"
+        self.execute_sql(stmt, tag.name,
+                         tag.description,
+                         tag.parent.key if tag.parent is not None
+                         else None,
+                         tag.key)
+
+    def delete_tag(self, tag_):
+        """Delete given tag and all its assignments."""
+        stmt = "DELETE FROM tags WHERE id=$1"
+        self.execute_sql(stmt, tag_.key)
+
+    def number_of_tags(self):
+        """Provide number of tags currently in database."""
+        stmt = 'SELECT count(*) FROM tags'
         stmt_ = self.conn.prepare(stmt)
-        result = stmt_(name)
-        row = list(result[0])
-        return DGroup(*row)
-
-    def retrieve_series_by_name_segment(self, name):
-        """Retrieve series by name segment using wildcards.
-
-        Example: name: 'a%'
-
-        :param name: the name of the series
-        :type name: str
-        :return: groups.
-        :rtype: [DGroup]
-        """
-        stmt = 'SELECT id, identifier, description, parent ' \
-               'FROM groups WHERE "identifier"LIKE $1'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_(name)
-        records = [DGroup(*row) for row in result]
-        return list(records)
+        result = stmt_()
+        return result[0][0]
 
     def retrieve_all_tags(self):
         """Get all tags from database.
 
         :return: tags.
-        :rtype: [DTag]
+        :rtype: [Tag]
         """
         stmt = 'SELECT id, identifier, description, parent FROM tags'
         stmt_ = self.conn.prepare(stmt)
-        records = [DTag(*row) for row in stmt_()]
+        records = [self._create_tag(*row) for row in stmt_()]
         return list(records)
 
     def retrieve_tag_by_name(self, name):
@@ -498,7 +590,7 @@ class Persistence:
         result = stmt_(name)
         if result is None:
             return None
-        return DTag(*(list(result[0])))
+        return self._create_tag(*(list(result[0])))
 
     def retrieve_tags_by_name_segment(self, name):
         """Retrieve tags by name segment using wildcards.
@@ -510,13 +602,13 @@ class Persistence:
         :param limit: maximum number of records to retrieve
         :type limit: int
         :return: tags.
-        :rtype: [DTag]
+        :rtype: [Tag]
         """
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE "identifier"LIKE $1'
         stmt_ = self.conn.prepare(stmt)
         result = stmt_(name)
-        records = [DTag(*row) for row in result]
+        records = [self._create_tag(*row) for row in result]
         return list(records)
 
     def retrieve_tag_by_key(self, key):
@@ -525,7 +617,7 @@ class Persistence:
         :param key: the id of the tag
         :type key: int
         :return: tag.
-        :rtype: DTag
+        :rtype: Tag
         """
         stmt = 'SELECT id, identifier, description, parent FROM tags WHERE ' \
                '"id"=$1'
@@ -534,53 +626,15 @@ class Persistence:
         if result is None:
             return None
         row = result[0]
-        return DTag(*(list(row)))
+        return self._create_tag(*(list(row)))
 
-    def retrieve_all_series(self):
-        """Get all series from database.
+    def _create_tag(self, id, identifier, description, parent_id):
+        """Create a Tag instance from raw database record info.
 
-        :return: series.
-        :rtype: [DGroup]
+        Creates parent object if required.
         """
-        stmt = 'SELECT id, identifier, description, parent FROM groups'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_()
-        records = [DGroup(*row) for row in result]
-        return list(records)
-
-    def number_of_pictures(self):
-        """Provide number of pictures currently in database."""
-        stmt = 'SELECT count(*) FROM pictures'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_()
-        return result[0][0]
-
-    def number_of_groups(self):
-        """Provide number of groups currently in database."""
-        stmt = 'SELECT count(*) FROM groups'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_()
-        return result[0][0]
-
-    def number_of_tags(self):
-        """Provide number of tags currently in database."""
-        stmt = 'SELECT count(*) FROM tags'
-        stmt_ = self.conn.prepare(stmt)
-        result = stmt_()
-        return result[0][0]
-
-    def execute_sql(self, stmt_, *args):
-        try:
-            stmt = self.conn.prepare(stmt_)
-            stmt(*args)
-            self.conn.commit()
-            return True
-        except UniqueError as u:
-            self.conn.rollback()
-            self.logger.debug('duplicate: {}'.format(stmt))
-            raise u
-        except Exception as e:
-            self.conn.rollback()
-            messagebox.showerror(title='Database Error',
-                                 message='{}'.format(e))
-            return False
+        if parent_id is not None:
+            parent = self.retrieve_tag_by_key(parent_id)
+        else:
+            parent = None
+        return Tag(id, identifier, description, parent)

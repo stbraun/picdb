@@ -2,6 +2,7 @@
   <dictionary name="sb">
     <words>
       <w>argparse</w>
+      <w>dbapi</w>
       <w>minilib</w>
       <w>nosetests</w>
       <w>onefile</w>

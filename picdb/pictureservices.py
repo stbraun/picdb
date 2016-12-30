@@ -29,13 +29,8 @@ Service functions for pictures.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from .cache import LRUCache
 from .persistence import get_db
-from .tagservices import get_tag_from_d_object
 from .picture import Picture
-
-
-_picture_cache = LRUCache(20000)
 
 
 def save_picture(picture):
@@ -66,10 +61,8 @@ def _add_picture(picture):
 
 
 def _update_picture(picture):
-    global _picture_cache
     db = get_db()
     db.update_picture(picture)
-    _picture_cache.put(picture.key, picture)
 
 
 def delete_picture(picture):
@@ -90,14 +83,8 @@ def retrieve_picture_by_key(key):
     :return: picture object
     :rtype: Picture
     """
-    global _picture_cache
-    try:
-        picture = _picture_cache.get(key)
-    except KeyError:
-        db = get_db()
-        d_pic = db.retrieve_picture_by_key(key)
-        picture = Picture(*d_pic)
-        _picture_cache.put(key, picture)
+    db = get_db()
+    picture = db.retrieve_picture_by_key(key)
     return picture
 
 
@@ -109,11 +96,8 @@ def retrieve_picture_by_path(path):
     :return: picture object
     :rtype: Picture
     """
-    global _picture_cache
     db = get_db()
-    d_pic = db.retrieve_picture_by_path(path)
-    picture = Picture(*d_pic)
-    _picture_cache.put(picture.key, picture)
+    picture = db.retrieve_picture_by_path(path)
     return picture
 
 
@@ -131,12 +115,8 @@ def retrieve_filtered_pictures(path, limit, groups, tags):
     :return: pictures matching given criteria.
     :rtype: [Picture]
     """
-    global _picture_cache
     db = get_db()
-    d_pictures = db.retrieve_filtered_pictures(path, limit, groups, tags)
-    pictures = [get_picture_from_d_object(d_pic) for d_pic in d_pictures]
-    for picture in pictures:
-        _picture_cache.put(picture.key, picture)
+    pictures = db.retrieve_filtered_pictures(path, limit, groups, tags)
     return pictures
 
 
@@ -162,35 +142,12 @@ def remove_tags_from_picture(picture, tags):
 
 def retrieve_tags_for_picture(picture):
     db = get_db()
-    d_tags = db.retrieve_tags_for_picture(picture)
-    tags = [get_tag_from_d_object(d_tag) for d_tag in d_tags]
-    return tags
+    return db.retrieve_tags_for_picture(picture)
 
 
 def retrieve_pictures_by_tag(tag_):
     db = get_db()
-    d_pics = db.retrieve_pictures_by_tag(tag_)
-    pics = [get_picture_from_d_object(d_pic) for d_pic in d_pics]
-    return pics
-
-
-def get_picture_from_d_object(d_picture):
-    """Create picture or retrieve from picture cache.
-
-    :param d_picture: data object of picture
-    :type d_picture: DPicture
-    :return: picture object
-    :rtype: Picture
-    """
-    pic = None
-    try:
-        pic = _picture_cache.get(d_picture.key)
-    except KeyError:
-        pic = Picture(*d_picture)
-        pic.tags = retrieve_tags_for_picture(pic)
-        _picture_cache.put(pic.key, pic)
-    finally:
-        return pic
+    return db.retrieve_pictures_by_tag(tag_)
 
 
 def number_of_pictures():
