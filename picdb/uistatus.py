@@ -38,7 +38,7 @@ from pkgutil import get_data
 
 import psutil
 
-from .persistence import db_params
+from .persistence import db_params, _tag_cache, _picture_cache, _group_cache
 from .pictureservices import number_of_pictures
 from .groupservices import number_of_groups
 from .tagservices import number_of_tags
@@ -57,10 +57,14 @@ class StatusPanel(ttk.Frame):
         self.num_tags_var = tk.StringVar()
         self.memory_usage_var = tk.StringVar()
         self.database_var = tk.StringVar()
+        self.cache_stats_tag_var = tk.StringVar()
+        self.cache_stats_picture_var = tk.StringVar()
+        self.cache_stats_group_var = tk.StringVar()
         self.create_widgets()
         self.report_usage()
         self.show_db()
         self.data_statistics()
+        self.cache_statistics()
 
     def create_widgets(self):
         """Create widgets for view."""
@@ -71,7 +75,8 @@ class StatusPanel(ttk.Frame):
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
         self.columnconfigure(3, weight=1)
-        self.columnconfigure(4, weight=6)
+        self.columnconfigure(4, weight=1)
+        self.columnconfigure(5, weight=6)
         photo = tk.PhotoImage(data=img)
         image = ttk.Label(self, image=photo)
         image.photo = photo
@@ -96,11 +101,31 @@ class StatusPanel(ttk.Frame):
                                                                  sticky=(
                                                                      tk.W,
                                                                      tk.N))
+        ttk.Label(self, text="Cache stats (hits/misses), size").grid(row=0,
+                                                                     column=4,
+                                                                     sticky=(
+                                                                         tk.W,
+                                                                         tk.N))
+        ttk.Label(self, textvariable=self.cache_stats_picture_var).grid(row=1,
+                                                                        column=4,
+                                                                        sticky=(
+                                                                            tk.W,
+                                                                            tk.N))
+        ttk.Label(self, textvariable=self.cache_stats_group_var).grid(row=2,
+                                                                      column=4,
+                                                                      sticky=(
+                                                                          tk.W,
+                                                                          tk.N))
+        ttk.Label(self, textvariable=self.cache_stats_tag_var).grid(row=3,
+                                                                    column=4,
+                                                                    sticky=(
+                                                                    tk.W,
+                                                                    tk.N))
 
-    def _report_usage(self, prev_mem_info=None):
+    def _report_usage(self, mem_info=None):
         """report memory usage."""
         info = 'memory usage: {:6.3f}MB'.format(
-            prev_mem_info.rss / (1024 * 1024))
+            mem_info.rss / (1024 * 1024))
         self.memory_usage_var.set(info)
 
     def report_usage(self, prev_mem_info=None,
@@ -113,7 +138,8 @@ class StatusPanel(ttk.Frame):
                     (prev_mem_info is None or mem_info.rss >
                         prev_mem_info.rss)):
                 prev_mem_info = mem_info
-            self.after(500, self._report_usage,
+            self._report_usage(mem_info)
+            self.after(500, self.report_usage,
                        prev_mem_info)  # report every 0.5s
 
     def show_db(self):
@@ -135,4 +161,16 @@ class StatusPanel(ttk.Frame):
         self.num_pics_var.set(pics)
         self.num_groups_var.set(groups)
         self.num_tags_var.set(tags)
-        self.after(2000, self.data_statistics)
+        self.after(5000, self.data_statistics)
+
+    def cache_statistics(self):
+        """Show cache statistics."""
+        templ = '{:s}: {:d} / {}, {}'
+        vars = [self.cache_stats_tag_var, self.cache_stats_picture_var,
+                self.cache_stats_group_var]
+        names = ['tag', 'picture', 'group']
+        caches = [_tag_cache, _picture_cache, _group_cache]
+        for name, var, cache in zip(names, vars, caches):
+            var.set(
+                templ.format(name, cache.hits, cache.misses, cache.size))
+        self.after(1000, self.cache_statistics)

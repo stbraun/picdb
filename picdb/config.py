@@ -42,7 +42,7 @@ logger = logging.getLogger('picdb.config')
 __config = None
 
 # Search path for config file. Will default to packaged file.
-config_path = ['./picdb_app.yaml', '~/.picdb_app.yaml']
+config_path = ['./picdb_app.yaml', '~/.picdb/picdb_app.yaml']
 
 
 def _lookup_configuration():

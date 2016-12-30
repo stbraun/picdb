@@ -33,6 +33,7 @@ import argparse
 import logging
 import tkinter as tk
 from tkinter import ttk
+import os
 
 from .log import initialize_logger
 from .uistatus import StatusPanel
@@ -128,12 +129,20 @@ def create_db_by_arguments(args):
     create_db(DBParameters(args.db, args.user, args.passwd, args.port))
 
 
+def setup():
+    """Check for configuration and log folder and create it if it does not exist yet."""
+    app_folder = os.path.expanduser('~/.picdb')
+    if not os.path.exists(app_folder):
+        os.mkdir(app_folder)
+
+
 def start_application(argv):
     """ Entry point of the application.
 
     :param argv: command line arguments
     :type argv: [str]
     """
+    setup()
     initialize_logger()
     root = tk.Tk()
     root.rowconfigure(0, weight=1)

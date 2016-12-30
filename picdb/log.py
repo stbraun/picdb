@@ -7,7 +7,7 @@ import pkgutil
 import yaml
 
 # Search path for config file. Will default to packaged file.
-config_path = ['./picdb_log.yaml', '~/.picdb_log.yaml']
+config_path = ['./picdb_log.yaml', '~/.picdb/picdb_log.yaml']
 
 # The file used for logger configuration.
 _config_file = None

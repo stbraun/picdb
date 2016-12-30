@@ -105,3 +105,6 @@ class LRUCache:
         while len(self.__usage_list) > self.max_size:
             key = self.__usage_list.pop()
             self.__cache.pop(key)
+
+    def __iter__(self):
+        return iter(self.__cache)
