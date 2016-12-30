@@ -558,13 +558,13 @@ class PictureMetadataEditor(ttk.Frame, Observable):
                 save_group(group_)
         else:
             self.picture = self.editor.picture
-            self._update_series()
+            self._update_groups()
             tags = self.tag_selector.selected_items()
             self.picture.tags = tags
             save_picture(self.picture)
             self._call_listeners(self.EVT_ITEM_SAVED, None)
 
-    def _update_series(self):
+    def _update_groups(self):
         """Remove or add picture from groups according to changes made
         during editing."""
         saved_groups = set(retrieve_groups_for_picture(self.picture))

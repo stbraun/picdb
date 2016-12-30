@@ -202,8 +202,7 @@ def create_group_from_d_object(d_group):
             # replace key with Group instance
             parent = retrieve_series_by_key(d_group.parent)
             group.parent = parent
-        pictures = retrieve_pictures_for_group(group)
-        group.pictures = pictures
+        group.pictures = retrieve_pictures_for_group(group)
         _group_cache.put(group.key, group)
     finally:
         return group

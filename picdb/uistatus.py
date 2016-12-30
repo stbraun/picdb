@@ -114,7 +114,7 @@ class StatusPanel(ttk.Frame):
                         prev_mem_info.rss)):
                 prev_mem_info = mem_info
             self.after(500, self._report_usage,
-                       prev_mem_info)  # report in 0.5s
+                       prev_mem_info)  # report every 0.5s
 
     def show_db(self):
         """Display database info."""
