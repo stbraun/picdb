@@ -6,37 +6,37 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
+    level: WARNING
     formatter: simple
     stream: ext://sys.stdout
   file:
     class: logging.handlers.RotatingFileHandler
     level: DEBUG
     formatter: simple
-    filename: picdb.log
+    filename: /Users/sb/.picdb/picdb.log
     maxBytes: 10000000
     backupCount: 3
 loggers:
   picdb:
     level: WARNING
-    handlers: [console]
+    handlers: [console, file]
     propagate: no
   picdb.db:
-    level: WARNING
-    handlers: [console]
+    level: DEBUG
+    handlers: [console, file]
     propagate: no
   picdb.ui:
     level: WARNING
-    handlers: [console]
+    handlers: [console, file]
     propagate: no
   picdb.config:
     level: WARNING
-    handlers: [console]
+    handlers: [console, file]
     propagate: no
   picdb.logging:
     level: WARNING
-    handlers: [console]
+    handlers: [console, file]
     propagate: no
 root:
-  level: WARNING
-  handlers: [console]
+    level: WARNING
+    handlers: [console, file]
