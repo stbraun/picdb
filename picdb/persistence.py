@@ -188,8 +188,8 @@ class Persistence:
                "WHERE id=$4"
         self.execute_sql(stmt, series.name,
                          series.description,
-                         series.parent.key if series.parent is not
-                                              None else None,
+                         series.parent.key if series.parent is not None else
+                         None,
                          series.key)
 
     def delete_group(self, group_):
@@ -339,12 +339,13 @@ class Persistence:
         try:
             return _group_cache.get(key)
         except KeyError:
-            self.logger.debug("_create_group({}, {}, ...)".format(key, identifier))
+            self.logger.debug(
+                "_create_group({}, {}, ...)".format(key, identifier))
             if parent_id is not None:
                 parent = self.retrieve_group_by_key(parent_id)
             else:
                 parent = None
-            group = Group(key, identifier, description, parent)
+            group = Group(key, identifier, description, parent=parent)
             pictures = self.retrieve_pictures_for_group(group)
             group.pictures = pictures
             _group_cache.put(key, group)
@@ -393,7 +394,8 @@ class Persistence:
         :param tag: the tag
         :type tag: Tag
         """
-        self.logger.debug("add_tag_to_picture({!r}, {!r})".format(picture, tag))
+        self.logger.debug(
+            "add_tag_to_picture({!r}, {!r})".format(picture, tag))
         stmt = '''INSERT INTO picture2tag VALUES($1, $2)'''
         self.execute_sql(stmt, picture.key, tag.key)
 
@@ -405,7 +407,8 @@ class Persistence:
         :param tag: the tag
         :type tag: Tag
         """
-        self.logger.debug("remove_tag_from_picture({!r}, {!r})".format(picture, tag))
+        self.logger.debug(
+            "remove_tag_from_picture({!r}, {!r})".format(picture, tag))
         stmt = '''DELETE FROM picture2tag WHERE picture=$1 AND tag=$2'''
         self.execute_sql(stmt, picture.key, tag.key)
 
@@ -463,7 +466,8 @@ class Persistence:
         :return: pictures matching given path.
         :rtype: [Picture]
         """
-        self.logger.debug("retrieve_filtered_pictures({!r}, {!r}, ...)".format(path, limit))
+        self.logger.debug(
+            "retrieve_filtered_pictures({!r}, {!r}, ...)".format(path, limit))
         stmt_p = 'SELECT DISTINCT id, identifier, path, description ' \
                  'FROM pictures WHERE ' \
                  '"path" LIKE $1'
@@ -536,7 +540,8 @@ class Persistence:
         try:
             return _picture_cache.get(key)
         except KeyError:
-            self.logger.debug("_create_picture({!r}, {!r}, ...)".format(key, identifier))
+            self.logger.debug(
+                "_create_picture({!r}, {!r}, ...)".format(key, identifier))
             picture = Picture(key, identifier, path, description)
             tags = self.retrieve_tags_for_picture(picture)
             picture.tags = tags
@@ -660,11 +665,12 @@ class Persistence:
         try:
             return _tag_cache.get(key)
         except KeyError:
-            self.logger.debug("_create_tag({!r}, {!r}), ...".format(key, identifier))
+            self.logger.debug(
+                "_create_tag({!r}, {!r}), ...".format(key, identifier))
             if parent_id is not None:
                 parent = self.retrieve_tag_by_key(parent_id)
             else:
                 parent = None
-            tag = Tag(key, identifier, description, parent)
+            tag = Tag(key, identifier, description, parent=parent)
             _tag_cache.put(key, tag)
             return tag

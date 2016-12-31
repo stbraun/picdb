@@ -130,7 +130,10 @@ def create_db_by_arguments(args):
 
 
 def setup():
-    """Check for configuration and log folder and create it if it does not exist yet."""
+    """Check for configuration and log folder.
+
+    Create it if it does not exist yet.
+    """
     app_folder = os.path.expanduser('~/.picdb')
     if not os.path.exists(app_folder):
         os.mkdir(app_folder)

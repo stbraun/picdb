@@ -34,7 +34,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
-from .group import Group
 from .groupservices import retrieve_groups_by_name, delete_group, \
     retrieve_groups_by_name_segment, retrieve_group_by_key, get_all_groups, \
     save_group as save_group_, create_group

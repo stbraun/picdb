@@ -30,7 +30,6 @@ Service functions for pictures.
 # THE SOFTWARE.
 
 from .persistence import get_db
-from .picture import Picture
 
 
 def save_picture(picture):

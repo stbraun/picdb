@@ -101,26 +101,30 @@ class StatusPanel(ttk.Frame):
                                                                  sticky=(
                                                                      tk.W,
                                                                      tk.N))
-        ttk.Label(self, text="Cache stats (hits/misses), size").grid(row=0,
-                                                                     column=4,
-                                                                     sticky=(
-                                                                         tk.W,
-                                                                         tk.N))
-        ttk.Label(self, textvariable=self.cache_stats_picture_var).grid(row=1,
-                                                                        column=4,
-                                                                        sticky=(
-                                                                            tk.W,
-                                                                            tk.N))
-        ttk.Label(self, textvariable=self.cache_stats_group_var).grid(row=2,
-                                                                      column=4,
-                                                                      sticky=(
-                                                                          tk.W,
-                                                                          tk.N))
-        ttk.Label(self, textvariable=self.cache_stats_tag_var).grid(row=3,
-                                                                    column=4,
-                                                                    sticky=(
+        ttk.Label(self,
+                  text="Cache stats (hits/misses), size").grid(row=0,
+                                                               column=4,
+                                                               sticky=(
+                                                                   tk.W,
+                                                                   tk.N))
+        ttk.Label(self,
+                  textvariable=self.cache_stats_picture_var).grid(row=1,
+                                                                  column=4,
+                                                                  sticky=(
+                                                                      tk.W,
+                                                                      tk.N))
+        ttk.Label(self,
+                  textvariable=self.cache_stats_group_var).grid(row=2,
+                                                                column=4,
+                                                                sticky=(
                                                                     tk.W,
                                                                     tk.N))
+        ttk.Label(self,
+                  textvariable=self.cache_stats_tag_var).grid(row=3,
+                                                              column=4,
+                                                              sticky=(
+                                                                  tk.W,
+                                                                  tk.N))
 
     def _report_usage(self, mem_info=None):
         """report memory usage."""
