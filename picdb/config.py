@@ -32,6 +32,7 @@ Configure the application for your needs.
 # THE SOFTWARE.
 
 import os
+import collections.abc
 import logging
 import pkgutil
 import yaml
@@ -74,14 +75,47 @@ def __initialize_configuration():
     return conf_dict
 
 
-def get_configuration(key):
+def get_configuration(key, default=None):
     """Retrieve configuration for given key."""
     logger.info('Retrieving application configuration key: <{}>'.format(key))
     global __config
     if __config is None:
-        __config = __initialize_configuration()
-    value = __config[key]
+        __config = Configuration(__initialize_configuration())
+    value = __config.get_value(key, default)
     logger.info(
         'Retrieved application configuration key: <{}> -> <{}>'.format(key,
                                                                        value))
     return value
+
+
+class Configuration:
+    """Configuration container."""
+
+    def __init__(self, conf_dict=None):
+        self._conf = conf_dict.copy() if conf_dict is not None else {}
+
+    def get_value(self, key, default=None):
+        """Retrieve a configuration based on its key.
+
+        For nested configuration items a hierarchical key may be given,
+        e.g. parent.child.
+
+        If key is unknown the default value will be returned. If no default
+        value is given a KeyError is raised.
+
+        :param key: the key.
+        :type key: str
+        :param default: optional default value.
+        :return: configured value for given key.
+        :raises: KeyError if key is unknown and no default is given.
+        """
+        keys = key.split('.')
+        try:
+            v = self._conf[keys[0]]
+            for key in keys[1:]:
+                v = v[key]
+            return v
+        except KeyError as e:
+            if default is None:
+                raise e
+            return default

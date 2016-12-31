@@ -41,9 +41,9 @@ from .group import Group
 from .picture import Picture
 from .tag import Tag
 
-_tag_cache = LRUCache(2000)
-_picture_cache = LRUCache(20000)
-_group_cache = LRUCache(2000)
+_tag_cache = LRUCache(get_configuration('cache.tags', 1000))
+_picture_cache = LRUCache(get_configuration('cache.pictures', 20000))
+_group_cache = LRUCache(get_configuration('cache.groups', 1000))
 
 # This module global variable will hold the Persistence instance.
 _db = None

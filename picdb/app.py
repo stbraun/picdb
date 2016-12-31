@@ -95,26 +95,26 @@ def _parse_arguments(args):
     parser = argparse.ArgumentParser(
         description='Assign tags to pictures and pictures to groups.')
     parser.add_argument('--db', action='store', dest='db',
-                        default=get_configuration('db_name'),
+                        default=get_configuration('db.name'),
                         help='Name to database to use. Overrides '
                              'configuration file.')
     parser.add_argument('--user', action='store', dest='user',
-                        default=get_configuration('db_user'),
+                        default=get_configuration('db.user'),
                         help='Database user. Overrides '
                              'configuration file.')
     parser.add_argument('--passwd', action='store', dest='passwd',
-                        default=get_configuration('db_passwd'),
+                        default=get_configuration('db.passwd'),
                         help='Password of database user. Overrides '
                              'configuration file.')
     parser.add_argument('--port', action='store', dest='port',
-                        default=get_configuration('db_port'),
+                        default=get_configuration('db.port'),
                         help='Port of database to use. Overrides '
                              'configuration file.')
     parser.add_argument('--title', action='store', dest='title',
                         default='PicDB',
                         help='Window title.')
     parser.add_argument('--geometry', action='store', dest='geometry',
-                        default=get_configuration('geometry'),
+                        default=get_configuration('ui.geometry'),
                         help='Window geometry, e.g. "2200x1000+100+100".')
     arguments = parser.parse_args(args)
     return arguments

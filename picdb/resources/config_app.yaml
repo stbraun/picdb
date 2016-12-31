@@ -1,10 +1,16 @@
 version: 1
-db_user: sb
-db_passwd: sb
-# db_name: mypics
-db_name: pictest
-db_host: 127.0.0.1
-db_port: 5432
+db:
+  user: sb
+  passwd: sb
+  name: pictest
+  host: 127.0.0.1
+  port: 5432
 
-# Specify window geometry <width>x<height>+<x-offset>+<y-offset>
-geometry: 2200x1000+20+10
+ui:
+  # Specify window geometry <width>x<height>+<x-offset>+<y-offset>
+  geometry: 2500x1200+10+10
+
+cache:
+  tags: 2000
+  pictures: 100000
+  groups: 2000
