@@ -32,7 +32,6 @@ Configure the application for your needs.
 # THE SOFTWARE.
 
 import os
-import collections.abc
 import logging
 import pkgutil
 import yaml
