@@ -17,3 +17,8 @@ cache:
   tags: -1
   pictures: -1
   groups: -1
+
+trace:
+  # configure method tracing: will create massive files and slow down the app.
+  activate: False
+  trace_file: /Users/sb/.picdb/trace.txt

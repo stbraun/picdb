@@ -29,6 +29,9 @@ Application entry for PicDB.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import sys
+import functools
+
 import argparse
 import logging
 import tkinter as tk
@@ -139,10 +142,6 @@ def setup():
         os.mkdir(app_folder)
 
 
-import sys
-import functools
-
-
 def traceit(fo, frame, event, arg):
     """Trace function."""
     fname = frame.f_code.co_filename
@@ -157,27 +156,35 @@ def traceit(fo, frame, event, arg):
     return functools.partial(traceit, fo)
 
 
+def main(args, root):
+    create_db_by_arguments(args)
+    root.geometry(args.geometry)
+    app = Application(root)
+    app.set_title(args.title)
+    app.mainloop()
+
+
 def start_application(argv):
     """ Entry point of the application.
 
     :param argv: command line arguments
     :type argv: [str]
     """
-    with open('/Users/sb/Development/projects/picdb/reports/trace.txt', 'w') as fo:
-        # sys.settrace(functools.partial(traceit, fo))
-        try:
-            setup()
-            initialize_logger()
-            root = tk.Tk()
-            root.rowconfigure(0, weight=1)
-            root.columnconfigure(0, weight=1)
-            # no tear-off menus
-            root.option_add('*tearoff', False)
-            args = _parse_arguments(argv)
-            create_db_by_arguments(args)
-            root.geometry(args.geometry)
-            app = Application(root)
-            app.set_title(args.title)
-            app.mainloop()
-        finally:
-            sys.settrace(None)
+    setup()
+    initialize_logger()
+    root = tk.Tk()
+    root.rowconfigure(0, weight=1)
+    root.columnconfigure(0, weight=1)
+    # no tear-off menus
+    root.option_add('*tearoff', False)
+    args = _parse_arguments(argv)
+    if get_configuration('trace.activate', default=False):
+        with open(get_configuration('trace.trace_file',
+                                    default='/tmp/picdb.trace'), 'w') as fo:
+            sys.settrace(functools.partial(traceit, fo))
+            try:
+                main(args, root)
+            finally:
+                sys.settrace(None)
+    else:
+        main(args, root)
