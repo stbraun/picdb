@@ -139,22 +139,45 @@ def setup():
         os.mkdir(app_folder)
 
 
+import sys
+import functools
+
+
+def traceit(fo, frame, event, arg):
+    """Trace function."""
+    fname = frame.f_code.co_filename
+    if 'picdb/picdb' in fname and event in ('call', 'return'):
+        template = '{evt} {file} {func} {line} {res!s}\n'
+        record = template.format(evt=event, file=fname,
+                                 func=frame.f_code.co_name,
+                                 line=frame.f_lineno,
+                                 res=arg)
+        fo.write(record)
+        fo.flush()
+    return functools.partial(traceit, fo)
+
+
 def start_application(argv):
     """ Entry point of the application.
 
     :param argv: command line arguments
     :type argv: [str]
     """
-    setup()
-    initialize_logger()
-    root = tk.Tk()
-    root.rowconfigure(0, weight=1)
-    root.columnconfigure(0, weight=1)
-    # no tear-off menus
-    root.option_add('*tearoff', False)
-    args = _parse_arguments(argv)
-    create_db_by_arguments(args)
-    root.geometry(args.geometry)
-    app = Application(root)
-    app.set_title(args.title)
-    app.mainloop()
+    with open('/Users/sb/Development/projects/picdb/reports/trace.txt', 'w') as fo:
+        # sys.settrace(functools.partial(traceit, fo))
+        try:
+            setup()
+            initialize_logger()
+            root = tk.Tk()
+            root.rowconfigure(0, weight=1)
+            root.columnconfigure(0, weight=1)
+            # no tear-off menus
+            root.option_add('*tearoff', False)
+            args = _parse_arguments(argv)
+            create_db_by_arguments(args)
+            root.geometry(args.geometry)
+            app = Application(root)
+            app.set_title(args.title)
+            app.mainloop()
+        finally:
+            sys.settrace(None)
