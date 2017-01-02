@@ -44,7 +44,7 @@ from .groupservices import retrieve_groups_for_picture, save_group
 from .persistence import DuplicateException
 from .picture import Picture
 from .pictureservices import save_picture, retrieve_picture_by_path, \
-    retrieve_filtered_pictures, retrieve_picture_by_key
+    retrieve_filtered_pictures, retrieve_picture_by_key, delete_picture
 from .uicommon import tag_all_children, Observable
 from .uigroups import GroupSelector
 from .uimasterdata import PicTreeView, FilteredTreeView
@@ -391,7 +391,7 @@ class PictureReferenceTree(PicTreeView):
             for group_ in groups:
                 group_.remove_picture(pic)
                 save_group(group_)
-            pic.delete()
+                delete_picture(pic)
 
     def _show_selected_pic_in_external_viewer(self):
         """Show selected pictures in external viewer."""
