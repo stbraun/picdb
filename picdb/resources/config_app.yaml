@@ -12,6 +12,8 @@ ui:
   geometry: 2500x1200+10+10
 
 cache:
-  tags: 2000
-  pictures: 100000
-  groups: 2000
+  # Maximum size of LRU caches.
+  # Zero or negative number gives unlimited cache size.
+  tags: -1
+  pictures: -1
+  groups: -1

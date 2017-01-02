@@ -353,7 +353,8 @@ class FilteredTreeView(ttk.Frame, Observable):
         """Load a bunch of items from database."""
         self.tree.clear()
         items = self._retrieve_items()
-        for item in items:
+        # reverse sort items to speed up insertion into tree
+        for item in reversed(sorted(items)):
             self.tree.add_item(item)
 
     def _retrieve_items(self):

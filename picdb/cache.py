@@ -29,28 +29,33 @@ A simple LRU cache.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from collections import deque
+
 
 class LRUCache:
     """LRU cache."""
     def __init__(self, max_size):
         self.max_size = max_size
+        self.lru_required = self.max_size >= 0
         self.__cache = {}
-        self.__usage_list = []
+        self.__usage_list = deque()
         self._misses = 0
         self._hits = 0
 
     def put(self, key, item):
         """Put item into __cache."""
         self.__cache[key] = item
-        self.__update_usage(key)
-        self.__keep_max_size()
+        if self.lru_required:
+            self.__update_usage(key)
+            self.__keep_max_size()
 
     def get(self, key):
         """Try to retrieve item """
         try:
             item = self.__cache[key]
             self._hits += 1
-            self.__update_usage(key)
+            if self.lru_required:
+                self.__update_usage(key)
             return item
         except KeyError:
             self._misses += 1
@@ -63,7 +68,7 @@ class LRUCache:
         :return: current cace entries.
         :rtype: int
         """
-        return len(self.__usage_list)
+        return len(self.__cache)
 
     @property
     def misses(self):
@@ -86,7 +91,7 @@ class LRUCache:
     def clear(self):
         """Clear cache."""
         self.__cache = {}
-        self.__usage_list = []
+        self.__usage_list.clear()
         self._misses = 0
         self._hits = 0
 
@@ -98,7 +103,7 @@ class LRUCache:
         """
         if key in self.__usage_list:
             self.__usage_list.remove(key)
-        self.__usage_list.insert(0, key)
+        self.__usage_list.appendleft(key)
 
     def __keep_max_size(self):
         """ Keep cache size in required range. """
