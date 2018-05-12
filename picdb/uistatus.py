@@ -133,14 +133,14 @@ class StatusPanel(ttk.Frame):
         self.memory_usage_var.set(info)
 
     def report_usage(self, prev_mem_info=None,
-                     p=psutil.Process(os.getpid())):
+                     process=psutil.Process(os.getpid())):
         """Report memory usage."""
         # find max memory
-        if p.is_running():
-            mem_info = p.memory_info()
+        if process.is_running():
+            mem_info = process.memory_info()
             if (mem_info != prev_mem_info and
-                    (prev_mem_info is None or mem_info.rss >
-                        prev_mem_info.rss)):
+                (prev_mem_info is None or mem_info.rss >
+                 prev_mem_info.rss)):
                 prev_mem_info = mem_info
             self._report_usage(mem_info)
             self.after(500, self.report_usage,
@@ -170,11 +170,11 @@ class StatusPanel(ttk.Frame):
     def cache_statistics(self):
         """Show cache statistics."""
         templ = '{:s}: {:d} / {}, {}'
-        vars = [self.cache_stats_tag_var, self.cache_stats_picture_var,
+        variabless = [self.cache_stats_tag_var, self.cache_stats_picture_var,
                 self.cache_stats_group_var]
         names = ['tag', 'picture', 'group']
         caches = [_TAG_CACHE, _PICTURE_CACHE, _GROUP_CACHE]
-        for name, var, cache in zip(names, vars, caches):
+        for name, var, cache in zip(names, variabless, caches):
             var.set(
                 templ.format(name, cache.hits, cache.misses, cache.size))
         self.after(1000, self.cache_statistics)

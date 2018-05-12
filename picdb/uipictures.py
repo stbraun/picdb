@@ -31,11 +31,9 @@ Manage pictures via UI.
 
 import logging
 import os
-import tkinter as tk
 import webbrowser
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import ttk
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
 
 from PIL import Image, ImageTk
 
@@ -206,10 +204,12 @@ class PictureManagement(ttk.Frame):
                                      image=self.image,
                                      tags=self.image_tag)
 
-    def _fit_image(self, event=None, _last=[None] * 2):
+    def _fit_image(self, event=None, _last=None):
         """Fit image inside application window on resize."""
+        if _last is None:
+            _last = [None, None]
         if event is not None and event.widget is self.canvas and (
-                    _last[0] != event.width or _last[1] != event.height):
+            _last[0] != event.width or _last[1] != event.height):
             # size changed; update image
             self.logger.info(
                 'Resize event on canvas: ({}, {})'.format(event.width,

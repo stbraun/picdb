@@ -377,11 +377,11 @@ class FilteredTreeView(ttk.Frame, Observable):
 
     def _validate_limit(self):
         """Validator for limit entry."""
-        x = self.limit_entry.get()
-        self.logger.info("limit = {}".format(x))
+        limit = self.limit_entry.get()
+        self.logger.info("limit = {}".format(limit))
         try:
-            int(x)
+            int(limit)
         except ValueError:
-            self.limit_entry.delete(0, len(x))
+            self.limit_entry.delete(0, len(limit))
             self.limit_entry.insert(0, str(self.limit_default))
         return True
