@@ -40,6 +40,6 @@ def get_resource_path(package, resource):
 
     Example: get_resource_path('mypackage', 'resources/mydata')
     """
-    d = os.path.dirname(sys.modules[package].__file__)
-    path = os.path.join(d, resource)
+    package_dir = os.path.dirname(sys.modules[package].__file__)
+    path = os.path.join(package_dir, resource)
     return path

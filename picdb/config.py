@@ -36,13 +36,13 @@ import logging
 import pkgutil
 import yaml
 
-logger = logging.getLogger('picdb.config')
+LOGGER = logging.getLogger('picdb.config')
 
 # The configuration dictionary.
-__config = None
+__CONFIG = None
 
 # Search path for config file. Will default to packaged file.
-config_path = ['./picdb_app.yaml', '~/.picdb/picdb_app.yaml']
+CONFIG_PATH = ['./picdb_app.yaml', '~/.picdb/picdb_app.yaml']
 
 
 def _lookup_configuration():
@@ -51,12 +51,11 @@ def _lookup_configuration():
     :return: opened configuration file
     :rtype: stream
     """
-    global config_path
-    for pth in config_path:
+    for pth in CONFIG_PATH:
         path = os.path.abspath(os.path.expanduser(pth))
-        logger.debug('Checking for {}'.format(path))
+        LOGGER.debug('Checking for {}'.format(path))
         if os.path.exists(path):
-            logger.info('Config file: {}'.format(path))
+            LOGGER.info('Config file: {}'.format(path))
             return open(path)
     return pkgutil.get_data('picdb', 'resources/config_app.yaml')
 
@@ -67,21 +66,21 @@ def __initialize_configuration():
     :return: configuration dictionary
     :rtype: dict
     """
-    logger.info('Initializing application configuration ...')
+    LOGGER.info('Initializing application configuration ...')
     cfg = _lookup_configuration()
     conf_dict = yaml.safe_load(cfg)
-    logger.info('Application configuration initialized.')
+    LOGGER.info('Application configuration initialized.')
     return conf_dict
 
 
 def get_configuration(key, default=None):
     """Retrieve configuration for given key."""
-    logger.info('Retrieving application configuration key: <{}>'.format(key))
-    global __config
-    if __config is None:
-        __config = Configuration(__initialize_configuration())
-    value = __config.get_value(key, default)
-    logger.info(
+    LOGGER.info('Retrieving application configuration key: <{}>'.format(key))
+    global __CONFIG
+    if __CONFIG is None:
+        __CONFIG = Configuration(__initialize_configuration())
+    value = __CONFIG.get_value(key, default)
+    LOGGER.info(
         'Retrieved application configuration key: <{}> -> <{}>'.format(key,
                                                                        value))
     return value
@@ -108,13 +107,17 @@ class Configuration:
         :return: configured value for given key.
         :raises: KeyError if key is unknown and no default is given.
         """
-        keys = key.split('.')
+        sub_keys = key.split('.')
         try:
-            v = self._conf[keys[0]]
-            for key in keys[1:]:
-                v = v[key]
-            return v
-        except KeyError as e:
+            value = self._conf[sub_keys[0]]
+            for child_key in sub_keys[1:]:
+                value = value[child_key]
+            return value
+        except KeyError as err:
             if default is None:
-                raise e
+                raise err
             return default
+
+    def set_value(self, key, value):
+        """Set the value of a configuration item. """
+        self._conf[key] = value

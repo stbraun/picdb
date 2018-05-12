@@ -142,7 +142,7 @@ def setup():
         os.mkdir(app_folder)
 
 
-def traceit(fo, frame, event, arg):
+def traceit(output_file, frame, event, arg):
     """Trace function."""
     fname = frame.f_code.co_filename
     if 'picdb/picdb' in fname and event in ('call', 'return'):
@@ -151,12 +151,13 @@ def traceit(fo, frame, event, arg):
                                  func=frame.f_code.co_name,
                                  line=frame.f_lineno,
                                  res=arg)
-        fo.write(record)
-        fo.flush()
-    return functools.partial(traceit, fo)
+        output_file.write(record)
+        output_file.flush()
+    return functools.partial(traceit, output_file)
 
 
 def main(args, root):
+    """Start application. """
     create_db_by_arguments(args)
     root.geometry(args.geometry)
     app = Application(root)
@@ -180,8 +181,9 @@ def start_application(argv):
     args = _parse_arguments(argv)
     if get_configuration('trace.activate', default=False):
         with open(get_configuration('trace.trace_file',
-                                    default='/tmp/picdb.trace'), 'w') as fo:
-            sys.settrace(functools.partial(traceit, fo))
+                                    default='/tmp/picdb.trace'),
+                  'w') as trace_file:
+            sys.settrace(functools.partial(traceit, trace_file))
             try:
                 main(args, root)
             finally:

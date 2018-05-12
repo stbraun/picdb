@@ -7,7 +7,7 @@ import pkgutil
 import yaml
 
 # Search path for config file. Will default to packaged file.
-config_path = ['./picdb_log.yaml', '~/.picdb/picdb_log.yaml']
+CONFIG_PATH = ['./picdb_log.yaml', '~/.picdb/picdb_log.yaml']
 
 # The file used for logger configuration.
 _config_file = None
@@ -19,7 +19,7 @@ def _lookup_configuration():
     :return: opened configuration file
     :rtype: stream
     """
-    global config_path
+    global CONFIG_PATH
     global _config_file
     for pth in config_path:
         path = os.path.abspath(os.path.expanduser(pth))
