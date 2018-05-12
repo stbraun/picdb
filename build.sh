@@ -18,7 +18,7 @@ flake8 --output-file reports/flake8.txt --benchmark --count --statistics picdb s
 pylint --rcfile=resrc/pylintrc picdb > reports/pylint.txt
 
 # run test and measure coverage
-nosetests --with-coverage --cover-branches --cover-inclusive --with-xunit --xunit-file=reports/nosetests.xml --cover-html --cover-html-dir=reports/coverage --cover-xml --cover-xml-file=reports/coverage.xml test/
+nosetests --with-coverage --cover-branches --cover-inclusive --with-xunit --xunit-file=reports/nosetests.xml --cover-html --cover-html-dir=reports/coverage --cover-xml --cover-xml-file=reports/coverage.xml test/  > reports/nosetest.txt 2>&1
 
 # build source distribution tarball
 paver sdist
