@@ -20,7 +20,15 @@ else
 fi
 
 # run sanity checks
-flake8 --output-file reports/flake8.txt --benchmark --count --statistics picdb start_picdb.py
+if flake8 --output-file reports/flake8.txt --benchmark --count --statistics picdb start_picdb.py; then
+    echo "=====================";
+    echo " sanity tests passed ";
+    echo "=====================";
+else
+    echo "=====================";
+    echo " sanity tests failed ";
+    echo "=====================";
+fi
 
 if pylint --rcfile=resrc/pylintrc picdb > reports/pylint.txt; then
     echo "========================";
