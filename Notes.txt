@@ -14,7 +14,6 @@ First cd into project folder
 
 
 
-
 pyinstaller: create_app.sh
 
 See also pyinstaller-hooks for patches required for tcl and tk
