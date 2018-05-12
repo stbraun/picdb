@@ -89,7 +89,7 @@ class Observable:
         :type event_identifier: str
         """
         if event_identifier in self.listeners.keys():
-            del(self.listeners[event_identifier])
+            del self.listeners[event_identifier]
 
     def _call_listeners(self, event_identifier, event=None):
         """Call registered listeners for event_identifier."""

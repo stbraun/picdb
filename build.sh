@@ -32,7 +32,7 @@ fi
 
 if pylint --rcfile=resrc/pylintrc picdb > reports/pylint.txt; then
     echo "========================";
-    echo " static analysis passed";
+    echo " static analysis passed ";
     echo "========================";
 else
     echo "========================";

@@ -42,33 +42,33 @@ def save_tag(tag_):
 
 def add_tag(tag_):
     """Add given tag to database."""
-    db = get_db()
-    db.add_tag(tag_)
+    database = get_db()
+    database.add_tag(tag_)
 
 
 def update_tag(tag_):
     """Update given tag in database."""
-    db = get_db()
-    db.update_tag(tag_)
+    database = get_db()
+    database.update_tag(tag_)
 
 
 def delete_tag(tag_):
     """Delete given tag from database."""
-    db = get_db()
-    db.delete_tag(tag_)
+    database = get_db()
+    database.delete_tag(tag_)
 
 
 def get_all_tags():
     """Get all tags from database."""
-    db = get_db()
-    tags = db.retrieve_all_tags()
+    database = get_db()
+    tags = database.retrieve_all_tags()
     return tags
 
 
 def retrieve_tag_by_key(key):
     """Retrieve tag by given key."""
-    db = get_db()
-    tag = db.retrieve_tag_by_key(key)
+    database = get_db()
+    tag = database.retrieve_tag_by_key(key)
     if tag is None:
         raise UnknownEntityException(
             'Tag with key {} is unknown.'.format(key))
@@ -77,8 +77,8 @@ def retrieve_tag_by_key(key):
 
 def retrieve_tag_by_name(name):
     """Retrieve tag by given name."""
-    db = get_db()
-    tag = db.retrieve_tag_by_name(name)
+    database = get_db()
+    tag = database.retrieve_tag_by_name(name)
     if tag is None:
         raise UnknownEntityException(
             'Tag with name {} is unknown.'.format(name))
@@ -87,12 +87,12 @@ def retrieve_tag_by_name(name):
 
 def retrieve_tags_by_name_segment(name, limit):
     """Retrieve tag by given name segment."""
-    db = get_db()
-    tags = db.retrieve_tags_by_name_segment(name)
+    database = get_db()
+    tags = database.retrieve_tags_by_name_segment(name)
     return tags
 
 
 def number_of_tags():
     """Provide number of tags currently in database."""
-    db = get_db()
-    return db.number_of_tags()
+    database = get_db()
+    return database.number_of_tags()

@@ -43,6 +43,7 @@ class Picture(Entity):
 
     @property
     def tags(self):
+        """Get pictures tags."""
         return self._tags
 
     @tags.setter

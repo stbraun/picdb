@@ -34,6 +34,9 @@ from .group import Group
 
 
 def save_group(group_):
+    """Save group to database.
+
+    Add group if it is new or update in case of existing group."""
     if group_.key is None:
         __add_group(group_)
     else:
@@ -42,6 +45,7 @@ def save_group(group_):
 
 
 def __add_group(group_):
+    """Add new group."""
     db = get_db()
     db.add_group(group_)
 
@@ -58,24 +62,28 @@ def __update_pictures(group_):
 
 
 def update_group(group):
-    db = get_db()
-    db.update_group(group)
+    """Update given group in database."""
+    data_base = get_db()
+    data_base.update_group(group)
 
 
 def delete_group(group_):
-    db = get_db()
-    db.delete_group(group_)
+    """Delete given group from database."""
+    data_base = get_db()
+    data_base.delete_group(group_)
 
 
 def get_all_groups():
-    db = get_db()
-    groups = db.retrieve_all_groups()
+    """Retrieve all groups."""
+    data_base = get_db()
+    groups = data_base.retrieve_all_groups()
     return groups
 
 
 def retrieve_group_by_key(key):
-    db = get_db()
-    group = db.retrieve_group_by_key(key)
+    """Retrieve group for given key."""
+    data_base = get_db()
+    group = data_base.retrieve_group_by_key(key)
     if group is None:
         raise UnknownEntityException(
             'Group with key {} is unknown.'.format(key))
@@ -88,8 +96,9 @@ def retrieve_groups_by_name(name):
 
 
 def retrieve_groups_by_name_segment(name, limit):
-    db = get_db()
-    return db.retrieve_groups_by_name_segment(name)
+    """Retrieve groups matching given name or name segment."""
+    data_base = get_db()
+    return data_base.retrieve_groups_by_name_segment(name)
 
 
 def retrieve_pictures_for_group(group):
@@ -100,8 +109,8 @@ def retrieve_pictures_for_group(group):
     :return: assigned pictures
     :rtype: [Picture]
     """
-    db = get_db()
-    return db.retrieve_pictures_for_group(group)
+    data_base = get_db()
+    return data_base.retrieve_pictures_for_group(group)
 
 
 def retrieve_groups_for_picture(picture):
@@ -112,13 +121,14 @@ def retrieve_groups_for_picture(picture):
     :return: groups the picture is assigned to
     :rtype: [Group]
     """
-    db = get_db()
-    return db.retrieve_groups_for_picture(picture)
+    data_base = get_db()
+    return data_base.retrieve_groups_for_picture(picture)
 
 
 def add_picture_to_group(group_, picture):
-    db = get_db()
-    db.add_picture_to_group(picture, group_)
+    """Add given picture to group."""
+    data_base = get_db()
+    data_base.add_picture_to_group(picture, group_)
 
 
 def add_pictures_to_group(group_, pictures_):
@@ -134,13 +144,15 @@ def add_pictures_to_group(group_, pictures_):
 
 
 def add_picture_to_set_of_groups(picture, groups):
+    """Add given picture to groups."""
     for item in groups:
         add_picture_to_group(item, picture)
 
 
 def remove_picture_from_group(group_, picture):
-    db = get_db()
-    db.remove_picture_from_group(picture, group_)
+    """Remove given picture from group."""
+    data_base = get_db()
+    data_base.remove_picture_from_group(picture, group_)
 
 
 def remove_pictures_from_group(group_, pictures_):
@@ -156,6 +168,7 @@ def remove_pictures_from_group(group_, pictures_):
 
 
 def remove_picture_from_set_of_groups(picture, groups):
+    """Remove given picture from groups."""
     for item in groups:
         remove_picture_from_group(item, picture)
 
@@ -176,5 +189,5 @@ def create_group(key=None, name='', description=''):
 
 def number_of_groups():
     """Provide number of groups currently in database."""
-    db = get_db()
-    return db.number_of_groups()
+    data_base = get_db()
+    return data_base.number_of_groups()

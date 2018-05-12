@@ -10,7 +10,7 @@ import yaml
 CONFIG_PATH = ['./picdb_log.yaml', '~/.picdb/picdb_log.yaml']
 
 # The file used for logger configuration.
-_config_file = None
+_CONFIG_FILE = None
 
 
 def _lookup_configuration():
@@ -19,14 +19,13 @@ def _lookup_configuration():
     :return: opened configuration file
     :rtype: stream
     """
-    global CONFIG_PATH
-    global _config_file
-    for pth in config_path:
+    global _CONFIG_FILE
+    for pth in CONFIG_PATH:
         path = os.path.abspath(os.path.expanduser(pth))
         if os.path.exists(path):
-            _config_file = path
+            _CONFIG_FILE = path
             return open(path)
-    _config_file = 'resources/config_log.yaml'
+    _CONFIG_FILE = 'resources/config_log.yaml'
     return pkgutil.get_data('picdb', 'resources/config_log.yaml')
 
 
@@ -39,7 +38,7 @@ def initialize_logger():
     config = __read_configuration()
     logging.config.dictConfig(config)
     logger = logging.getLogger('picdb.logging')
-    logger.info('Logger configuration file: {}'.format(_config_file))
+    logger.info('Logger configuration file: {}'.format(_CONFIG_FILE))
 
 
 def __read_configuration():

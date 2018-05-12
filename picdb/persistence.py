@@ -41,12 +41,12 @@ from .group import Group
 from .picture import Picture
 from .tag import Tag
 
-_tag_cache = LRUCache(get_configuration('cache.tags', 1000))
-_picture_cache = LRUCache(get_configuration('cache.pictures', 20000))
-_group_cache = LRUCache(get_configuration('cache.groups', 1000))
+_TAG_CACHE = LRUCache(get_configuration('cache.tags', 1000))
+_PICTURE_CACHE = LRUCache(get_configuration('cache.pictures', 20000))
+_GROUP_CACHE = LRUCache(get_configuration('cache.groups', 1000))
 
 # This module global variable will hold the Persistence instance.
-_db = None
+_DB = None
 
 
 class UnknownEntityException(Exception):
@@ -92,9 +92,9 @@ def db_params():
     :return: parameters.
     :rtype: DBParameters
     """
-    if _db is None:
+    if _DB is None:
         return None
-    return _db.db_params
+    return _DB.db_params
 
 
 def create_db(db_=None):
@@ -105,19 +105,19 @@ def create_db(db_=None):
     :return: persistence instance.
     :rtype: Persistence
     """
-    global _db
+    global _DB
     if db_ is None:
         db_ = DBParameters.from_configuration()
-    _db = Persistence(db_)
+    _DB = Persistence(db_)
 
 
 def get_db():
     """Get connected persistence instance."""
-    global _db
-    if _db is None:
+    global _DB
+    if _DB is None:
         # use configured database.
         create_db()
-    return _db
+    return _DB
 
 
 class Persistence:
@@ -153,14 +153,14 @@ class Persistence:
             stmt(*args)
             self.conn.commit()
             return True
-        except UniqueError as u:
+        except UniqueError as uq_err:
             self.conn.rollback()
             self.logger.debug('duplicate: {}'.format(stmt))
-            raise u
-        except Exception as e:
+            raise uq_err
+        except Exception as exc:
             self.conn.rollback()
             messagebox.showerror(title='Database Error',
-                                 message='{}'.format(e))
+                                 message='{}'.format(exc))
             return False
 
     # -------- group related
@@ -233,8 +233,8 @@ class Persistence:
         :return: group.
         :rtype: Group
         """
-        if key in _group_cache:
-            return _group_cache.get(key)
+        if key in _GROUP_CACHE:
+            return _GROUP_CACHE.get(key)
         self.logger.debug("retrieve_group_by_key({})".format(key))
         stmt = 'SELECT id, identifier, description, parent  ' \
                'FROM groups WHERE "id"=$1'
@@ -337,7 +337,7 @@ class Persistence:
         Creates parent object if required.
         """
         try:
-            return _group_cache.get(key)
+            return _GROUP_CACHE.get(key)
         except KeyError:
             self.logger.debug(
                 "_create_group({}, {}, ...)".format(key, identifier))
@@ -348,7 +348,7 @@ class Persistence:
             group = Group(key, identifier, description, parent=parent)
             pictures = self.retrieve_pictures_for_group(group)
             group.pictures = pictures
-            _group_cache.put(key, group)
+            _GROUP_CACHE.put(key, group)
             return group
 
     # ------ picture related
@@ -420,8 +420,8 @@ class Persistence:
         :return: picture.
         :rtype: Picture
         """
-        if key in _picture_cache:
-            return _picture_cache.get(key)
+        if key in _PICTURE_CACHE:
+            return _PICTURE_CACHE.get(key)
         self.logger.debug("retrieve_picture_by_key({!r})".format(key))
         stmt = 'SELECT id, identifier, path, description ' \
                'FROM pictures WHERE "id"=$1'
@@ -538,14 +538,14 @@ class Persistence:
         Creates parent object if required.
         """
         try:
-            return _picture_cache.get(key)
+            return _PICTURE_CACHE.get(key)
         except KeyError:
             self.logger.debug(
                 "_create_picture({!r}, {!r}, ...)".format(key, identifier))
             picture = Picture(key, identifier, path, description)
             tags = self.retrieve_tags_for_picture(picture)
             picture.tags = tags
-            _picture_cache.put(key, picture)
+            _PICTURE_CACHE.put(key, picture)
             return picture
 
     # ------ tag related
@@ -645,8 +645,8 @@ class Persistence:
         :return: tag.
         :rtype: Tag
         """
-        if key in _tag_cache:
-            return _tag_cache.get(key)
+        if key in _TAG_CACHE:
+            return _TAG_CACHE.get(key)
         self.logger.debug("retrieve_tag_by_key({!r})".format(key))
         stmt = 'SELECT id, identifier, description, parent FROM tags WHERE ' \
                '"id"=$1'
@@ -663,7 +663,7 @@ class Persistence:
         Creates parent object if required.
         """
         try:
-            return _tag_cache.get(key)
+            return _TAG_CACHE.get(key)
         except KeyError:
             self.logger.debug(
                 "_create_tag({!r}, {!r}), ...".format(key, identifier))
@@ -672,5 +672,5 @@ class Persistence:
             else:
                 parent = None
             tag = Tag(key, identifier, description, parent=parent)
-            _tag_cache.put(key, tag)
+            _TAG_CACHE.put(key, tag)
             return tag

@@ -38,7 +38,7 @@ from pkgutil import get_data
 
 import psutil
 
-from .persistence import db_params, _tag_cache, _picture_cache, _group_cache
+from .persistence import db_params, _TAG_CACHE, _PICTURE_CACHE, _GROUP_CACHE
 from .pictureservices import number_of_pictures
 from .groupservices import number_of_groups
 from .tagservices import number_of_tags
@@ -173,7 +173,7 @@ class StatusPanel(ttk.Frame):
         vars = [self.cache_stats_tag_var, self.cache_stats_picture_var,
                 self.cache_stats_group_var]
         names = ['tag', 'picture', 'group']
-        caches = [_tag_cache, _picture_cache, _group_cache]
+        caches = [_TAG_CACHE, _PICTURE_CACHE, _GROUP_CACHE]
         for name, var, cache in zip(names, vars, caches):
             var.set(
                 templ.format(name, cache.hits, cache.misses, cache.size))

@@ -55,13 +55,13 @@ def _update_tags(picture):
 
 
 def _add_picture(picture):
-    db = get_db()
-    db.add_picture(picture)
+    database = get_db()
+    database.add_picture(picture)
 
 
 def _update_picture(picture):
-    db = get_db()
-    db.update_picture(picture)
+    database = get_db()
+    database.update_picture(picture)
 
 
 def delete_picture(picture):
@@ -70,8 +70,8 @@ def delete_picture(picture):
     :param picture: picture to delete
     :type picture: Picture
     """
-    db = get_db()
-    db.delete_picture(picture)
+    database = get_db()
+    database.delete_picture(picture)
 
 
 def retrieve_picture_by_key(key):
@@ -82,8 +82,8 @@ def retrieve_picture_by_key(key):
     :return: picture object
     :rtype: Picture
     """
-    db = get_db()
-    picture = db.retrieve_picture_by_key(key)
+    database = get_db()
+    picture = database.retrieve_picture_by_key(key)
     return picture
 
 
@@ -95,8 +95,8 @@ def retrieve_picture_by_path(path):
     :return: picture object
     :rtype: Picture
     """
-    db = get_db()
-    picture = db.retrieve_picture_by_path(path)
+    database = get_db()
+    picture = database.retrieve_picture_by_path(path)
     return picture
 
 
@@ -114,42 +114,48 @@ def retrieve_filtered_pictures(path, limit, groups, tags):
     :return: pictures matching given criteria.
     :rtype: [Picture]
     """
-    db = get_db()
-    pictures = db.retrieve_filtered_pictures(path, limit, groups, tags)
+    database = get_db()
+    pictures = database.retrieve_filtered_pictures(path, limit, groups, tags)
     return pictures
 
 
 def add_tag_to_picture(picture, tag):
-    db = get_db()
-    db.add_tag_to_picture(picture, tag)
+    """Tag oicture."""
+    database = get_db()
+    database.add_tag_to_picture(picture, tag)
 
 
 def add_tags_to_picture(picture, tags):
+    """Add set of tags to picture."""
     for tag in tags:
         add_tag_to_picture(picture, tag)
 
 
 def remove_tag_from_picture(picture, tag):
-    db = get_db()
-    db.remove_tag_from_picture(picture, tag)
+    """Remove given tag from picture."""
+    database = get_db()
+    database.remove_tag_from_picture(picture, tag)
 
 
 def remove_tags_from_picture(picture, tags):
+    """Remove given tags from picture."""
     for tag in tags:
         remove_tag_from_picture(picture, tag)
 
 
 def retrieve_tags_for_picture(picture):
-    db = get_db()
-    return db.retrieve_tags_for_picture(picture)
+    """Retrieve all tags for picture."""
+    database = get_db()
+    return database.retrieve_tags_for_picture(picture)
 
 
 def retrieve_pictures_by_tag(tag_):
-    db = get_db()
-    return db.retrieve_pictures_by_tag(tag_)
+    """Retrieve all pictures for given tag."""
+    database = get_db()
+    return database.retrieve_pictures_by_tag(tag_)
 
 
 def number_of_pictures():
     """Provide number of pictures currently in database."""
-    db = get_db()
-    return db.number_of_pictures()
+    database = get_db()
+    return database.number_of_pictures()
