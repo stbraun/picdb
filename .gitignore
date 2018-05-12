@@ -18,3 +18,4 @@ picdb.egg-info
 .coverage
 .idea/dataSources/d7ac4d34-44ce-449a-9e41-ffceb1e03e79/storage.xml
 .idea/dataSources/f3c314c7-1fdc-4392-8152-61a587817aed/storage.xml
+build_flymake.sh
