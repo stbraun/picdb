@@ -10,7 +10,12 @@ python3 -m venv venv
 source venv/bin/activate
 
 # install required packages
-pip install -r requirements.txt
+pip install --upgrade pip
+if pip install -r requirements.txt; then
+    echo"requirements installed";
+else
+    exit 1;
+fi
 
 # run sanity checks
 flake8 --output-file reports/flake8.txt --benchmark --count --statistics picdb start_picdb.py
@@ -18,7 +23,11 @@ flake8 --output-file reports/flake8.txt --benchmark --count --statistics picdb s
 pylint --rcfile=resrc/pylintrc picdb > reports/pylint.txt
 
 # run test and measure coverage
-nosetests --with-coverage --cover-branches --cover-inclusive --with-xunit --xunit-file=reports/nosetests.xml --cover-html --cover-html-dir=reports/coverage --cover-xml --cover-xml-file=reports/coverage.xml test/  > reports/nosetest.txt 2>&1
+if nosetests --with-coverage --cover-branches --cover-inclusive --with-xunit --xunit-file=reports/nosetests.xml --cover-html --cover-html-dir=reports/coverage --cover-xml --cover-xml-file=reports/coverage.xml test/  > reports/nosetest.txt 2>&1; then
+   echo "tests passed";
+else
+   exit 1;
+fi
 
 # build source distribution tarball
 paver sdist
