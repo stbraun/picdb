@@ -209,7 +209,7 @@ class PictureManagement(ttk.Frame):
         if _last is None:
             _last = [None, None]
         if event is not None and event.widget is self.canvas and (
-            _last[0] != event.width or _last[1] != event.height):
+                _last[0] != event.width or _last[1] != event.height):
             # size changed; update image
             self.logger.info(
                 'Resize event on canvas: ({}, {})'.format(event.width,

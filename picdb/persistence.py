@@ -177,8 +177,8 @@ class Persistence:
         parent = group.parent.key if group.parent is not None else None
         try:
             self.execute_sql(stmt, group.name, group.description, parent)
-        except UniqueError as u:
-            raise DuplicateException(group, u)
+        except UniqueError as uq_err:
+            raise DuplicateException(group, uq_err)
 
     def update_group(self, series):
         """Update group record."""
@@ -365,8 +365,8 @@ class Persistence:
         try:
             self.execute_sql(stmt, picture.name,
                              picture.path, picture.description)
-        except UniqueError as u:
-            raise DuplicateException(picture, u)
+        except UniqueError as uq_err:
+            raise DuplicateException(picture, uq_err)
 
     def update_picture(self, picture):
         """Update picture record."""
@@ -562,8 +562,8 @@ class Persistence:
         parent = tag.parent.key if tag.parent is not None else None
         try:
             self.execute_sql(stmt, tag.name, tag.description, parent)
-        except UniqueError as u:
-            raise DuplicateException(tag, u)
+        except UniqueError as uq_err:
+            raise DuplicateException(tag, uq_err)
 
     def update_tag(self, tag):
         """Update tag record."""

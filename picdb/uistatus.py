@@ -171,7 +171,7 @@ class StatusPanel(ttk.Frame):
         """Show cache statistics."""
         templ = '{:s}: {:d} / {}, {}'
         variabless = [self.cache_stats_tag_var, self.cache_stats_picture_var,
-                self.cache_stats_group_var]
+                      self.cache_stats_group_var]
         names = ['tag', 'picture', 'group']
         caches = [_TAG_CACHE, _PICTURE_CACHE, _GROUP_CACHE]
         for name, var, cache in zip(names, variabless, caches):
