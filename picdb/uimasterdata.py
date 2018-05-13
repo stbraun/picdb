@@ -59,7 +59,7 @@ class PicTreeView(ttk.Treeview, Observable):
     def clear(self):
         """Remove all items from tree."""
         items = self.get_children()
-        if len(items) > 0:
+        if items:
             self.delete(*items)
 
     def add_item(self, item):
@@ -252,7 +252,7 @@ class HierarchicalTreeView(PicTreeView):
         """
         all_items = []
         items = list(self.get_children())
-        while len(items) > 0:
+        while items:
             item = items.pop()
             all_items.append(int(item))
             items.extend(self.get_children(item))
@@ -368,7 +368,7 @@ class FilteredTreeView(ttk.Frame, Observable):
     def _item_selected(self, event):
         """An item in the tree view was selected."""
         items = self.tree.selection()
-        if len(items) > 0:
+        if items:
             self._call_listeners(self.EVT_ITEM_SELECTED, event)
 
     def _item_deleted(self, event):

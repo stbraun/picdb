@@ -144,7 +144,7 @@ class GroupManagement(ttk.Frame):
     def item_selected(self, _):
         """An item in the tree view was selected."""
         items = self.filter_tree.selected_items()
-        if len(items) > 0:
+        if items:
             group_ = items[0]
             # This loads the pictures for this group. Just to be sure that save
             # will work.

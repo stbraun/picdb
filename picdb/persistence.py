@@ -63,6 +63,7 @@ class DuplicateException(Exception):
         :param duplicate: duplicate item.
         :param caused_by: the exception causing this one.
         """
+        super().__init__(self)
         self.duplicate = duplicate
         self.caused_by = caused_by
 
@@ -123,23 +124,25 @@ def get_db():
 class Persistence:
     """Implementation of persistence."""
 
-    def __init__(self, db):
+    def __init__(self, db_params):
         """Initialize persistence mechanism.
 
-        :param db: database parameters.
-        :type db: DBParameters
+        :param db_params: database parameters.
+        :type db_params: DBParameters
         """
         self.logger = logging.getLogger('picdb.db')
-        self.db_params = db
+        self.db_params = db_params
         self.conn = None
         self.connect()
 
     def connect(self):
         """Connect to database."""
         self.logger.debug('connecting to database ...')
-        db = self.db_params
-        self.conn = dbapi.connect(user=db.user, database=db.name, port=db.port,
-                                  password=db.passwd)
+        db_params = self.db_params
+        self.conn = dbapi.connect(user=db_params.user,
+                                  database=db_params.name,
+                                  port=db_params.port,
+                                  password=db_params.passwd)
 
     def close(self):
         """Close database."""

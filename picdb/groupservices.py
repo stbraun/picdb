@@ -46,8 +46,8 @@ def save_group(group_):
 
 def __add_group(group_):
     """Add new group."""
-    db = get_db()
-    db.add_group(group_)
+    data_base = get_db()
+    data_base.add_group(group_)
 
 
 def __update_pictures(group_):
