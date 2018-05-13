@@ -30,17 +30,17 @@ Status bar.
 # THE SOFTWARE.
 
 
-import os
 import logging
+import os
 import tkinter as tk
-from tkinter import ttk
 from pkgutil import get_data
+from tkinter import ttk
 
 import psutil
 
+from .groupservices import number_of_groups
 from .persistence import db_params, _TAG_CACHE, _PICTURE_CACHE, _GROUP_CACHE
 from .pictureservices import number_of_pictures
-from .groupservices import number_of_groups
 from .tagservices import number_of_tags
 from .version import long_version
 
@@ -138,9 +138,9 @@ class StatusPanel(ttk.Frame):
         # find max memory
         if process.is_running():
             mem_info = process.memory_info()
-            if (mem_info != prev_mem_info and
-                (prev_mem_info is None or mem_info.rss >
-                 prev_mem_info.rss)):
+            if (mem_info != prev_mem_info and (
+                    prev_mem_info is None or
+                    mem_info.rss > prev_mem_info.rss)):
                 prev_mem_info = mem_info
             self._report_usage(mem_info)
             self.after(500, self.report_usage,

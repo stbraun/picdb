@@ -124,25 +124,25 @@ def get_db():
 class Persistence:
     """Implementation of persistence."""
 
-    def __init__(self, db_params):
+    def __init__(self, db_parms):
         """Initialize persistence mechanism.
 
-        :param db_params: database parameters.
-        :type db_params: DBParameters
+        :param db_parms: database parameters.
+        :type db_parms: DBParameters
         """
         self.logger = logging.getLogger('picdb.db')
-        self.db_params = db_params
+        self.db_params = db_parms
         self.conn = None
         self.connect()
 
     def connect(self):
         """Connect to database."""
         self.logger.debug('connecting to database ...')
-        db_params = self.db_params
-        self.conn = dbapi.connect(user=db_params.user,
-                                  database=db_params.name,
-                                  port=db_params.port,
-                                  password=db_params.passwd)
+        db_parms = self.db_params
+        self.conn = dbapi.connect(user=db_parms.user,
+                                  database=db_parms.name,
+                                  port=db_parms.port,
+                                  password=db_parms.passwd)
 
     def close(self):
         """Close database."""
