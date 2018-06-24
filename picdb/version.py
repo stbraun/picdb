@@ -30,10 +30,10 @@ Version number.
 # THE SOFTWARE.
 
 
-major = 1
-minor = 1
-maintenance = 1
-build = 10
+major = 2
+minor = 0
+maintenance = 0
+build = 1
 
 version = '{}.{}'.format(major, minor)
 release = '{}.{}'.format(version, maintenance)
