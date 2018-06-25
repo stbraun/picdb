@@ -107,7 +107,7 @@ case "$1" in
         activate_venv;
         run_tests;
         ;;
-    dist )
+    doc )
         activate_venv;
         create_doc;
         ;;
