@@ -99,7 +99,7 @@ build_app() {
     echo "=====================================";
     echo " Building the application bundle ... ";
     echo "=====================================";
-    pyinstaller PicDB.spec;
+    return pyinstaller PicDB.spec;
 }
 
 case "$1" in

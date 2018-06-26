@@ -7,7 +7,7 @@ from version import release
 
 block_cipher = None
 
-added_files = [('venv/lib/python3.5/site-packages/postgresql/lib/libsys.sql', 'postgresql/lib'),
+added_files = [('venv/lib/python3.6/site-packages/postgresql/lib/libsys.sql', 'postgresql/lib'),
                ('picdb/resources/config_app.yaml', 'picdb/resources'),
                ('picdb/resources/config_log.yaml', 'picdb/resources'),
                ('picdb/resources/eye.gif', 'picdb/resources'),
