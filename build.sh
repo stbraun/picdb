@@ -99,7 +99,18 @@ build_app() {
     echo "=====================================";
     echo " Building the application bundle ... ";
     echo "=====================================";
-    return pyinstaller PicDB.spec;
+    if pyinstaller PicDB.spec; then
+    echo "========================================";
+    echo " Building application bundle succeeded. ";
+    echo "========================================";
+        exit 0;
+    else
+    echo "=====================================";
+    echo " Building application bundle failed. ";
+    echo "=====================================";
+       exit 1;
+    fi
+
 }
 
 case "$1" in
