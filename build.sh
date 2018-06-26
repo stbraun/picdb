@@ -91,6 +91,12 @@ create_doc() {
     zip -r ../../dist/docs.zip html
 }
 
+build_app() {
+    # build the app for deployment
+    paver clean_app
+    paver build_app
+}
+
 case "$1" in
     venv )
         mk_venv;
@@ -111,6 +117,10 @@ case "$1" in
         activate_venv;
         create_doc;
         ;;
+    build )
+        activate_venv;
+        build_app;
+        ;;
     all )
         mk_venv;
         activate_venv;
@@ -118,6 +128,7 @@ case "$1" in
         check_sources;
         run_tests;
         create_doc;
+        build;
         ;;
 esac
 exit 0

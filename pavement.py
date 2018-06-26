@@ -3,7 +3,7 @@
 This file provides tasks for paver.
 """
 
-from paver.easy import *
+from paver.easy import sh, task, needs
 from paver.doctools import html, doc_clean
 from paver.setuputils import setup
 
