@@ -7,7 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/model" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.5.0 virtualenv at ~/Development/projects/picdb/venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.6 (picdb)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
