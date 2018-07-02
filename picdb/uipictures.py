@@ -33,7 +33,7 @@ import logging
 import os
 import webbrowser
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, ttk, TclError
 
 from PIL import Image, ImageTk
 
@@ -121,18 +121,27 @@ class PictureManagement(ttk.Frame):
         load_button = ttk.Button(self.control_frame, text='load pictures',
                                  command=self.load_pictures)
         load_button.grid(row=0, column=0, sticky=(tk.W, tk.N))
-        add_button = ttk.Button(self.control_frame, text='import pictures',
-                                command=self.import_pictures)
+        add_button = ttk.Button(self.control_frame, text='add picture',
+                                command=self.add_picture)
         add_button.grid(row=0, column=1, sticky=(tk.W, tk.N))
+        import_button = ttk.Button(self.control_frame, text='import pictures',
+                                   command=self.import_pictures)
+        import_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
         rst_text = 'reset selection [CMD-R]'
         clear_button = ttk.Button(self.control_frame, text=rst_text,
                                   command=self._reset)
-        clear_button.grid(row=0, column=2, sticky=(tk.W, tk.N))
+        clear_button.grid(row=0, column=3, sticky=(tk.W, tk.N))
 
     def load_pictures(self):
         """Load a bunch of pictures from database."""
         self.clear()
         self.filter_tree.load_items()
+
+    def add_picture(self):
+        """Push empty picture to editor."""
+        self.clear()
+        item_ = Picture(None, '', '', '')
+        self.editor.load_picture(item_)
 
     def import_pictures(self):
         """Let user select pictures and import them into database."""
@@ -435,7 +444,10 @@ class PictureReferenceEditor(ttk.LabelFrame):
     def picture(self):
         """Update picture from editor fields and return it."""
         if self.picture_ is not None:
-            self.picture_.id = self.id_var.get()
+            try:
+                self.picture_.id = self.id_var.get()
+            except TclError:
+                self.picture_.id = None
             self.picture_.name = self.name_var.get()
             self.picture_.path = self.path_var.get()
             self.picture_.description = self.description_var.get()
@@ -558,10 +570,15 @@ class PictureMetadataEditor(ttk.Frame, Observable):
                 save_group(group_)
         else:
             self.picture = self.editor.picture
-            self._update_groups()
+            if self.picture.key is None:
+                path = self.picture.path
+                save_picture(self.picture)
+                self.picture = retrieve_picture_by_path(path)
             tags = self.tag_selector.selected_items()
             self.picture.tags = tags
             save_picture(self.picture)
+            self._update_groups()
+            self.editor.picture = self.picture
             self._call_listeners(self.EVT_ITEM_SAVED, None)
 
     def _update_groups(self):
