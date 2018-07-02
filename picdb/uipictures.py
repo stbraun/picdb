@@ -415,10 +415,10 @@ class PictureReferenceEditor(ttk.LabelFrame):
     def __init__(self, master, text='Edit picture reference'):
         super().__init__(master, text=text)
         self.picture_ = None
+        self.descr_text = None
         self.id_var = tk.IntVar()
         self.name_var = tk.StringVar()
         self.path_var = tk.StringVar()
-        self.description_var = tk.StringVar()
         self.create_widgets()
 
     def create_widgets(self):
@@ -435,10 +435,8 @@ class PictureReferenceEditor(ttk.LabelFrame):
                                                          sticky=(tk.E, tk.W))
         ttk.Entry(self, textvariable=self.path_var).grid(row=2, column=1,
                                                          sticky=(tk.E, tk.W))
-        ttk.Entry(self,
-                  textvariable=self.description_var).grid(row=3,
-                                                          column=1,
-                                                          sticky=(tk.E, tk.W))
+        self.descr_text = tk.Text(self, width=40, height=5)
+        self.descr_text.grid(row=3, column=1, sticky=(tk.E, tk.W))
 
     @property
     def picture(self):
@@ -450,25 +448,26 @@ class PictureReferenceEditor(ttk.LabelFrame):
                 self.picture_.id = None
             self.picture_.name = self.name_var.get()
             self.picture_.path = self.path_var.get()
-            self.picture_.description = self.description_var.get()
+            self.picture_.description = self.descr_text.get(1.0, 'end')
         return self.picture_
 
     @picture.setter
     def picture(self, pic):
         """Put picture into editor. Fill attribute values into editor
         fields."""
+        self.clear()
         self.picture_ = pic
         self.id_var.set(pic.key)
         self.name_var.set(pic.name)
         self.path_var.set(pic.path)
-        self.description_var.set(pic.description)
+        self.descr_text.insert(1.0, pic.description, None)
 
     def clear(self):
         """Clear entries and remove reference to picture."""
         self.id_var.set('')
         self.name_var.set('')
         self.path_var.set('')
-        self.description_var.set('')
+        self.descr_text.delete(1.0, 'end')
         self.picture_ = None
 
 
