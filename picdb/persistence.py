@@ -32,11 +32,11 @@ Persistence.
 import logging
 from tkinter import messagebox
 
-from postgresql.exceptions import UniqueError
 import postgresql.driver.dbapi20 as dbapi
+from postgresql.exceptions import UniqueError
 
-from .config import get_configuration
 from .cache import LRUCache
+from .config import get_configuration
 from .group import Group
 from .picture import Picture
 from .tag import Tag
@@ -153,13 +153,14 @@ class Persistence:
         """Execute the given SQL statement with arguments."""
         try:
             stmt = self.conn.prepare(stmt_)
-            stmt(*args)
-            self.conn.commit()
-            return True
-        except UniqueError as uq_err:
-            self.conn.rollback()
-            self.logger.debug('duplicate: {}'.format(stmt))
-            raise uq_err
+            try:
+                stmt(*args)
+                self.conn.commit()
+                return True
+            except UniqueError as uq_err:
+                self.conn.rollback()
+                self.logger.debug('duplicate: {}'.format(stmt))
+                raise uq_err
         except Exception as exc:
             self.conn.rollback()
             messagebox.showerror(title='Database Error',
@@ -627,8 +628,6 @@ class Persistence:
 
         :param name: the name of the tag
         :type name: str
-        :param limit: maximum number of records to retrieve
-        :type limit: int
         :return: tags.
         :rtype: [Tag]
         """
