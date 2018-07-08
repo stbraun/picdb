@@ -3,9 +3,7 @@
 export PATH=/usr/local/bin:/usr/local/sbin:$PATH
 
 # prepare folder for build reports
-if [ -d reports ]; then
-    echo "report folder exists already."
-else
+if [ ! -d reports ]; then
     mkdir reports
 fi
 
