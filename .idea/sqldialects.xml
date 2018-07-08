@@ -2,7 +2,5 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$" dialect="PostgreSQL" />
-    <file url="dbSrc:///d256071/d7ac4d34-44ce-449a-9e41-ffceb1e03e79" dialect="PostgreSQL" />
-    <file url="dbSrc:///d256071/f3c314c7-1fdc-4392-8152-61a587817aed" dialect="SQLite" />
   </component>
 </project>

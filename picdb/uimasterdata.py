@@ -76,8 +76,13 @@ class PicTreeView(ttk.Treeview, Observable):
             if self._is_less(item, child):
                 index = idx
                 break
-        self.insert('', index, item.key,
-                    text=item.name, values=self._additional_values(item))
+        try:
+            self.insert('', index, item.key,
+                        text=item.name, values=self._additional_values(item))
+        except tk.TclError as exc:
+            msg = 'Error when adding item [{0}] with name {1}. '\
+                  'Exception was: {2}.'.format(item.key, item.name, exc)
+            self.logger.error(msg)
 
     def bind(self, sequence=None, func=None, add=None):
         """Bind to this widget at event SEQUENCE a call to function FUNC."""

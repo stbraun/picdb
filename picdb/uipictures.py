@@ -405,8 +405,13 @@ class PictureReferenceTree(PicTreeView):
     def _show_selected_pic_in_external_viewer(self):
         """Show selected pictures in external viewer."""
         pics = self.selected_items()
+        import re
+        rex = r'[a-z]+://.+'
         for pic in pics:
-            webbrowser.open('file://' + pic.path)
+            if re.match(rex, pic.path):
+                webbrowser.open(pic.path)
+            else:
+                webbrowser.open('file://' + pic.path)
 
 
 class PictureReferenceEditor(ttk.LabelFrame):

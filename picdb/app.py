@@ -99,7 +99,7 @@ def _parse_arguments(args):
         description='Assign tags to pictures and pictures to groups.')
     parser.add_argument('--db', action='store', dest='db',
                         default=get_configuration('db.name'),
-                        help='Name to database to use. Overrides '
+                        help='Name of database to use. Overrides '
                              'configuration file.')
     parser.add_argument('--user', action='store', dest='user',
                         default=get_configuration('db.user'),
@@ -174,6 +174,7 @@ def start_application(argv):
     setup()
     initialize_logger()
     root = tk.Tk()
+    root.title = '-- libraries --'
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
     # no tear-off menus
