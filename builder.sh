@@ -58,7 +58,7 @@ check_sources() {
         exit 1;
     fi
 
-    if pylint --rcfile=resrc/pylintrc picdb start_picdb.py | tee reports/pylint.txt; then
+    if pylint --rcfile=resrc/pylintrc -output-format=parseable picdb start_picdb.py | tee reports/pylint.txt; then
         echo "=========================";
         echo " Static analysis passed. ";
         echo "=========================";
@@ -72,7 +72,7 @@ check_sources() {
 
 run_tests() {
     # run test and measure coverage
-    if nosetests --with-coverage --cover-branches --cover-inclusive --with-xunit --xunit-file=reports/nosetests.xml --cover-html --cover-html-dir=reports/coverage --cover-xml --cover-xml-file=reports/coverage.xml test/  > reports/nosetest.txt 2>&1; then
+    if nosetests --cover-package=picdb --with-coverage --cover-branches --cover-inclusive --with-xunit --xunit-file=reports/nosetests.xml --cover-xml --cover-xml-file=reports/coverage.xml test; then
        echo "===============";
        echo " Tests passed. ";
        echo "===============";
