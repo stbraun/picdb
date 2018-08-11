@@ -33,7 +33,7 @@ Version number.
 major = 2
 minor = 0
 maintenance = 0
-build = 1
+build = 2
 
 version = '{}.{}'.format(major, minor)
 release = '{}.{}'.format(version, maintenance)

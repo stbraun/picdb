@@ -58,7 +58,7 @@ check_sources() {
         exit 1;
     fi
 
-    if pylint --rcfile=resrc/pylintrc -output-format=parseable picdb start_picdb.py | tee reports/pylint.txt; then
+    if pylint --rcfile=resrc/pylintrc --output-format=parseable picdb start_picdb.py | tee reports/pylint.txt; then
         echo "=========================";
         echo " Static analysis passed. ";
         echo "=========================";
@@ -148,7 +148,7 @@ case "$1" in
         check_sources;
         run_tests;
         create_doc;
-        build;
+        build_app;
         ;;
 esac
 exit 0
