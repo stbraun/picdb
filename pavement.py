@@ -2,19 +2,22 @@
 
 This file provides tasks for paver.
 """
-
 import sys
+from os import environ
 
 from paver.easy import sh, task, needs, options, Bunch
 from paver.setuputils import setup
 
-sys.path.insert(0, './')
 
-from version import long_version
+sys.path.insert(0, './picdb')
+import version
+
+environ[version.VERSION_KEY] = '2.0.0'
+environ[version.RELEASE_KEY] = 'SNAPSHOT'
 
 setup(
     name='picdb',
-    version=long_version,
+    version=version.get_version(),
     packages=['picdb'],
     url='https://github.com/stbraun/picdb',
     license='MIT',

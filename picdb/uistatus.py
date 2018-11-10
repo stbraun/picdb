@@ -42,7 +42,7 @@ from .groupservices import number_of_groups
 from .persistence import db_params, _TAG_CACHE, _PICTURE_CACHE, _GROUP_CACHE
 from .pictureservices import number_of_pictures
 from .tagservices import number_of_tags
-from .version import long_version
+from .version import get_version
 
 
 class StatusPanel(ttk.Frame):
@@ -51,7 +51,7 @@ class StatusPanel(ttk.Frame):
     def __init__(self, master):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger('picdb.ui')
-        self.version = long_version
+        self.version = get_version()
         self.num_pics_var = tk.StringVar()
         self.num_groups_var = tk.StringVar()
         self.num_tags_var = tk.StringVar()
