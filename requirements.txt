@@ -3,9 +3,10 @@ py-postgresql >= 1.1.0
 PyYAML
 hypothesis
 nose
+nose2-cov
 psutil
 Sphinx
-pyinstaller
+PyInstaller
 Paver
 flake8
 pylint

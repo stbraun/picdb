@@ -10,6 +10,7 @@
       <w>paver</w>
       <w>picdb</w>
       <w>postgresql</w>
+      <w>psutil</w>
       <w>pyinstaller</w>
       <w>pytest</w>
       <w>sfood</w>
