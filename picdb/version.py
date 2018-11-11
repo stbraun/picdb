@@ -44,7 +44,7 @@ RELEASE_KEY = 'RELEASE_TYPE'
 information to the current instance of a product, e.g. 'SNAPSHOT', 'debug'."""
 
 
-def get_version(default_version='0.0.0'):
+def determine_version(default_version='0.0.0'):
     """Provide version number.
 
     Looks for version number in environment. If none, default_version is used.
@@ -62,7 +62,18 @@ def get_version(default_version='0.0.0'):
     if BUILD_KEY in environ.keys():
         build_number = environ[BUILD_KEY]
         version_number = version_number + '.' + build_number
+    long_version = version_number
     if RELEASE_KEY in environ.keys():
         release_type = environ[RELEASE_KEY]
-        version_number = version_number + '-' + release_type
-    return version_number
+        long_version = version_number + '-' + release_type
+    return version_number, long_version
+
+
+def get_version():
+    """Provide version number."""
+    return determine_version()[0]
+
+
+def get_long_version():
+    """Provide long version number."""
+    return determine_version()[1]
