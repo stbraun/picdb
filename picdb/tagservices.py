@@ -85,7 +85,7 @@ def retrieve_tag_by_name(name):
     return tag
 
 
-def retrieve_tags_by_name_segment(name, limit):
+def retrieve_tags_by_name_segment(name, _):
     """Retrieve tag by given name segment."""
     database = get_db()
     tags = database.retrieve_tags_by_name_segment(name)

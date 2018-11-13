@@ -32,8 +32,8 @@ Manage pictures via UI.
 import logging
 import os
 import tkinter as tk
-import webbrowser
 from tkinter import filedialog, messagebox, ttk, TclError
+import webbrowser
 
 from PIL import Image, ImageTk
 

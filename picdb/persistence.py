@@ -426,7 +426,7 @@ class Persistence:
         """
         if key in _PICTURE_CACHE:
             return _PICTURE_CACHE.get(key)
-        self.logger.debug("retrieve_picture_by_key()", repr(key))
+        self.logger.debug("retrieve_picture_by_key(%s)", repr(key))
         stmt = 'SELECT id, identifier, path, description ' \
                'FROM pictures WHERE "id"=$1'
         stmt_ = self.conn.prepare(stmt)
