@@ -114,7 +114,6 @@ def create_db(db_=None):
 
 def get_db():
     """Get connected persistence instance."""
-    global _DB
     if _DB is None:
         # use configured database.
         create_db()
@@ -124,25 +123,24 @@ def get_db():
 class Persistence:
     """Implementation of persistence."""
 
-    def __init__(self, db_parms):
+    def __init__(self, db_parameters):
         """Initialize persistence mechanism.
 
-        :param db_parms: database parameters.
-        :type db_parms: DBParameters
+        :param db_parameters: database parameters.
+        :type db_parameters: DBParameters
         """
         self.logger = logging.getLogger('picdb.db')
-        self.db_params = db_parms
+        self.db_params = db_parameters
         self.conn = None
         self.connect()
 
     def connect(self):
         """Connect to database."""
         self.logger.debug('connecting to database ...')
-        db_parms = self.db_params
-        self.conn = dbapi.connect(user=db_parms.user,
-                                  database=db_parms.name,
-                                  port=db_parms.port,
-                                  password=db_parms.passwd)
+        self.conn = dbapi.connect(user=self.db_params.user,
+                                  database=self.db_params.name,
+                                  port=self.db_params.port,
+                                  password=self.db_params.passwd)
 
     def close(self):
         """Close database."""
@@ -161,7 +159,7 @@ class Persistence:
                 self.conn.rollback()
                 self.logger.debug('duplicate: %s', stmt)
                 raise uq_err
-        except Exception as exc:
+        except Exception as exc:  # noqa
             self.conn.rollback()
             messagebox.showerror(title='Database Error',
                                  message='{}'.format(exc))
@@ -212,7 +210,7 @@ class Persistence:
         :type group_: Group
         """
         self.logger.debug(
-            "Adding picture {} to group_ {}.".format(picture, group_))
+            "Adding picture %s to group_ %s.", str(picture), str(group_))
         stmt = '''INSERT INTO picture2group VALUES($1, $2)'''
         self.execute_sql(stmt, picture.key, group_.key)
 

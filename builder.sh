@@ -90,12 +90,13 @@ create_doc() {
     # ... and generate documentation
     pushd docs
     make html
-    popd
 
     # package documentation
     pushd build
     zip -r ../../dist/docs.zip html
     popd
+    popd
+
 }
 
 build_app() {
