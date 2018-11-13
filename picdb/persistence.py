@@ -399,7 +399,7 @@ class Persistence:
         :type tag: Tag
         """
         self.logger.debug(
-            "add_tag_to_picture(%s, %s)",repr(picture), repr(tag))
+            "add_tag_to_picture(%s, %s)", repr(picture), repr(tag))
         stmt = '''INSERT INTO picture2tag VALUES($1, $2)'''
         self.execute_sql(stmt, picture.key, tag.key)
 
