@@ -103,7 +103,7 @@ build_app() {
     echo "=====================================";
     echo " Building the application bundle ... ";
     echo "=====================================";
-    if pyinstaller PicDB.spec; then
+    if PyInstaller PicDB.spec; then
     echo "========================================";
     echo " Building application bundle succeeded. ";
     echo "========================================";

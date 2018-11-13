@@ -32,8 +32,8 @@ The UI for master data management of groups and tags.
 import logging
 import time
 import tkinter as tk
-from tkinter import ttk
 from tkinter import messagebox
+from tkinter import ttk
 
 from .uicommon import Observable
 
@@ -122,7 +122,7 @@ class PicTreeView(ttk.Treeview, Observable):
                                           'system.')
         if yes:
             self.logger.info(
-                'Delete item command triggered on: {}'.format(items))
+                'Delete item command triggered on: %s', str(items))
             self._delete_items(items)
             for item in items:
                 self.delete(item.key)
@@ -175,7 +175,7 @@ class HierarchicalTreeView(PicTreeView):
         item = self.identify_row(event.y)
         try:
             if item != self._dnd_start_item:
-                self.logger.info('Finish DND on item {}'.format(item))
+                self.logger.info('Finish DND on item %d', str(item))
                 self._dnd_action(self._dnd_start_item, item)
         finally:
             self.config(cursor='')
@@ -193,8 +193,8 @@ class HierarchicalTreeView(PicTreeView):
         :param target_item: item to drop on
         :type target_item: str
         """
-        self.logger.info(
-            'Item {} was dragged to {}'.format(start_item, target_item))
+        self.logger.info('Item %s was dragged to %s', str(start_item),
+                         str(target_item))
 
     def _dnd_motion(self, event):
         """Start dnd action."""
@@ -383,7 +383,7 @@ class FilteredTreeView(ttk.Frame, Observable):
     def _validate_limit(self):
         """Validator for limit entry."""
         limit = self.limit_entry.get()
-        self.logger.info("limit = {}".format(limit))
+        self.logger.info("limit = %s", str(limit))
         try:
             int(limit)
         except ValueError:

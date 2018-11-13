@@ -31,8 +31,8 @@ Manage pictures via UI.
 
 import logging
 import os
-import webbrowser
 import tkinter as tk
+import webbrowser
 from tkinter import filedialog, messagebox, ttk, TclError
 
 from PIL import Image, ImageTk
@@ -146,7 +146,7 @@ class PictureManagement(ttk.Frame):
     def import_pictures(self):
         """Let user select pictures and import them into database."""
         files = filedialog.askopenfilenames()
-        self.logger.info('Files selected for import: {}'.format(files))
+        self.logger.info('Files selected for import: %s', str(files))
         pictures = [Picture(None, os.path.basename(pth), pth, None)
                     for pth in files]
         import_counter = 0
@@ -157,7 +157,7 @@ class PictureManagement(ttk.Frame):
             except DuplicateException:
                 duplicate_counter += 1
                 self.logger.warning(
-                    'Duplicate picture not imported: {}'.format(pic))
+                    'Duplicate picture not imported: %s', str(pic))
             else:
                 pic_ = retrieve_picture_by_path(pic.path)
                 self.filter_tree.add_item_to_tree(pic_)
@@ -221,8 +221,7 @@ class PictureManagement(ttk.Frame):
                 _last[0] != event.width or _last[1] != event.height):
             # size changed; update image
             self.logger.info(
-                'Resize event on canvas: ({}, {})'.format(event.width,
-                                                          event.height))
+                'Resize event on canvas: (%d, %d)', event.width, event.height)
             _last[:] = event.width, event.height
             self._canvas_width = event.width
             self._canvas_height = event.height
@@ -329,8 +328,8 @@ class PictureFilteredTreeView(FilteredTreeView):
     def _visibility_changed(self, event):
         """Listener is called if visibility of widget changes."""
         self.logger.info(
-            'Visibility of PictureFilteredTreeView frame changed: {}'.format(
-                event.state))
+            'Visibility of PictureFilteredTreeView frame changed: %s',
+            str(event.state))
         self.tag_selector.load_items(self.tag_selector.selected_items())
         self.group_selector.load_items(self.group_selector.selected_items())
 

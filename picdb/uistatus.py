@@ -68,8 +68,9 @@ class StatusPanel(ttk.Frame):
 
     def create_widgets(self):
         """Create widgets for view."""
-        img = get_data('picdb', 'resources/eye.gif')
-        self.logger.info('image {} loaded'.format('resources/eye.gif'))
+        img_resource = 'resources/eye.gif'
+        img = get_data('picdb', img_resource)
+        self.logger.info('image %s loaded', img_resource)
         self.rowconfigure(0, weight=0)
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)

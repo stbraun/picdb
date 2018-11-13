@@ -159,7 +159,7 @@ class Persistence:
                 return True
             except UniqueError as uq_err:
                 self.conn.rollback()
-                self.logger.debug('duplicate: {}'.format(stmt))
+                self.logger.debug('duplicate: %s', stmt)
                 raise uq_err
         except Exception as exc:
             self.conn.rollback()
@@ -175,7 +175,7 @@ class Persistence:
         :param group: the group to add
         :type group: Group
         """
-        self.logger.debug("Add group to DB: {}".format(group.name))
+        self.logger.debug("Add group to DB: %s", group.name)
         stmt = '''INSERT INTO groups (identifier, description, parent)
         VALUES ($1, $2, $3)'''
         parent = group.parent.key if group.parent is not None else None
@@ -186,7 +186,7 @@ class Persistence:
 
     def update_group(self, series):
         """Update group record."""
-        self.logger.debug("Update series: {}".format(series.name))
+        self.logger.debug("Update series: %s", series.name)
         stmt = "UPDATE groups SET identifier=$1, description=$2, " \
                "parent=$3 " \
                "WHERE id=$4"
@@ -225,7 +225,7 @@ class Persistence:
         :type group: Group
         """
         self.logger.debug(
-            "Removing picture {} from series {}.".format(picture, group))
+            "Removing picture %s from series %s.", str(picture), str(group))
         stmt = '''DELETE FROM picture2group WHERE picture=$1 AND "group"=$2'''
         self.execute_sql(stmt, picture.key, group.key)
 
@@ -239,7 +239,7 @@ class Persistence:
         """
         if key in _GROUP_CACHE:
             return _GROUP_CACHE.get(key)
-        self.logger.debug("retrieve_group_by_key({})".format(key))
+        self.logger.debug("retrieve_group_by_key(%s)", str(key))
         stmt = 'SELECT id, identifier, description, parent  ' \
                'FROM groups WHERE "id"=$1'
         stmt_ = self.conn.prepare(stmt)
@@ -257,7 +257,7 @@ class Persistence:
         :return: groups.
         :rtype: [Group]
         """
-        self.logger.debug("retrieve_groups_by_name({})".format(name))
+        self.logger.debug("retrieve_groups_by_name(%s)", name)
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM groups WHERE "identifier"=$1'
         stmt_ = self.conn.prepare(stmt)
@@ -275,7 +275,7 @@ class Persistence:
         :return: groups.
         :rtype: [Group]
         """
-        self.logger.debug("retrieve_groups_by_name_segment({})".format(name))
+        self.logger.debug("retrieve_groups_by_name_segment(%s)", name)
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM groups WHERE "identifier"LIKE $1'
         stmt_ = self.conn.prepare(stmt)
@@ -304,7 +304,7 @@ class Persistence:
         :return: pictures assigned to group
         :rtype: [Picture]
         """
-        self.logger.debug("retrieve_pictures_for_group({})".format(group_))
+        self.logger.debug("retrieve_pictures_for_group(%s)", str(group_))
         stmt = 'SELECT id, identifier, path, description FROM pictures ' \
                'WHERE id IN (SELECT ' \
                'picture FROM picture2group WHERE "group"=$1)'
@@ -320,7 +320,7 @@ class Persistence:
         :return: groups.
         :rtype: [Group]
         """
-        self.logger.debug("retrieve_groups_for_picture({})".format(picture))
+        self.logger.debug("retrieve_groups_for_picture(%s)", str(picture))
         stmt = 'SELECT id, identifier, description, parent FROM groups ' \
                'WHERE id IN (SELECT ' \
                '"group" FROM picture2group WHERE picture=$1)'
@@ -344,7 +344,7 @@ class Persistence:
             return _GROUP_CACHE.get(key)
         except KeyError:
             self.logger.debug(
-                "_create_group({}, {}, ...)".format(key, identifier))
+                "_create_group(%s, %s, ...)", str(key), identifier)
             if parent_id is not None:
                 parent = self.retrieve_group_by_key(parent_id)
             else:
@@ -363,7 +363,7 @@ class Persistence:
         :param picture: picture to add
         :type picture: Picture
         """
-        self.logger.debug("add_picture({})".format(picture))
+        self.logger.debug("add_picture(%s)", str(picture))
         stmt = "INSERT INTO pictures (identifier, path, description) VALUES " \
                "($1, $2, $3)"
         try:
@@ -374,7 +374,7 @@ class Persistence:
 
     def update_picture(self, picture):
         """Update picture record."""
-        self.logger.debug("update_picture({})".format(picture))
+        self.logger.debug("update_picture(%s)", str(picture))
         stmt = "UPDATE pictures SET identifier=$1, path=$2, " \
                "description=$3 WHERE id=$4"
         self.execute_sql(stmt, picture.name,
@@ -384,7 +384,7 @@ class Persistence:
 
     def delete_picture(self, picture):
         """Delete given picture. Does also remove tag assignments."""
-        self.logger.debug("delete_picture({})".format(picture))
+        self.logger.debug("delete_picture(%s)", str(picture))
         stmt_tags = "DELETE FROM picture2tag WHERE picture=$1"
         stmt_pic = "DELETE FROM pictures WHERE id=$1"
         self.execute_sql(stmt_tags, picture.key)
@@ -399,7 +399,7 @@ class Persistence:
         :type tag: Tag
         """
         self.logger.debug(
-            "add_tag_to_picture({!r}, {!r})".format(picture, tag))
+            "add_tag_to_picture(%s, %s)",repr(picture), repr(tag))
         stmt = '''INSERT INTO picture2tag VALUES($1, $2)'''
         self.execute_sql(stmt, picture.key, tag.key)
 
@@ -412,7 +412,7 @@ class Persistence:
         :type tag: Tag
         """
         self.logger.debug(
-            "remove_tag_from_picture({!r}, {!r})".format(picture, tag))
+            "remove_tag_from_picture(%s, %s)", repr(picture), repr(tag))
         stmt = '''DELETE FROM picture2tag WHERE picture=$1 AND tag=$2'''
         self.execute_sql(stmt, picture.key, tag.key)
 
@@ -426,7 +426,7 @@ class Persistence:
         """
         if key in _PICTURE_CACHE:
             return _PICTURE_CACHE.get(key)
-        self.logger.debug("retrieve_picture_by_key({!r})".format(key))
+        self.logger.debug("retrieve_picture_by_key()", repr(key))
         stmt = 'SELECT id, identifier, path, description ' \
                'FROM pictures WHERE "id"=$1'
         stmt_ = self.conn.prepare(stmt)
@@ -444,7 +444,7 @@ class Persistence:
         :return: picture.
         :rtype: Picture
         """
-        self.logger.debug('retrieve_picture_by_path({!r})'.format(path))
+        self.logger.debug('retrieve_picture_by_path(%s)', path)
         stmt = 'SELECT id, identifier, path, description ' \
                'FROM pictures WHERE "path"=$1'
         stmt_ = self.conn.prepare(stmt)
@@ -471,7 +471,7 @@ class Persistence:
         :rtype: [Picture]
         """
         self.logger.debug(
-            "retrieve_filtered_pictures({!r}, {!r}, ...)".format(path, limit))
+            "retrieve_filtered_pictures(%s, %s, ...)", path, str(limit))
         stmt_p = 'SELECT DISTINCT id, identifier, path, description ' \
                  'FROM pictures WHERE ' \
                  '"path" LIKE $1'
@@ -504,7 +504,7 @@ class Persistence:
         :return: tags.
         :rtype: [Tag]
         """
-        self.logger.debug("retrieve_tags_for_picture({!r})".format(picture))
+        self.logger.debug("retrieve_tags_for_picture(%s)", repr(picture))
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE id IN (SELECT tag ' \
                'FROM picture2tag WHERE picture=$1)'
@@ -521,7 +521,7 @@ class Persistence:
         :return: pictures with tag
         :rtype: [Picture]
         """
-        self.logger.debug("retrieve_pictures_by_tag({!r})".format(tag_))
+        self.logger.debug("retrieve_pictures_by_tag(%s)", repr(tag_))
         stmt = 'SELECT id, identifier, path, description FROM pictures ' \
                'WHERE id IN (SELECT ' \
                'picture FROM picture2tag WHERE tag=$1)'
@@ -545,7 +545,7 @@ class Persistence:
             return _PICTURE_CACHE.get(key)
         except KeyError:
             self.logger.debug(
-                "_create_picture({!r}, {!r}, ...)".format(key, identifier))
+                "_create_picture(%s, %s, ...)", str(key), identifier)
             picture = Picture(key, identifier, path, description)
             tags = self.retrieve_tags_for_picture(picture)
             picture.tags = tags
@@ -560,7 +560,7 @@ class Persistence:
         :param tag: tag to add
         :type tag: Tag
         """
-        self.logger.debug("add_tag({})".format(tag))
+        self.logger.debug("add_tag(%s)", repr(tag))
         stmt = "INSERT INTO tags(identifier, description, parent) VALUES (" \
                "$1, $2, $3)"
         parent = tag.parent.key if tag.parent is not None else None
@@ -571,7 +571,7 @@ class Persistence:
 
     def update_tag(self, tag):
         """Update tag record."""
-        self.logger.debug("update_tag({!r})".format(tag))
+        self.logger.debug("update_tag(%s)", repr(tag))
         stmt = "UPDATE tags SET identifier=$1, description=$2, parent=$3 " \
                "WHERE id=$4"
         self.execute_sql(stmt, tag.name,
@@ -582,7 +582,7 @@ class Persistence:
 
     def delete_tag(self, tag_):
         """Delete given tag and all its assignments."""
-        self.logger.debug("delete_tag({!r})".format(tag_))
+        self.logger.debug("delete_tag(%s)", repr(tag_))
         stmt = "DELETE FROM tags WHERE id=$1"
         self.execute_sql(stmt, tag_.key)
 
@@ -612,7 +612,7 @@ class Persistence:
         :return: tag or None if name is unknown.
         :rtype: Tag
         """
-        self.logger.debug("retrieve_tag_by_name({!r})".format(name))
+        self.logger.debug("retrieve_tag_by_name(%s)", name)
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE "identifier"=$1'
         stmt_ = self.conn.prepare(stmt)
@@ -631,7 +631,7 @@ class Persistence:
         :return: tags.
         :rtype: [Tag]
         """
-        self.logger.debug("retrieve_tags_by_name_segment({!r})".format(name))
+        self.logger.debug("retrieve_tags_by_name_segment(%s)", name)
         stmt = 'SELECT id, identifier, description, parent ' \
                'FROM tags WHERE "identifier"LIKE $1'
         stmt_ = self.conn.prepare(stmt)
@@ -649,7 +649,7 @@ class Persistence:
         """
         if key in _TAG_CACHE:
             return _TAG_CACHE.get(key)
-        self.logger.debug("retrieve_tag_by_key({!r})".format(key))
+        self.logger.debug("retrieve_tag_by_key(%s)", str(key))
         stmt = 'SELECT id, identifier, description, parent FROM tags WHERE ' \
                '"id"=$1'
         stmt_ = self.conn.prepare(stmt)
@@ -668,7 +668,7 @@ class Persistence:
             return _TAG_CACHE.get(key)
         except KeyError:
             self.logger.debug(
-                "_create_tag({!r}, {!r}), ...".format(key, identifier))
+                "_create_tag(%s, %s), ...", str(key), identifier)
             if parent_id is not None:
                 parent = self.retrieve_tag_by_key(parent_id)
             else:

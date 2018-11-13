@@ -33,13 +33,13 @@ def initialize_logger():
     path_cfg_file, config = __read_configuration()
     logging.config.dictConfig(config)
     logger = logging.getLogger('picdb.logging')
-    logger.info('Logger configuration file: %s' % path_cfg_file)
+    logger.info('Logger configuration file: %s', path_cfg_file)
 
 
 def __read_configuration():
     """Read the logging configuration from file.
 
-    :return: cpath to config file, onfiguration dictionary
+    :return: path to config file, configuration dictionary
     :rtype: (str, dict)
     """
     path, cfg = _lookup_configuration()

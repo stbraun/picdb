@@ -133,7 +133,7 @@ class TagManagement(ttk.Frame):
     def item_selected(self, _):
         """An item in the tree view was selected."""
         items = self.filter_tree.selected_items()
-        self.logger.info('Selected tags: {}'.format(items))
+        self.logger.info('Selected tags: %s', str(items))
         if items:
             tag = items[0]
             self.editor.tag = tag

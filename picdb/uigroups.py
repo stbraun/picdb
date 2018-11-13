@@ -31,16 +31,16 @@ Series management.
 
 import logging
 import tkinter as tk
-from tkinter import ttk
 from tkinter import messagebox
+from tkinter import ttk
 
 from .groupservices import retrieve_groups_by_name, delete_group, \
     retrieve_groups_by_name_segment, retrieve_group_by_key, get_all_groups, \
     save_group as save_group_, create_group
-from .uimasterdata import HierarchicalTreeView, FilteredTreeView
+from .persistence import UnknownEntityException
 from .selector import Selector
 from .uicommon import tag_all_children
-from .persistence import UnknownEntityException
+from .uimasterdata import HierarchicalTreeView, FilteredTreeView
 
 
 class GroupManagement(ttk.Frame):
@@ -151,8 +151,8 @@ class GroupManagement(ttk.Frame):
             # As soon as we can edit the pictures of a group here we will need
             # this call anyway.
             pics = group_.pictures
-            self.logger.debug('Pictures of group {}: {}.'.
-                              format(group_.name, pics))
+            self.logger.debug('Pictures of group %s: %s.', group_.name,
+                              str(pics))
             self.editor.group = group_
 
     def _item_deleted(self, _):

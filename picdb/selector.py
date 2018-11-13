@@ -97,14 +97,14 @@ class Selector(ttk.LabelFrame, Observable):
 
     def _add_item(self):
         items = self.left.selected_items()
-        self.logger.info('add item: {}'.format(items))
+        self.logger.info('add item: %s', str(items))
         for item in items:
             self.right.add_item(item)
         self._call_listeners(self.EVT_ITEM_ASSIGNED, items)
 
     def _remove_item(self):
         items = self.right.selected_items()
-        self.logger.info('remove item: {}'.format(items))
+        self.logger.info('remove item: %s', str(items))
         for item in items:
             self.right.delete(item.key)
         self._call_listeners(self.EVT_ITEM_UNASSIGNED, items)
