@@ -33,8 +33,8 @@ Status bar.
 import logging
 import os
 import tkinter as tk
-from pkgutil import get_data
 from tkinter import ttk
+from pkgutil import get_data
 
 import psutil
 

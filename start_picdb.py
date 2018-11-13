@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # coding=utf-8
-"""
-Start PicDB Application.
-"""
+"""Start PicDB Application."""
 # Copyright (c) 2016 Stefan Braun
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,7 +30,7 @@ Start PicDB Application.
 
 
 import sys
-from picdb import app as app
+from picdb import app
 
 if __name__ == '__main__':
     app.start_application(sys.argv[1:])
