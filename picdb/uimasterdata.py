@@ -52,9 +52,9 @@ class PicTreeView(ttk.Treeview, Observable):
         self.bind('<2>', lambda e: self.menu.post(e.x_root, e.y_root))
 
     @classmethod
-    def create_instance(cls, master):
+    def create_instance(cls, master, **kwargs):
         """Factory method."""
-        return PicTreeView(master)
+        return PicTreeView(master, **kwargs)
 
     def clear(self):
         """Remove all items from tree."""

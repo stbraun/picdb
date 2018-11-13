@@ -54,7 +54,6 @@ check_sources() {
         echo "======================";
         echo " Sanity tests failed. ";
         echo "======================";
-
         exit 1;
     fi
 
@@ -89,12 +88,14 @@ create_doc() {
     python setup.py install
 
     # ... and generate documentation
-    cd docs
+    pushd docs
     make html
+    popd
 
     # package documentation
-    cd build
+    pushd build
     zip -r ../../dist/docs.zip html
+    popd
 }
 
 build_app() {
@@ -114,7 +115,6 @@ build_app() {
     echo "=====================================";
        exit 1;
     fi
-
 }
 
 case "$1" in

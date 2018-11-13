@@ -201,14 +201,6 @@ class GroupFilteredTreeView(FilteredTreeView):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, group_):
-        """Add given group to tree view.
-
-        :param group_: group to add.
-        :type group_: Group
-        """
-        super().add_item_to_tree(group_)
-
     def _retrieve_items(self):
         """Retrieve a bunch of groups from database.
 
@@ -219,8 +211,7 @@ class GroupFilteredTreeView(FilteredTreeView):
         """
         name_filter = self.name_filter_var.get()
         limit = self.limit_var.get()
-        groups = retrieve_groups_by_name_segment(name_filter,
-                                                 limit)
+        groups = retrieve_groups_by_name_segment(name_filter, limit)
         return groups
 
 
@@ -243,14 +234,6 @@ class GroupTree(HierarchicalTreeView):
     def create_instance_change_parent(cls, master, tree_only=False, **kwargs):
         """Factory method."""
         return GroupTree(master, tree_only, allow_change_parent=True, **kwargs)
-
-    def add_item(self, group_):
-        """Add given group to tree.
-
-        :param group_: group to add
-        :type group_: Group
-        """
-        super().add_item(group_)
 
     def _additional_values(self, item):
         return () if self.tree_only else (item.description,)
@@ -366,7 +349,7 @@ class GroupEditor(ttk.LabelFrame):
 
     def clear(self):
         """Remove group from editor."""
-        self.group = None
+        self.group_ = None
 
 
 class GroupSelector(Selector):

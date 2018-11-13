@@ -184,10 +184,6 @@ class TagFilteredTreeView(FilteredTreeView):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, tag):
-        """Add given tag to tree view."""
-        super().add_item_to_tree(tag)
-
     def _retrieve_items(self):
         """Retrieve a bunch of tags from database.
 
@@ -218,14 +214,6 @@ class TagTree(HierarchicalTreeView):
     def create_instance_change_parent(cls, master, tree_only=False, **kwargs):
         """Factory method."""
         return TagTree(master, tree_only, allow_change_parent=True, **kwargs)
-
-    def add_item(self, tag_):
-        """Add given tag to tree.
-
-        :param tag_: tag to add.
-        :type tag_: Tag
-        """
-        super().add_item(tag_)
 
     def _additional_values(self, item):
         return () if self.tree_only else (item.description,)

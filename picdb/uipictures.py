@@ -309,10 +309,6 @@ class PictureFilteredTreeView(FilteredTreeView):
         """
         return self.tree.selected_items()
 
-    def add_item_to_tree(self, picture_):
-        """Add given picture to tree view."""
-        super().add_item_to_tree(picture_)
-
     def _retrieve_items(self):
         """Retrieve a bunch of pictures from database.
 
