@@ -31,15 +31,13 @@ Configure the application for your needs.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import os
 import logging
+import os
 import pkgutil
+
 import yaml
 
 LOGGER = logging.getLogger('picdb.config')
-
-# The configuration dictionary.
-__CONFIG = None
 
 # Search path for config file. Will default to packaged file.
 CONFIG_PATH = ['./picdb_app.yaml', '~/.picdb/picdb_app.yaml']
@@ -53,9 +51,9 @@ def _lookup_configuration():
     """
     for pth in CONFIG_PATH:
         path = os.path.abspath(os.path.expanduser(pth))
-        LOGGER.debug('Checking for {}'.format(path))
+        LOGGER.debug('Checking for %s' % path)
         if os.path.exists(path):
-            LOGGER.info('Config file: {}'.format(path))
+            LOGGER.info('Config file: %s' % path)
             return open(path)
     return pkgutil.get_data('picdb', 'resources/config_app.yaml')
 
@@ -75,14 +73,14 @@ def __initialize_configuration():
 
 def get_configuration(key, default=None):
     """Retrieve configuration for given key."""
-    LOGGER.info('Retrieving application configuration key: <{}>'.format(key))
-    global __CONFIG
-    if __CONFIG is None:
-        __CONFIG = Configuration(__initialize_configuration())
+    LOGGER.info('Retrieving application configuration key: <%s>' % str(key))
+    # global __CONFIG
+    # if __CONFIG is None:
+    #     __CONFIG = Configuration(__initialize_configuration())
     value = __CONFIG.get_value(key, default)
     LOGGER.info(
-        'Retrieved application configuration key: <{}> -> <{}>'.format(key,
-                                                                       value))
+        'Retrieved application configuration key: <%s> -> <%s>' % (
+            str(key), str(value)))
     return value
 
 
@@ -121,3 +119,7 @@ class Configuration:
     def set_value(self, key, value):
         """Set the value of a configuration item. """
         self._conf[key] = value
+
+
+# The configuration dictionary.
+__CONFIG = Configuration(__initialize_configuration())

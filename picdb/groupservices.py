@@ -95,7 +95,7 @@ def retrieve_groups_by_name(name):
     return retrieve_groups_by_name_segment(name, None)
 
 
-def retrieve_groups_by_name_segment(name, limit):
+def retrieve_groups_by_name_segment(name, _):
     """Retrieve groups matching given name or name segment."""
     data_base = get_db()
     return data_base.retrieve_groups_by_name_segment(name)
