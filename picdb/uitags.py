@@ -205,11 +205,10 @@ class TagTree(HierarchicalTreeView):
         if not tree_only:
             self.heading('description', text='Description')
 
-    # pylint: disable=W0221
     @classmethod
-    def create_instance(cls, master, tree_only=False, **kwargs):
+    def create_instance(cls, master, tree_only=False,
+                        **kwargs):  # pylint: disable=W0221
         """Factory method."""
-        # pylint: enable=W0221
         return TagTree(master, tree_only, **kwargs)
 
     @classmethod
@@ -354,7 +353,7 @@ class TagSelector(Selector):
         tags = [retrieve_tag_by_key(int(item)) for item in items]
         return tags
 
-    def load_items(self, picture_tags):  # noqa
+    def load_items(self, picture_tags):   # pylint: disable=W0221
         """Load items into selector.
 
         :param picture_tags: list of tags already assigned to picture.
