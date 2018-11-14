@@ -358,7 +358,7 @@ class PictureReferenceTree(PicTreeView):
                               command=external_viewer_cmd)
 
     @classmethod
-    def create_instance(cls, master, tree_only=False):  # noqa
+    def create_instance(cls, master, tree_only=False):  # pylint: disable=W0221
         """Factory method."""
         return PictureReferenceTree(master, tree_only)
 

@@ -205,9 +205,11 @@ class TagTree(HierarchicalTreeView):
         if not tree_only:
             self.heading('description', text='Description')
 
+    # pylint: disable=W0221
     @classmethod
-    def create_instance(cls, master, tree_only=False, **kwargs):  # noqa
+    def create_instance(cls, master, tree_only=False, **kwargs):
         """Factory method."""
+        # pylint: enable=W0221
         return TagTree(master, tree_only, **kwargs)
 
     @classmethod

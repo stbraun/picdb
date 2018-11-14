@@ -225,9 +225,11 @@ class GroupTree(HierarchicalTreeView):
         if not tree_only:
             self.heading('description', text='Description')
 
+    # pylint: disable=W0221
     @classmethod
-    def create_instance(cls, master, tree_only=False, **kwargs):  # noqa
+    def create_instance(cls, master, tree_only=False, **kwargs):
         """Factory method."""
+        # pylint: enable=W0221
         return GroupTree(master, tree_only, **kwargs)
 
     @classmethod
@@ -371,7 +373,9 @@ class GroupSelector(Selector):
                   for item in items]
         return groups
 
-    def load_items(self, picture_groups):  # noqa
+    # pylint: disable=W0221
+    def load_items(self, picture_groups):
+        # pylint: enable=W0221
         """Load items into selector.
 
         :param picture_groups: list of groups already assigned to picture.
