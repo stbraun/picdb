@@ -39,8 +39,10 @@ from .uicommon import Observable
 class Selector(ttk.LabelFrame, Observable):
     """A component for moving items between two tree views."""
 
-    def __init__(self, master, tree_factory_left, tree_factory_right,
-                 left_tree_options=None, right_tree_options=None, **kwargs):
+    def __init__(self, master, tree_factory_left,
+                 tree_factory_right,
+                 left_tree_options=None,
+                 right_tree_options=None, **kwargs):  # noqa
         super().__init__(master, **kwargs)
         self.logger = logging.getLogger('picdb.ui')
         # Register observable events

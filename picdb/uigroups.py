@@ -226,7 +226,7 @@ class GroupTree(HierarchicalTreeView):
             self.heading('description', text='Description')
 
     @classmethod
-    def create_instance(cls, master, tree_only=False, **kwargs):
+    def create_instance(cls, master, tree_only=False, **kwargs):  # noqa
         """Factory method."""
         return GroupTree(master, tree_only, **kwargs)
 
@@ -371,7 +371,7 @@ class GroupSelector(Selector):
                   for item in items]
         return groups
 
-    def load_items(self, picture_groups):
+    def load_items(self, picture_groups):  # noqa
         """Load items into selector.
 
         :param picture_groups: list of groups already assigned to picture.

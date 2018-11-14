@@ -34,7 +34,8 @@ from .entity import Entity
 class Group(Entity):
     """A series of pictures."""
 
-    def __init__(self, key, name, description, pictures=None, parent=None):
+    def __init__(self, key, name, description,
+                 pictures=None, parent=None):  # noqa
         super().__init__(key, name, description)
         self._parent = parent
         self._children = []

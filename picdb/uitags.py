@@ -206,7 +206,7 @@ class TagTree(HierarchicalTreeView):
             self.heading('description', text='Description')
 
     @classmethod
-    def create_instance(cls, master, tree_only=False, **kwargs):
+    def create_instance(cls, master, tree_only=False, **kwargs):  # noqa
         """Factory method."""
         return TagTree(master, tree_only, **kwargs)
 
@@ -332,7 +332,7 @@ class TagEditor(ttk.LabelFrame):
 
     def clear(self):
         """Clear editor."""
-        self.tag = None
+        self.tag_ = None
 
 
 class TagSelector(Selector):
@@ -352,7 +352,7 @@ class TagSelector(Selector):
         tags = [retrieve_tag_by_key(int(item)) for item in items]
         return tags
 
-    def load_items(self, picture_tags):
+    def load_items(self, picture_tags):  # noqa
         """Load items into selector.
 
         :param picture_tags: list of tags already assigned to picture.
