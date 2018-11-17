@@ -1,7 +1,5 @@
 # coding=utf-8
-"""
-Test LRUCache
-"""
+"""Test LRUCache."""
 # Copyright (c) 2016 Stefan Braun
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,20 +27,20 @@ Test LRUCache
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import unittest
+import pytest
 from hypothesis import given, example, settings
 import hypothesis.strategies as st
 
 from picdb.cache import LRUCache
 
 
-class LRUCacheTest(unittest.TestCase):
+class TestLRUCache():
     def test_put(self):
         """Just put an item."""
         cache = LRUCache(5)
-        self.assertEqual(0, cache.size)
+        assert 0 == cache.size
         cache.put(1, 'aaa')
-        self.assertEqual(1, cache.size)
+        assert 1 == cache.size
 
     def test_put_get(self):
         """Put an item an get it again."""
@@ -50,14 +48,14 @@ class LRUCacheTest(unittest.TestCase):
         item = 'aaa'
         cache = LRUCache(5)
         cache.put(key, item)
-        self.assertEqual(item, cache.get(key))
-        self.assertEqual(1, cache.size)
+        assert item == cache.get(key)
+        assert 1 == cache.size
 
     def test_not_in_cache(self):
         """Try to get an item which is not in cache."""
         cache = LRUCache(5)
         cache.put(1, 'aaa')
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             cache.get(2)
 
     def test_lru_behavior(self):
@@ -67,13 +65,13 @@ class LRUCacheTest(unittest.TestCase):
         cache = LRUCache(max_size)
         for i in range(max_size):
             cache.put(i, str(i))
-        self.assertEqual(max_size, cache.size)
+        assert max_size == cache.size
         for i in range(max_size):
             cache.get(i)
         cache.put(max_size, str(max_size))
-        self.assertEqual(max_size, cache.size)
+        assert max_size == cache.size
         cache.get(max_size)
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             cache.get(0)
 
     def test_clear_cache(self):
@@ -82,9 +80,9 @@ class LRUCacheTest(unittest.TestCase):
         cache = LRUCache(3)
         for i in range(max_size):
             cache.put(i, str(i))
-        self.assertEqual(max_size, cache.size)
+        assert max_size == cache.size
         cache.clear()
-        self.assertEqual(0, cache.size)
+        assert 0 == cache.size
 
     def test_statistics(self):
         """Test hits and _misses."""
@@ -92,14 +90,15 @@ class LRUCacheTest(unittest.TestCase):
         cache = LRUCache(max_size)
         for i in range(max_size):
             cache.put(i, str(i))
-        self.assertEqual(0, cache.hits)
-        self.assertEqual(0, cache.misses)
+        assert 0 == cache.hits
+        assert 0 == cache.misses
         cache.get(0)
-        self.assertEqual(1, cache.hits)
-        self.assertEqual(0, cache.misses)
-        self.assertRaises(KeyError, cache.get, (42,))
-        self.assertEqual(1, cache.hits)
-        self.assertEqual(1, cache.misses)
+        assert 1 == cache.hits
+        assert 0 == cache.misses
+        with pytest.raises(KeyError):
+            cache.get(42)
+        assert 1 == cache.hits
+        assert 1 == cache.misses
 
 
 # Some additional property based testing

@@ -1,7 +1,5 @@
 # coding=utf-8
-"""
-Test Group.
-"""
+"""Test Group."""
 # Copyright (c) 2016 Stefan Braun
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,60 +26,78 @@ Test Group.
 # OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-import unittest
-import collections
+
+import pytest
+from collections.abc import Iterable
 
 from picdb.group import Group
 from picdb.entity import Entity
 
 
-class GroupTest(unittest.TestCase):
+class TestGroup(object):
+    """Test group class."""
+
     def setUp(self):
+        """Setup test data."""
         self.g = Group(1, 'a', 'A')
         self.p1 = Entity(None, 'p1', '')
         self.p2 = Entity(None, 'p2', '')
 
     def test_is_iterable(self):
         """Check that Group instances are iterable."""
-        self.assertIsInstance(self.g, collections.Iterable)
+        g = Group(1, 'a', 'A')
+        assert isinstance(g, Iterable)
 
     def test_iterate_over_pictures(self):
         """Test iteration without pictures assigned."""
-        for _ in self.g:
-            self.fail('No pictures expected.')
-        self.assertEqual(0, len([p for p in self.g]))
-        self.g.assign_picture(self.p1)
-        self.assertEqual(1, len([p for p in self.g]), 'One picture expected.')
-        self.g.assign_picture(self.p2)
-        self.assertEqual(2, len([p for p in self.g]), 'Two pictures expected.')
+        g = Group(1, 'a', 'A')
+        p1 = Entity(None, 'p1', '')
+        p2 = Entity(None, 'p2', '')
+        for _ in g:
+            pytest.fail('No pictures expected.')
+        assert 0 == len([p for p in g])
+        g.assign_picture(p1)
+        assert 1 == len([p for p in g]), 'One picture expected.'
+        g.assign_picture(p2)
+        assert 2 == len([p for p in g]), 'Two pictures expected.'
 
     def test_assign_picture(self):
-        self.g.assign_picture(self.p1)
-        self.g.assign_picture(self.p2)
-        pics = [p for p in self.g]
-        self.assertEqual(2, len(pics))
-        self.assertTrue(self.p1 in pics)
-        self.assertTrue(self.p2 in pics)
+        g = Group(1, 'a', 'A')
+        p1 = Entity(None, 'p1', '')
+        p2 = Entity(None, 'p2', '')
+        g.assign_picture(p1)
+        g.assign_picture(p2)
+        pics = [p for p in g]
+        assert 2 == len(pics)
+        assert p1 in pics
+        assert p2 in pics
 
     def test_assign_same_picture_multiple_times(self):
-        self.g.assign_picture(self.p1)
-        self.assertTrue(self.p1 in self.g)
-        self.assertEqual(1, len(self.g))
-        self.g.assign_picture(self.p1)
-        self.assertEqual(1, len(self.g))
+        g = Group(1, 'a', 'A')
+        p1 = Entity(None, 'p1', '')
+        g.assign_picture(p1)
+        assert p1 in g
+        assert 1 == len(g)
+        g.assign_picture(p1)
+        assert 1 == len(g)
 
     def test_remove_picture(self):
         """Test assigning and removing of a picture. Removing it twice shall
         be ignored."""
-        self.g.assign_picture(self.p1)
-        self.assertTrue(self.p1 in self.g)
-        self.assertEqual(1, len(self.g))
-        self.g.remove_picture(self.p1)
-        self.assertEqual(0, len(self.g))
+        g = Group(1, 'a', 'A')
+        p1 = Entity(None, 'p1', '')
+        g.assign_picture(p1)
+        assert p1 in g
+        assert 1 == len(g)
+        g.remove_picture(p1)
+        assert 0 == len(g)
         # ignore removing unknown picture
-        self.g.remove_picture(self.p1)
+        g.remove_picture(p1)
 
     def test_contains(self):
-        self.g.assign_picture(self.p1)
-        self.assertTrue(self.p1 in self.g)
-        self.assertFalse(self.p2 in self.g)
+        g = Group(1, 'a', 'A')
+        p1 = Entity(None, 'p1', '')
+        p2 = Entity(None, 'p2', '')
+        g.assign_picture(p1)
+        assert p1 in g
+        assert p2 not in g

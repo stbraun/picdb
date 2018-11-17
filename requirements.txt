@@ -4,6 +4,7 @@ PyYAML
 hypothesis
 nose
 nose2-cov
+pytest
 psutil
 Sphinx
 PyInstaller
