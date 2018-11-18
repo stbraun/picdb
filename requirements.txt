@@ -2,9 +2,8 @@ pillow
 py-postgresql >= 1.1.0
 PyYAML
 hypothesis
-nose
-nose2-cov
 pytest
+pytest-cover
 psutil
 Sphinx
 PyInstaller

@@ -8,7 +8,6 @@ from os import environ
 from paver.easy import sh, task, needs, options, Bunch
 from paver.setuputils import setup
 
-
 sys.path.insert(0, './picdb')
 import version
 
@@ -26,11 +25,11 @@ setup(
     description='Simple image database.',
     include_package_data=True,
     zip_safe=False,
-    install_requires=['Pillow', 'PyYAML'],
-    requires=['Pillow', 'PyYAML'],
+    install_requires=['pillow', 'PyYAML', 'py-postgresql'],
+    requires=['pillow', 'PyYAML'],
     provides=['picdb'],
     scripts=['scripts/assign_pictures.py', 'start_picdb.py'],
-    tests_require=['pytest', 'nose'],
+    tests_require=['pytest', 'pytest-cover', 'hypothesis'],
 )
 
 options(
@@ -60,11 +59,11 @@ def dependencies():
 
 @task
 def test_coverage():
-    """Run nosetests with coverage."""
+    """Run tests with coverage."""
     sh(
-        'nosetests --with-coverage --cover-branches --cover-inclusive '
-        '--cover-html --cover-html-dir=reports/coverage --cover-xml '
-        '--cover-xml-file=reports/coverage.xml test/')
+        "pytest --junit-xml=reports/unittest.xml --doctest-modules "
+        "--cov=picdb/ --cov-branch --cov-report=xml:reports/coverage.xml "
+        "--cov-report=html:reports/coverage test")
 
 
 @task
