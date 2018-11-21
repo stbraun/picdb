@@ -18,3 +18,5 @@ picdb.egg-info
 .coverage
 .idea/dataSources/
 build_flymake.sh
+
+/.mypy_cache/

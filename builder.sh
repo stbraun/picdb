@@ -118,7 +118,17 @@ build_app() {
     fi
 }
 
+clean_env() {
+    rm -rf build dist picdb.egg-info;
+    rm -rf __pycache__ test/__pycache__ picdb/__pycache__ scripts/__pycache__;
+    rm -rf .coverage coverage.xml reports/* docs/build/*;
+    find picdb test -name "*.pyc" -exec rm {} ";";
+}
+
 case "$1" in
+    clean )
+        clean_env;
+        ;;
     venv )
         mk_venv;
         ;;
@@ -151,5 +161,7 @@ case "$1" in
         create_doc;
         build_app;
         ;;
+    *   )
+        echo "builder.sh [clean | venv | requ | checks | tests | doc | build | all]"
 esac
 exit 0

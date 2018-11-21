@@ -44,7 +44,7 @@ options(
 @task
 def clean():
     """Remove build artifacts."""
-    sh('rm -rf build dist')
+    sh('rm -rf build dist picdb.egg-info')
 
 
 @task
