@@ -1,10 +1,35 @@
-try:
-    import paver.tasks
-except ImportError:
-    from os.path import exists
-    if exists("paver-minilib.zip"):
-        import sys
-        sys.path.insert(0, "paver-minilib.zip")
-    import paver.tasks
+# coding=utf-8
+"""
+PicDB: image management tool.
 
-paver.tasks.main()
+Copyright 2016-2018, Stefan Braun.
+Licensed under MIT.
+"""
+import sys
+from setuptools import setup
+
+
+def version():
+    """Determine version."""
+    sys.path.insert(0, "./picdb")
+    from version import get_version
+    return get_version()
+
+
+setup(
+    name='picdb',
+    version=version(),
+    packages=['picdb'],
+    url='https://github.com/stbraun/picdb',
+    license='MIT',
+    author='Stefan Braun',
+    author_email='sb@action.ms',
+    description='Simple image database.',
+    include_package_data=True,
+    zip_safe=False,
+    install_requires=['pillow', 'PyYAML'],
+    requires=['pillow', 'PyYAML', 'PyInstaller', 'Sphinx'],
+    provides=['picdb'],
+    scripts=['scripts/assign_pictures.py', 'start_picdb.py'],
+    tests_require=['pytest', 'pytest-cover', 'hypothesis'],
+)

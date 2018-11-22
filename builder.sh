@@ -8,8 +8,7 @@ if [ ! -d reports ]; then
 fi
 
 if [ -z "$1" ]; then
-    echo 'usage: build.sh <cmd>'
-    exit 1;
+    $1 = "help"
 fi
 
 mk_venv() {
@@ -82,7 +81,7 @@ run_tests() {
 
 create_doc() {
     # build source distribution tarball
-    paver sdist
+    python setup.py sdist
 
     # install package ...
     python setup.py install
@@ -97,6 +96,11 @@ create_doc() {
     popd
     popd
 
+}
+
+source_dist() {
+    # build source distribution tarball
+    python setup.py sdist
 }
 
 build_app() {
@@ -144,6 +148,10 @@ case "$1" in
         activate_venv;
         run_tests;
         ;;
+    sdist )
+        activate_venv;
+        source_dist;
+        ;;
     doc )
         activate_venv;
         create_doc;
@@ -162,6 +170,6 @@ case "$1" in
         build_app;
         ;;
     *   )
-        echo "builder.sh [clean | venv | requ | checks | tests | doc | build | all]"
+        echo "builder.sh [clean | venv | requ | checks | tests | doc | sdist | build | all]"
 esac
 exit 0

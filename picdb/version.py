@@ -1,7 +1,5 @@
 # coding=utf-8
-"""
-Version number.
-"""
+"""Version number."""
 # Copyright (c) 2016 Stefan Braun
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -31,6 +29,8 @@ Version number.
 
 from os import environ
 
+VERSION = '2.0.0'
+
 # Keys of environment variables to overwrite version number, build number,
 # and release type. This can be used for building in a CI server.
 VERSION_KEY = 'APP_VERSION'
@@ -44,7 +44,7 @@ RELEASE_KEY = 'RELEASE_TYPE'
 information to the current instance of a product, e.g. 'SNAPSHOT', 'debug'."""
 
 
-def determine_version(default_version='0.0.0'):
+def determine_version(default_version=VERSION):
     """Provide version number.
 
     Looks for version number in environment. If none, default_version is used.
