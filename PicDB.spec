@@ -46,7 +46,7 @@ exe = EXE(pyz,
           console=False )
 app = BUNDLE(exe,
              name='PicDB.app',
-             icon='Icon.icns',
+             icon='resrc/Icon.icns',
              bundle_identifier='com.stbraun.picdb',
              info_plist={
                          'CFBundleShortVersionString': get_version()

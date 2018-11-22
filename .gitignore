@@ -20,3 +20,5 @@ picdb.egg-info
 build_flymake.sh
 
 /.mypy_cache/
+
+/reports/

@@ -113,7 +113,6 @@ build_app() {
     echo "========================================";
     echo " Building application bundle succeeded. ";
     echo "========================================";
-        exit 0;
     else
     echo "=====================================";
     echo " Building application bundle failed. ";
@@ -166,8 +165,9 @@ case "$1" in
         install_requirements;
         check_sources;
         run_tests;
-        create_doc;
+        source_dist;
         build_app;
+        create_doc;
         ;;
     *   )
         echo "builder.sh [clean | venv | requ | checks | tests | doc | sdist | build | all]"
