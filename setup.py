@@ -8,7 +8,7 @@ Licensed under MIT.
 import sys
 from setuptools import setup
 
-VERSION = '1.2.0'
+VERSION = '1.1.10'
 
 setup(
     name='picdb',
