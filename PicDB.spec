@@ -3,8 +3,6 @@
 import sys
 sys.path.insert(0, './picdb')
 
-from version import get_version
-
 block_cipher = None
 
 added_files = [('venv/lib/python3.7/site-packages/postgresql/lib/libsys.sql',
@@ -49,6 +47,6 @@ app = BUNDLE(exe,
              icon='resrc/Icon.icns',
              bundle_identifier='com.stbraun.picdb',
              info_plist={
-                         'CFBundleShortVersionString': get_version()
+                         'CFBundleShortVersionString': '1.10.0'
                         },
              )
