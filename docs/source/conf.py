@@ -65,7 +65,7 @@ author = 'Stefan Braun'
 # built documents.
 #
 # The short X.Y version.
-version = '.'.join(vv.split('.')[:2])
+version = '.'.join(release.split('.')[:2])
 # The full version, including alpha/beta/rc tags.
 release = '1.1.10'
 
