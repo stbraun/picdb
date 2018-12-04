@@ -51,7 +51,6 @@ _DB = None
 
 class UnknownEntityException(Exception):
     """Raised if requested entity does not exist."""
-    pass
 
 
 class DuplicateException(Exception):
