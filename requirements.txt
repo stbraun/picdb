@@ -10,4 +10,4 @@ PyInstaller
 Paver
 flake8
 pylint
-
+bumpversion

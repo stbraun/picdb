@@ -75,6 +75,17 @@
 	},
 	"buffers":
 	[
+		{
+			"contents": "\n  BRANCH:  On branch `master` tracking `origin/master`.\n  ROOT:    /Volumes/B3T/Development/projects/picdb\n  HEAD:    cff3ba7 cleanup.\n\n    Your working directory is clean.\n\n  ###################                   ###############\n  ## SELECTED FILE ##                   ## ALL FILES ##\n  ###################                   ###############\n\n  [o] open file                         [a] stage all unstaged files\n  [s] stage file                        [A] stage all unstaged and untracked files\n  [u] unstage file                      [U] unstage all staged files\n  [d] discard changes to file           [D] discard all unstaged changes\n  [h] open file on remote\n  [M] launch external merge tool\n\n  [l] diff file inline                  [f] diff all files\n  [e] diff file                         [F] diff all cached files\n\n  #############                         #############\n  ## ACTIONS ##                         ## STASHES ##\n  #############                         #############\n\n  [c] commit                            [t][a] apply stash\n  [C] commit, including unstaged        [t][p] pop stash\n  [m] amend previous commit             [t][s] show stash\n  [p] push current branch               [t][c] create stash\n                                        [t][u] create stash including untracked files\n  [i] ignore file                       [t][g] create stash of staged changes only\n  [I] ignore pattern                    [t][d] drop stash\n\n  [B] abort merge\n\n  ###########\n  ## OTHER ##\n  ###########\n\n  [r]         refresh status\n  [?]         toggle this help menu\n  [tab]       transition to next dashboard\n  [SHIFT-tab] transition to previous dashboard\n  [.]         move cursor to next file\n  [,]         move cursor to previous file\n\n-\n\n",
+			"settings":
+			{
+				"buffer_size": 1752,
+				"line_ending": "Unix",
+				"name": "STATUS: picdb",
+				"read_only": true,
+				"scratch": true
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -216,10 +227,18 @@
 	},
 	"expanded_folders":
 	[
-		"/Volumes/B3T/Development/projects/picdb"
+		"/Volumes/B3T/Development/projects/picdb",
+		"/Volumes/B3T/Development/projects/picdb/resrc"
 	],
 	"file_history":
 	[
+		"/Volumes/B3T/Development/projects/picdb/setup.py",
+		"/Volumes/B3T/Development/projects/picdb/create_app.sh",
+		"/Volumes/B3T/Development/projects/picdb/picdb/version.py",
+		"/Volumes/B3T/Development/projects/picdb/PicDB.spec",
+		"/Volumes/B3T/Development/projects/picdb/builder.sh",
+		"/Volumes/B3T/Development/projects/picdb/docs/source/conf.py",
+		"/Volumes/B3T/Development/projects/picdb/pavement.py",
 		"/Volumes/B3T/Development/projects/textanalysis/Makefile",
 		"/Volumes/B3T/Development/projects/textanalysis/pytest.ini",
 		"/Volumes/B3T/Development/projects/textanalysis/setup.py",
@@ -283,7 +302,6 @@
 		"/Users/sb/Downloads/Main.hs",
 		"/Volumes/B3T/Development/buildbot/bb-master/master/projects.py",
 		"/Applications/redmine-3.3.0-1/apps/redmine/htdocs/config/configuration.yml",
-		"/Volumes/B3T/Development/projects/picdb/builder.sh",
 		"/Users/sb/.jenkins/secrets/initialAdminPassword",
 		"/Volumes/B3T/Development/projects/ProjectEuler/pyeuler/test_euler30.py",
 		"/Volumes/B3T/Development/projects/ProjectEuler/pyeuler/euler30.py",
@@ -364,8 +382,44 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1752,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1752,
+								1752
+							]
+						],
+						"settings":
+						{
+							"__vi_external_disable": false,
+							"git_gutter_is_enabled": false,
+							"git_savvy.help_hidden": false,
+							"git_savvy.interface": "status",
+							"git_savvy.repo_path": "/Volumes/B3T/Development/projects/picdb",
+							"git_savvy.status_view": true,
+							"git_savvy.tabbable": true,
+							"syntax": "Packages/GitSavvy/syntax/status.sublime-syntax",
+							"tab_size": 2
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],
