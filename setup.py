@@ -8,17 +8,11 @@ Licensed under MIT.
 import sys
 from setuptools import setup
 
-
-def version():
-    """Determine version."""
-    sys.path.insert(0, "./picdb")
-    from version import get_version
-    return get_version()
-
+VERSION = '1.1.10'
 
 setup(
     name='picdb',
-    version=version(),
+    version=VERSION,
     packages=['picdb'],
     url='https://github.com/stbraun/picdb',
     license='MIT',
