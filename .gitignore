@@ -22,3 +22,4 @@ build_flymake.sh
 /.mypy_cache/
 
 /reports/
+*.sublime-workspace
