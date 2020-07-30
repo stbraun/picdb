@@ -49,8 +49,8 @@ class StatusPanel(ttk.Frame):
 
     def __init__(self, master):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
-        self.logger = logging.getLogger('picdb.ui')
-        self.version = '1.1.10'
+        self.logger = logging.getLogger("picdb.ui")
+        self.version = "1.1.10"
         self.num_pics_var = tk.StringVar()
         self.num_groups_var = tk.StringVar()
         self.num_tags_var = tk.StringVar()
@@ -67,9 +67,9 @@ class StatusPanel(ttk.Frame):
 
     def create_widgets(self):
         """Create widgets for view."""
-        img_resource = 'resources/eye.gif'
-        img = get_data('picdb', img_resource)
-        self.logger.info('image %s loaded', img_resource)
+        img_resource = "resources/eye.gif"
+        img = get_data("picdb", img_resource)
+        self.logger.info("image %s loaded", img_resource)
         self.rowconfigure(0, weight=0)
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
@@ -81,70 +81,55 @@ class StatusPanel(ttk.Frame):
         image = ttk.Label(self, image=photo)
         image.photo = photo
         image.grid(row=0, column=0, rowspan=3, sticky=(tk.W, tk.N))
-        ttk.Label(self, textvariable=self.num_pics_var).grid(row=0, column=1,
-                                                             sticky=(
-                                                                 tk.W, tk.N))
-        ttk.Label(self, textvariable=self.num_groups_var).grid(row=1, column=1,
-                                                               sticky=(
-                                                                   tk.W, tk.N))
-        ttk.Label(self, textvariable=self.num_tags_var).grid(row=2, column=1,
-                                                             sticky=(
-                                                                 tk.W, tk.N))
-        ttk.Label(self, textvariable=self.database_var).grid(row=0, column=2,
-                                                             sticky=(
-                                                                 tk.W, tk.N))
-        version_text = 'version: {}'.format(self.version)
-        ttk.Label(self, text=version_text).grid(row=1, column=2,
-                                                sticky=(tk.W, tk.N))
-        ttk.Label(self, textvariable=self.memory_usage_var).grid(row=0,
-                                                                 column=3,
-                                                                 sticky=(
-                                                                     tk.W,
-                                                                     tk.N))
-        ttk.Label(self,
-                  text="Cache stats (hits/misses), size").grid(row=0,
-                                                               column=4,
-                                                               sticky=(
-                                                                   tk.W,
-                                                                   tk.N))
-        ttk.Label(self,
-                  textvariable=self.cache_stats_picture_var).grid(row=1,
-                                                                  column=4,
-                                                                  sticky=(
-                                                                      tk.W,
-                                                                      tk.N))
-        ttk.Label(self,
-                  textvariable=self.cache_stats_group_var).grid(row=2,
-                                                                column=4,
-                                                                sticky=(
-                                                                    tk.W,
-                                                                    tk.N))
-        ttk.Label(self,
-                  textvariable=self.cache_stats_tag_var).grid(row=3,
-                                                              column=4,
-                                                              sticky=(
-                                                                  tk.W,
-                                                                  tk.N))
+        ttk.Label(self, textvariable=self.num_pics_var).grid(
+            row=0, column=1, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, textvariable=self.num_groups_var).grid(
+            row=1, column=1, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, textvariable=self.num_tags_var).grid(
+            row=2, column=1, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, textvariable=self.database_var).grid(
+            row=0, column=2, sticky=(tk.W, tk.N)
+        )
+        version_text = "version: {}".format(self.version)
+        ttk.Label(self, text=version_text).grid(
+            row=1, column=2, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, textvariable=self.memory_usage_var).grid(
+            row=0, column=3, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, text="Cache stats (hits/misses), size").grid(
+            row=0, column=4, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, textvariable=self.cache_stats_picture_var).grid(
+            row=1, column=4, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, textvariable=self.cache_stats_group_var).grid(
+            row=2, column=4, sticky=(tk.W, tk.N)
+        )
+        ttk.Label(self, textvariable=self.cache_stats_tag_var).grid(
+            row=3, column=4, sticky=(tk.W, tk.N)
+        )
 
     def _report_usage(self, mem_info=None):
         """report memory usage."""
-        info = 'memory usage: {:6.3f}MB'.format(
-            mem_info.rss / (1024 * 1024))
+        info = "memory usage: {:6.3f}MB".format(mem_info.rss / (1024 * 1024))
         self.memory_usage_var.set(info)
 
-    def report_usage(self, prev_mem_info=None,
-                     process=psutil.Process(os.getpid())):
+    def report_usage(self, prev_mem_info=None, process=psutil.Process(os.getpid())):
         """Report memory usage."""
         # find max memory
         if process.is_running():
             mem_info = process.memory_info()
-            if (mem_info != prev_mem_info and (
-                    prev_mem_info is None or
-                    mem_info.rss > prev_mem_info.rss)):
+            if (mem_info != prev_mem_info) and (
+                (prev_mem_info is None) or (mem_info.rss > prev_mem_info.rss)
+            ):
                 prev_mem_info = mem_info
             self._report_usage(mem_info)
-            self.after(500, self.report_usage,
-                       prev_mem_info)  # report every 0.5s
+            # report every 0.5s
+            self.after(500, self.report_usage, prev_mem_info)
 
     def show_db(self):
         """Display database info."""
@@ -152,16 +137,16 @@ class StatusPanel(ttk.Frame):
         if params is None:
             self.after(500, self.show_db)
         else:
-            info = 'database: {} ({}) at port {}'.format(params.name,
-                                                         params.user,
-                                                         params.port)
+            info = "database: {} ({}) at port {}".format(
+                params.name, params.user, params.port
+            )
             self.database_var.set(info)
 
     def data_statistics(self):
         """Show statistics about data."""
-        pics = 'pictures: {}'.format(number_of_pictures())
-        groups = 'groups: {}'.format(number_of_groups())
-        tags = 'tags: {}'.format(number_of_tags())
+        pics = "pictures: {}".format(number_of_pictures())
+        groups = "groups: {}".format(number_of_groups())
+        tags = "tags: {}".format(number_of_tags())
         self.num_pics_var.set(pics)
         self.num_groups_var.set(groups)
         self.num_tags_var.set(tags)
@@ -169,12 +154,14 @@ class StatusPanel(ttk.Frame):
 
     def cache_statistics(self):
         """Show cache statistics."""
-        templ = '{:s}: {:d} / {}, {}'
-        variabless = [self.cache_stats_tag_var, self.cache_stats_picture_var,
-                      self.cache_stats_group_var]
-        names = ['tag', 'picture', 'group']
+        templ = "{:s}: {:d} / {}, {}"
+        variabless = [
+            self.cache_stats_tag_var,
+            self.cache_stats_picture_var,
+            self.cache_stats_group_var,
+        ]
+        names = ["tag", "picture", "group"]
         caches = [_TAG_CACHE, _PICTURE_CACHE, _GROUP_CACHE]
         for name, var, cache in zip(names, variabless, caches):
-            var.set(
-                templ.format(name, cache.hits, cache.misses, cache.size))
+            var.set(templ.format(name, cache.hits, cache.misses, cache.size))
         self.after(1000, self.cache_statistics)
