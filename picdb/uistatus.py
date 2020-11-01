@@ -50,7 +50,7 @@ class StatusPanel(ttk.Frame):
     def __init__(self, master):
         super().__init__(master, borderwidth=2, relief=tk.GROOVE)
         self.logger = logging.getLogger("picdb.ui")
-        self.version = "1.1.11"
+        self.version = "1.2.0"
         self.num_pics_var = tk.StringVar()
         self.num_groups_var = tk.StringVar()
         self.num_tags_var = tk.StringVar()
