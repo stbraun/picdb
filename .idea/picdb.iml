@@ -4,19 +4,28 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/picdb" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.hypothesis" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/.mypy_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/source/api" />
       <excludeFolder url="file://$MODULE_DIR$/model" />
+      <excludeFolder url="file://$MODULE_DIR$/reports" />
+      <excludeFolder url="file://$MODULE_DIR$/test/.hypothesis" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (picdb)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Pipenv (picdb)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
-    <option name="requirementsPath" value="$MODULE_DIR$/requirements.txt" />
+    <option name="requirementsPath" value="$MODULE_DIR$/Pipfile" />
   </component>
   <component name="ReSTService">
     <option name="DOC_DIR" value="$MODULE_DIR$/docs" />
   </component>
   <component name="TestRunnerService">
-    <option name="PROJECT_TEST_RUNNER" value="Nosetests" />
+    <option name="PROJECT_TEST_RUNNER" value="pytest" />
   </component>
 </module>

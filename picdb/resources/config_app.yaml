@@ -2,8 +2,8 @@ version: 1
 db:
   user: sb
   passwd: sb
-  name: libraries
-  # name: pictest
+  # name: libraries
+  name: pictest
   # name: npix
   host: 127.0.0.1
   port: 5432

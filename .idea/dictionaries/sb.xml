@@ -2,11 +2,20 @@
   <dictionary name="sb">
     <words>
       <w>argparse</w>
+      <w>datas</w>
       <w>dbapi</w>
+      <w>f'found</w>
+      <w>hiddenimports</w>
+      <w>hookspath</w>
+      <w>icns</w>
+      <w>libsys</w>
       <w>minilib</w>
+      <w>noarchive</w>
       <w>nosetests</w>
       <w>onefile</w>
       <w>passwd</w>
+      <w>pathex</w>
+      <w>pathlib</w>
       <w>paver</w>
       <w>picdb</w>
       <w>pictest</w>
@@ -14,10 +23,12 @@
       <w>psutil</w>
       <w>pyinstaller</w>
       <w>pytest</w>
+      <w>resrc</w>
       <w>sfood</w>
       <w>stbraun</w>
       <w>tearoff</w>
       <w>tpdf</w>
+      <w>zipfiles</w>
     </words>
   </dictionary>
 </component>

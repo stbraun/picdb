@@ -115,7 +115,6 @@ class Selector(ttk.LabelFrame, Observable):
         """Write given entities into left tree."""
         self.clear()
         left_entities = all_entities
-        right_entities = right_entities
         for entity in left_entities:
             self.left.add_item(entity)
         for entity in right_entities:

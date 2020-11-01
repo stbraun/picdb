@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+# export PATH=/usr/local/bin:/usr/local/sbin:$PATH
 
 # prepare folder for build reports
 if [ ! -d reports ]; then
@@ -13,27 +13,29 @@ fi
 
 mk_venv() {
     # setup virtual environment ...
-    if python3 -m venv venv; then
-        echo "================================";
-        echo " Virtual environment installed. ";
-        echo "================================";
-    else
-        exit 1;
-    fi
+    echo " ===> skip mk_venv "
+#    if pipenv install; then
+#        echo "================================";
+#        echo " Virtual environment installed. ";
+#        echo "================================";
+#    else
+#        exit 1;
+#    fi
 }
 
 activate_venv() {
     # activate virtual environment
-    echo "==================================";
-    echo " Activate virtual environment ... ";
-    echo "==================================";
-    source venv/bin/activate;
+     echo " ===>  skip activate_venv "
+#    echo "==================================";
+#    echo " Activate virtual environment ... ";
+#    echo "==================================";
+    # pipenv shell
 }
 
 install_requirements() {
     # install required packages
     pip install --upgrade pip
-    if pip install -r requirements.txt; then
+    if pipenv install --dev; then
         echo "=========================";
         echo " Requirements installed. ";
         echo "=========================";
