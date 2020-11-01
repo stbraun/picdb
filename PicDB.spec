@@ -63,5 +63,5 @@ app = BUNDLE(
     name="PicDB.app",
     icon="resrc/Icon.icns",
     bundle_identifier="com.stbraun.picdb",
-    info_plist={"CFBundleShortVersionString": "1.2.0"},
+    info_plist={"CFBundleShortVersionString": "1.2.1"},
 )
