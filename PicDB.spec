@@ -3,21 +3,17 @@
 import sys
 from pathlib import Path
 
+from xutilities.sysutils import get_venv
+
+PYTHON_VERSION = 'python3.9'
+
 sys.path.insert(0, "./picdb")
 
 block_cipher = None
 
-def get_venv():
-    for exec_path in os.get_exec_path():
-        path = Path(exec_path)
-        if (path / 'python').exists():
-            print(f'found python in {path}')
-            return path.parent.absolute()
-    raise Exception('venv not found')
-
 added_files = [
     (
-        get_venv() / "lib/python3.9/site-packages/postgresql/lib/libsys.sql",
+        get_venv() / "lib" / PYTHON_VERSION / "site-packages/postgresql/lib/libsys.sql",
         "postgresql/lib",
     ),
     ("picdb/resources/config_app.yaml", "picdb/resources"),

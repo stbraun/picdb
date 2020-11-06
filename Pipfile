@@ -19,6 +19,7 @@ py-postgresql = ">=1.1.0"
 psutil = "*"
 Pillow = "*"
 PyYAML = "*"
+xutilities = '*'
 
 [requires]
 python_version = "3.9"
